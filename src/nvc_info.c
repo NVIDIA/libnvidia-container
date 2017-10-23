@@ -175,6 +175,7 @@ find_library_paths(struct error *err, struct nvc_driver_info *info, int32_t flag
                     info->libs32, info->nlibs32, select_libraries, info) < 0)
                         goto fail;
         }
+
         rv = 0;
 
  fail:

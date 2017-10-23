@@ -11,6 +11,13 @@
 
 #include "error.h"
 
+typedef struct {
+        uint32_t        n_namesz;    /* Length of note's name. */
+        uint32_t        n_descsz;    /* Length of note's value. */
+        uint32_t        n_type;      /* Type of note. */
+} Elf_Note;
+
+
 struct elftool {
     struct error *err;
     int fd;

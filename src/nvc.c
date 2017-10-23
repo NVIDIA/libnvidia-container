@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <elfdefinitions.h>
 #include <pci-enum.h>
 #include <nvidia-modprobe-utils.h>
 
@@ -25,6 +24,7 @@
 #include "options.h"
 #include "utils.h"
 #include "xfuncs.h"
+#include "elftool.h"
 
 static int init_within_userns(struct error *);
 static int load_kernel_modules(struct error *);
