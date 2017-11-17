@@ -8,26 +8,27 @@ If you feel something is missing or requires additional information, please let 
 
 ```bash
 curl -L https://nvidia.github.io/libnvidia-container/gpgkey | \
-sudo apt-key add -
-sudo tee /etc/apt/sources.list.d/libnvidia-container.list <<< \
-"deb https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64 /"
+  sudo apt-key add -
+curl -s -L https://nvidia.github.io/libnvidia-container/ubuntu16.04/amd64/libnvidia-container.list | \
+  sudo tee /etc/apt/sources.list.d/libnvidia-container.list
+sudo apt-get update
+```
+
+## Debian distributions (Stretch x86_64)
+
+```bash
+curl -L https://nvidia.github.io/libnvidia-container/gpgkey | \
+  sudo apt-key add -
+curl -s -L https://nvidia.github.io/libnvidia-container/debian9.2/amd64/libnvidia-container.list | \
+  sudo tee /etc/apt/sources.list.d/libnvidia-container.list
 sudo apt-get update
 ```
 
 ## CentOS distributions (RHEL7 x86_64)
 
 ```bash
-sudo tee /etc/yum.repos.d/libnvidia-container.repo <<EOF
-[libnvidia-container]
-name=libnvidia-container
-baseurl=https://nvidia.github.io/libnvidia-container/centos7/x86_64
-repo_gpgcheck=1
-gpgcheck=0
-enabled=1
-gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
-sslverify=1
-sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-EOF
+curl -s -L https://nvidia.github.io/libnvidia-container/centos7/x86_64/libnvidia-container.repo | \
+  sudo tee /etc/yum.repos.d/libnvidia-container.repo
 ```
 
 ## Other distributions (x86_64)
