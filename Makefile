@@ -81,13 +81,27 @@ BIN_SRCS     := $(SRCS_DIR)/nvc_cli.c \
 LIB_SCRIPT   = $(SRCS_DIR)/$(LIB_NAME).lds
 BIN_SCRIPT   = $(SRCS_DIR)/$(BIN_NAME).lds
 
-##### Target definitions #####
+# Get current system architecture
+uname_p := $(shell uname -p)
 
+##### Target definitions #####
+#If debian based
 ifneq ($(wildcard /etc/debian_version),)
+ifeq ($(uname_p),ppc64le)
+ARCH    ?= ppc64el
+else
 ARCH    ?= amd64
+endif
+#Else non-debian
+else
+ifeq ($(uname_p),ppc64le)
+ARCH    ?= ppc64le
 else
 ARCH    ?= x86_64
 endif
+endif
+
+
 MAJOR   := $(call getdef,NVC_MAJOR,$(LIB_INCS))
 MINOR   := $(call getdef,NVC_MINOR,$(LIB_INCS))
 PATCH   := $(call getdef,NVC_PATCH,$(LIB_INCS))
@@ -127,8 +141,8 @@ LDLIBS   := $(LDLIBS)
 LIB_CPPFLAGS       = -DNV_LINUX -isystem $(CUDA_DIR)/include -isystem $(DEPS_DIR)$(includedir) -include $(BUILD_DEFS)
 LIB_CFLAGS         = -fPIC
 LIB_LDFLAGS        = -L$(DEPS_DIR)$(libdir) -shared -Wl,-soname=$(LIB_SONAME)
-LIB_LDLIBS_STATIC  = -l:libelf.a -l:libnvidia-modprobe-utils.a
-LIB_LDLIBS_SHARED  = -ldl -lcap
+LIB_LDLIBS_STATIC  = -l:libnvidia-modprobe-utils.a
+LIB_LDLIBS_SHARED  = -ldl -lz -lcap -lelf
 ifeq ($(WITH_TIRPC), 1)
 LIB_CPPFLAGS       += -isystem $(DEPS_DIR)$(includedir)/tirpc -DWITH_TIRPC
 LIB_LDLIBS_STATIC  += -l:libtirpc.a
@@ -218,7 +232,11 @@ static: $(LIB_STATIC)($(LIB_STATIC_OBJ))
 deps: export DESTDIR:=$(DEPS_DIR)
 deps: $(LIB_RPC_SRCS) $(BUILD_DEFS)
 	$(MKDIR) -p $(DEPS_DIR)
+
+# FIXME elftoolchain is not compatible with ppc64le at the moment
+ifneq ($(uname_p),"ppc64le")
 	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk install
+endif
 	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk install
 ifeq ($(WITH_TIRPC), 1)
 	$(MAKE) -f $(MAKE_DIR)/libtirpc.mk install
