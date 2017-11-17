@@ -1,4 +1,4 @@
 theme: jekyll-theme-minimal
 title: libnvidia-container
 description: NVIDIA container runtime library repository.
-show_downloads: true
+show_downloads: false
