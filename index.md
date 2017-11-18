@@ -19,7 +19,7 @@ sudo apt-get update
 ```bash
 curl -L https://nvidia.github.io/libnvidia-container/gpgkey | \
   sudo apt-key add -
-curl -s -L https://nvidia.github.io/libnvidia-container/debian9.2/amd64/libnvidia-container.list | \
+curl -s -L https://nvidia.github.io/libnvidia-container/debian9/amd64/libnvidia-container.list | \
   sudo tee /etc/apt/sources.list.d/libnvidia-container.list
 sudo apt-get update
 ```
