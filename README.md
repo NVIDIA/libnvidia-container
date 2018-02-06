@@ -18,8 +18,8 @@ Refer to the [repository configuration](https://nvidia.github.io/libnvidia-conta
 ### From sources
 With Docker:
 ```bash
-docker build --build-arg USERSPEC=$(id -u):$(id -g) -t libnvidia-container:ubuntu -f Dockerfile.ubuntu .
-docker run --rm -v /my/output/directory:/mnt libnvidia-container:ubuntu
+docker build --build-arg USERSPEC=$(id -u):$(id -g) -t libnvidia-container:xenial -f Dockerfile.xenial .
+docker run --rm -v /my/output/directory:/mnt libnvidia-container:xenial
 ````
 
 Without Docker:
