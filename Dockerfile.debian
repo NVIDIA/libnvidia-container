@@ -2,12 +2,11 @@ FROM debian:9.2
 
 # XXX: CUDA doesn't officially support debian, we just need the driver headers though
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates gnupg2 && \
-    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/7fa2af80.pub | apt-key add - && \
-    echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
+    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/ppc64el/7fa2af80.pub | apt-key add - && \
+    echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/ppc64el /" > /etc/apt/sources.list.d/cuda.list && \
     rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        bmake \
         build-essential \
         bzip2 \
         cuda-misc-headers-8-0=8.0.61-1 \
@@ -17,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         fakeroot \
         git \
         libcap-dev \
+        libelf-dev \
         libseccomp-dev \
         lintian \
         lsb-release \
@@ -30,6 +30,7 @@ COPY . .
 RUN chown -R $USERSPEC $PWD
 USER $USERSPEC
 
+ENV WITH_LIBELF=1
 RUN make distclean && make -j"$(nproc)"
 
 ENV DIST_DIR /mnt
