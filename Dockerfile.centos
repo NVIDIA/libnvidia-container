@@ -2,7 +2,7 @@ FROM centos:7
 
 COPY mk/cuda.repo /etc/yum.repos.d/cuda.repo
 
-RUN curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/7fa2af80.pub > /etc/pki/rpm-gpg/RPM-GPG-KEY-NVIDIA && \
+RUN curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/rhel7/ppc64le/7fa2af80.pub > /etc/pki/rpm-gpg/RPM-GPG-KEY-NVIDIA && \
     yum install -y \
         bzip2 \
         cuda-misc-headers-8-0-8.0.61-1 \
@@ -10,19 +10,15 @@ RUN curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x8
         gcc \
         git \
         libcap-devel \
+        elfutils-libelf-devel \
         libseccomp-devel \
         m4 \
+        make \
         redhat-lsb-core \
         rpm-build \
         rpmlint \
         which && \
     rm -rf /var/cache/yum/*
-
-RUN cd $(mktemp -d) && \
-    curl -fsSL -O https://mirrors.kernel.org/mageia/distrib/6/x86_64/media/core/release/pmake-1.45-16.mga6.x86_64.rpm && \
-    curl -fsSL -O https://mirrors.kernel.org/mageia/distrib/6/x86_64/media/core/release/bmake-20161212-1.mga6.x86_64.rpm && \
-    rpm -i *.rpm && \
-    rm -rf $PWD
 
 ARG USERSPEC=0:0
 
@@ -31,6 +27,7 @@ COPY . .
 RUN chown -R $USERSPEC $PWD
 USER $USERSPEC
 
+ENV WITH_LIBELF=1
 RUN make distclean && make -j"$(nproc)"
 
 ENV DIST_DIR /mnt
