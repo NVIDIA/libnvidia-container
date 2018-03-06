@@ -1,0 +1,25 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: amd64
+Codename: trusty
+Components: main
+Date: Tue, 06 Mar 2018 02:20:19 +0000
+Description: NVIDIA container runtime library repository
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container
+Suite: trusty
+Version: 1.0
+SHA512:
+ bf7fbd6903179c601f21133a5af96d59b975748158430da19e6560f6d06ae30b98e0e81248dc1602fff6b90293e2297ae3686ff3398a412d395c1acd68176e15             4373 Packages
+ d427bc5ea8383d41a81087e520e818de59f25baa9ead6dce9c63ed29cd7fa2f37e162fb21a10e47d0033cf81457d4b109aebaef9ada4867e17d1312b0bdceb1b             1492 Packages.xz
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAEBCgAGBQJanfuxAAoJEMRbFnagTqVSxbIIAN5f6kVBM3qLIG5pCTPo5rOc
+hdrhKTfzPoKvwIIQGZ4HHXfwrdPoywgYJaiXUqkLpo3MGPhPl1Afi7O2U4J4K1KT
+fYidGRHPip6FR8OzzR4HV3KirY6j8KPF7d+stIY4tQYWrLJDfvuNk3sN+h9yldrG
+4UNOwl7mPjRY/IMyceGUHZF9kwDDekd8QhxSAd9vL2AguA6L0aJ8EJxiVb42cQvI
+vs+BgJwEC93dIXOZNOcM/wdAiv7OkUi26owuOC0IOJTZznqgpq62jn3mdxL9kSWq
+aOk6/il9a9Ty6zpbatAjFL4hY0UkhDZR9TtQGVwdXxj557XNzo5KMeTCUaF1xls=
+=3iZ+
+-----END PGP SIGNATURE-----

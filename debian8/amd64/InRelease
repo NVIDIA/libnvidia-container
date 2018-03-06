@@ -1,0 +1,25 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: amd64
+Codename: jessie
+Components: main
+Date: Tue, 06 Mar 2018 02:20:19 +0000
+Description: NVIDIA container runtime library repository
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container
+Suite: jessie
+Version: 1.0
+SHA512:
+ 9db6f6ee7d1d6e364202d337b6157b159f6cf45ecf05e993d1dd8ba398bcae98dc8ebedf727f037946fb64a4bac058e2e2012427ba6ca34430ef0cb7f67f67d9             4377 Packages
+ 6606cd317786ebc7d2f44fd4c81afc307b89a168593d953d530a9a611af98758cbc60c17e38a93ea107488d71ed5aefcfaa173f8fbc4410e48207f6b5fcd351f             1492 Packages.xz
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAEBCgAGBQJanfzOAAoJEMRbFnagTqVSX/4IALqVqDtbbaECLZ4P6uQNqTvF
+VZr2yzLZhteCSzW4ycAB86dOwHUCx+0oJsFxTAMC8tRY1s9J84m+nP+hKns6nH6J
+/W5xcVspNfX+TYq5NM0oHmKnnO1wsHbUHz9YDz40GeyskOSeAgre3wVIsOoH9Qg/
+Um5DQonQArpC09IzN2wsuv+d6XoMp1Yb+Taz2wAUj/Xi3oAREMHV5SJqVL7ev0gr
+LHtyw7Az04+eTb8gvWcQK2AtWT2Cz+RGC5HPo0WlWj+Os0Afsb2Q7xBoFMnjnMwL
+UNam4PXyKA6AslzC+sudW3ANaZ6V7fSQ3wr5f8cnx0Y1qLtp6pUwY+CQ1f5VISc=
+=b10Y
+-----END PGP SIGNATURE-----
