@@ -5,7 +5,7 @@ In order to setup the libnvidia-container repository for your distribution, foll
 If you feel something is missing or requires additional information, please let us know by [filing a new issue](https://github.com/NVIDIA/libnvidia-container/issues/new).
 
 List of supported distributions:
-- Ubuntu 14.04, 16.04
+- Ubuntu 14.04, 16.04, 18.04
 - Debian 8, 9
 - CentOS 7
 - Red Hat Enterprise Linux 7

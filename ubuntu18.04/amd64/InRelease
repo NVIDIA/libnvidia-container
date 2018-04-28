@@ -1,0 +1,26 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: amd64
+Codename: bionic
+Components: main
+Date: Fri, 27 Apr 2018 21:29:25 +0000
+Description: NVIDIA container runtime library repository
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container
+Suite: bionic
+Version: 1.0
+SHA512:
+ 00b23908be0fbcbaf5f4ed3d34c323e9ff46c1028449f1044986a5db4829a74ea7d3e7f5bb640b12b80497eee1f86052a03dc383dba72d70577c7aac4d1d6180             4323 Packages
+ 30f789eaabfb689f7189bafcf2879994b2f53da0cea39d9c8b00bc40a3fa2e123495eb2fc1e59ef30630230d6cd82f16fa8233fcb5aff19c129d4465155a7970             1464 Packages.xz
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCgAdFiEEiLH4d5Jo/+sbd9/gxFsWdqBOpVIFAlrjlnoACgkQxFsWdqBO
+pVL2YggAubbbkw3vXvM07GTQesbcHy72eSIIVyFXiKq6Bt+XpyzJPMno/Xh5n8pG
+Oexz/OYIwOxeZrWbJTxIG/XqjyFsUXvzZUk2eKJh1VUr2r79DGTf14xOSdds4gIA
+3b0qNWybikC1rFBOTXCh48XdbH/JnAMzFWNTPIzlSWVxDPj3VCkVUgyTyZQ/6xsR
+Obq6tLzkSRy49eOzJv3sr01kJr1iwPQQyqhl6oky/iOYI5QDUQ+xcvTArk9aw/ej
+VcgswEznWIkZ6XRhiuh0dzzTjyFYI6bHjB1T7hQ5IrHVzcskudxvCmsbuJxOCkoP
+rLOjkfy7tSbNJuk3Qygnp+ISkFxB7g==
+=5aRf
+-----END PGP SIGNATURE-----
