@@ -1,0 +1,25 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: ppc64el
+Codename: xenial
+Components: main
+Date: Mon, 30 Apr 2018 18:28:12 +0000
+Description: NVIDIA container runtime library repository
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container
+Suite: xenial
+Version: 1.0
+SHA512:
+ 832fef5b1f145284d638a68fbd1ee188dbb9179203be2bf1de532ed6b31401f6437d219f713d4404c034092d4ae3c8e2a15627b6a4157c9b4af0917818d0f384             4360 Packages
+ 1bb7f50c9bac7e694d2eed2c2adbcd3e15f898b02160f1522ed79e70e883f801f6bc423acf033194392c0c4e09af73040c05196403ca6caa7d303542f3a58893             1468 Packages.xz
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAEBCgAGBQJa52CpAAoJEMRbFnagTqVSWA0H/2AgJ9+W+7wPYzXv83X95ddS
+kkNpPqmolKqH55h7BK5/ny8P9mCEqidsdeAiZx8lAKtl+LEySijcuOpTL48SPXGQ
+slbM0niQxGPJ4ON0jGFVlDOXxz5Ueb4eDjUniWVTl4ftI6JcxMxpLewjMRI4/K3k
+XyAQBLQHITI5SUVFuqkFRg7oRYzNxmzeY4e6I5M5JcfNkN1NsQUYDME21KGseWu9
+KB2bx64+7i2d2jY2UfodV51FRrQ/yK3egqfGFK4Aok/+yHgaTJW5uxJE4bZbNi2B
+2qlfGQ9bE0oaUD+oj3Qo33w/C7RnwlkQ3R064LDfsgyIC7oGgmmxdHqTvoE42RM=
+=1A/L
+-----END PGP SIGNATURE-----

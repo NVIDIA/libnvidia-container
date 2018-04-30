@@ -1,0 +1,26 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: ppc64el
+Codename: stretch
+Components: main
+Date: Mon, 30 Apr 2018 18:28:12 +0000
+Description: NVIDIA container runtime library repository
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container
+Suite: stretch
+Version: 1.0
+SHA512:
+ 920f48db2859b14c57d81feb51e623266c7d182bbc38c666c3f55e0c204c088c323a4eb80f068301b9e8f0c431348aaafee3f5a348a0bdc38f4d6e15844bfd8d             4360 Packages
+ 43350ec16d73af74d9398722c7fdd583fd9cc46939ca788dd8e785f1e9e7047b402e39f7f835578d2eff3ab3f5918550e76774af6c12171dbbe3e68be8b82644             1468 Packages.xz
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCgAdFiEEiLH4d5Jo/+sbd9/gxFsWdqBOpVIFAlrnYLkACgkQxFsWdqBO
+pVI8Jgf/WhwlKJ6unnjD7S0ce8+zjLV1pVkNMHXpaIhYq6tOqyzg3u98LKPzAIIx
+84XxjEH3wBD9TSXPco3CEalYT/tcpA6IiRbnOtGudn3zjp6JRZadz8E9wEmQuImD
+qCMsG/0rDdYUqBUgyvXMEvw+STi9f+KOhaVVyiRJhfa0/wSDKFxfun1auVqp7WPL
+dor+SV89inmY2+mRGSOqAdYOuRZyKIvTfq/KB/IQIazhhjDki2a+YhOPIEaNBtHL
+6gSsjTIKxtWNU2bPd//v1XxXHMleYGAlPI7OtHDAUrheDSZT7s0mYBqvyH/oJEZ+
+q8BrTc9y5yhwDU2gs1P+eyOKjGctnA==
+=VDLN
+-----END PGP SIGNATURE-----
