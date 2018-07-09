@@ -33,7 +33,7 @@ static struct argp usage = {
                 {"ldcache", 'l', "FILE", 0, "Path to the system's DSO cache", -1},
                 {NULL, 0, NULL, 0, "Commands:", 0},
                 {"info", 0, NULL, OPTION_DOC|OPTION_NO_USAGE, "Report information about the driver and devices", 0},
-                {"list", 0, NULL, OPTION_DOC|OPTION_NO_USAGE, "List driver components", 0},
+                {"list", 0, NULL, OPTION_DOC|OPTION_NO_USAGE, "List devices and driver components", 0},
                 {"configure", 0, NULL, OPTION_DOC|OPTION_NO_USAGE, "Configure a container with GPU support", 0},
                 {0},
         },
