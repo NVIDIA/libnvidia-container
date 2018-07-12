@@ -1,0 +1,46 @@
+ARG IMAGESPEC=opensuse/leap:15.0
+FROM ${IMAGESPEC}
+ARG IMAGESPEC=opensuse/leap:15.0
+
+RUN zypper install -y \
+        bmake \
+        bzip2 \
+        createrepo \
+        curl \
+        gcc \
+        git \
+        groff \
+        libcap-devel \
+        libelf-devel \
+        libseccomp-devel \
+        m4 \
+        make \
+        lsb-release \
+        pkg-config \
+        rpm-build \
+        rpmlint \
+        which && \
+    rm -rf /var/cache/zypp/*
+
+ARG WITH_LIBELF=no
+ARG WITH_TIRPC=no
+ARG WITH_SECCOMP=yes
+ENV WITH_LIBELF=${WITH_LIBELF}
+ENV WITH_TIRPC=${WITH_TIRPC}
+ENV WITH_SECCOMP=${WITH_SECCOMP}
+
+ARG USERSPEC=0:0
+
+WORKDIR /tmp/libnvidia-container
+COPY . .
+RUN chown -R $USERSPEC $PWD
+USER $USERSPEC
+
+# META_NOECHO=echo is required to work around a bug in Leap 15's version of bmake,
+# see also https://github.com/ptt/pttbbs/issues/30
+RUN export META_NOECHO=echo && \
+    make distclean && make -j"$(nproc)"
+
+ENV DIST_DIR /mnt
+VOLUME $DIST_DIR
+CMD make dist && make rpm
