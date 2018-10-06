@@ -41,7 +41,10 @@ $(LIB_SRCS): $(SRCS_DIR)/.download_stamp
 
 .PHONY: all install clean
 
-all: $(LIB_STATIC)($(LIB_OBJS))
+all: $(LIB_STATIC)
+
+$(LIB_STATIC): $(LIB_OBJS)
+	$(AR) rs $@ $^
 
 install: all
 	$(INSTALL) -d -m 755 $(addprefix $(DESTDIR),$(includedir) $(libdir))
