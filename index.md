@@ -37,3 +37,23 @@ curl -s -L https://nvidia.github.io/libnvidia-container/$DIST/libnvidia-containe
 # https://github.com/NVIDIA/libnvidia-container/releases
 sudo tar --strip-components=1 -C / -xvf $RELEASE
 ```
+
+# Updating repository keys
+
+In order to update the libnvidia-container repository key for your distribution, follow the instructions below.
+
+## RHEL-based distributions
+
+```bash
+DIST=$(sed -n 's/releasever=//p' /etc/yum.conf)
+DIST=${DIST:-$(. /etc/os-release; echo $VERSION_ID)}
+sudo rpm -e gpg-pubkey-f796ecb0
+sudo gpg --homedir /var/lib/yum/repos/$(uname -m)/$DIST/libnvidia-container/gpgdir --delete-key f796ecb0
+sudo yum makecache
+```
+
+## Debian-based distributions
+```bash
+curl -s -L https://nvidia.github.io/libnvidia-container/gpgkey | \
+  sudo apt-key add -
+```
