@@ -5,6 +5,7 @@
 #include <alloca.h>
 #include <err.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include "cli.h"
 #include "dsl.h"
