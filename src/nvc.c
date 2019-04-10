@@ -290,10 +290,6 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
         if ((ctx->mnt_ns = xopen(&ctx->err, path, O_RDONLY|O_CLOEXEC)) < 0)
                 goto fail;
 
-        if (flags & OPT_LOAD_KMODS) {
-                if (load_kernel_modules(&ctx->err, ctx->cfg.root) < 0)
-                        goto fail;
-        }
         if (driver_init(&ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
                 goto fail;
 
