@@ -40,15 +40,10 @@ void driver_program_1(struct svc_req *, register SVCXPRT *);
 
 int driver_init(struct driver *, struct error *, const char *, uid_t, gid_t);
 int driver_shutdown(struct driver *);
-int driver_get_rm_version(struct driver *, char **);
 int driver_get_cuda_version(struct driver *, char **);
-int driver_get_device_count(struct driver *, unsigned int *);
 int driver_get_device(struct driver *, unsigned int, struct driver_device **);
-int driver_get_device_minor(struct driver *, struct driver_device *, unsigned int *);
-int driver_get_device_busid(struct driver *, struct driver_device *, char **);
 int driver_get_device_uuid(struct driver *, struct driver_device *, char **);
 int driver_get_device_arch(struct driver *, struct driver_device *, char **);
 int driver_get_device_model(struct driver *, struct driver_device *, char **);
-int driver_get_device_brand(struct driver *, struct driver_device *, char **);
 
 #endif /* HEADER_DRIVER_H */

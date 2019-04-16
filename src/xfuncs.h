@@ -21,6 +21,7 @@
 static inline void xclose(int);
 static inline int  xopen(struct error *, const char *, int);
 static inline void *xcalloc(struct error *, size_t, size_t);
+static inline void *xrealloc(struct error *, void *, size_t);
 static inline int  xstat(struct error *, const char *, struct stat *);
 static inline FILE *xfopen(struct error *, const char *, const char *);
 static inline char *xstrdup(struct error *, const char *);
@@ -62,6 +63,14 @@ xcalloc(struct error *err, size_t nmemb, size_t size)
         if ((p = calloc(nmemb, size)) == NULL)
                 error_set(err, "memory allocation failed");
         return (p);
+}
+
+static inline void *
+xrealloc(struct error *err, void *ptr, size_t size)
+{
+        if ((ptr = realloc(ptr, size)) == NULL)
+                error_set(err, "memory reallocation failed");
+        return (ptr);
 }
 
 static inline int

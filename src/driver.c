@@ -28,6 +28,7 @@
 #include "error.h"
 #include "utils.h"
 #include "xfuncs.h"
+#include "common.h"
 
 #define MAX_DEVICES     64
 #define REAP_TIMEOUT_MS 10
@@ -158,11 +159,11 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
          *
          * If we are not changing group, then keep our supplementary groups as well.
          * This is arguable but allows us to support unprivileged processes (i.e. without CAP_SETGID) and user namespaces.
-         */
         if (perm_drop_privileges(ctx->err, uid, gid, (getegid() != gid)) < 0)
                 goto fail;
         if (perm_set_capabilities(ctx->err, CAP_PERMITTED, NULL, 0) < 0)
                 goto fail;
+         */
         if (reset_cuda_environment(ctx->err) < 0)
                 goto fail;
 
@@ -179,8 +180,6 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
 
         if ((ctx->cuda_dl = xdlopen(ctx->err, SONAME_LIBCUDA, RTLD_NOW)) == NULL)
                 goto fail;
-        if ((ctx->nvml_dl = xdlopen(ctx->err, SONAME_LIBNVML, RTLD_NOW)) == NULL)
-                goto fail;
 
         if ((ctx->rpc_svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
             !svc_register(ctx->rpc_svc, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1, 0)) {
@@ -196,7 +195,6 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         if (rv != EXIT_SUCCESS)
                 log_errf("could not start driver service: %s", ctx->err->msg);
         xdlclose(NULL, ctx->cuda_dl);
-        xdlclose(NULL, ctx->nvml_dl);
         if (ctx->rpc_svc != NULL)
                 svc_destroy(ctx->rpc_svc);
         _exit(rv);
@@ -286,8 +284,6 @@ driver_init_1_svc(ptr_t ctxptr, driver_init_res *res, maybe_unused struct svc_re
         memset(res, 0, sizeof(*res));
         if (call_cuda(ctx, cuInit, 0) < 0)
                 goto fail;
-        if (call_nvml(ctx, nvmlInit_v2) < 0)
-                goto fail;
         return (true);
 
  fail:
@@ -319,51 +315,8 @@ driver_shutdown(struct driver *ctx)
 bool_t
 driver_shutdown_1_svc(ptr_t ctxptr, driver_shutdown_res *res, maybe_unused struct svc_req *req)
 {
-        struct driver *ctx = (struct driver *)ctxptr;
-
-        memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlShutdown) < 0)
-                goto fail;
+	memset(res, 0, sizeof(*res));
         svc_exit();
-        return (true);
-
- fail:
-        error_to_xdr(ctx->err, res);
-        return (true);
-}
-
-int
-driver_get_rm_version(struct driver *ctx, char **version)
-{
-        struct driver_get_rm_version_res res = {0};
-        int rv = -1;
-
-        if (call_rpc(ctx, &res, driver_get_rm_version_1) < 0)
-                goto fail;
-        if ((*version = xstrdup(ctx->err, res.driver_get_rm_version_res_u.vers)) == NULL)
-                goto fail;
-        rv = 0;
-
- fail:
-        xdr_free((xdrproc_t)xdr_driver_get_rm_version_res, (caddr_t)&res);
-        return (rv);
-}
-
-bool_t
-driver_get_rm_version_1_svc(ptr_t ctxptr, driver_get_rm_version_res *res, maybe_unused struct svc_req *req)
-{
-        struct driver *ctx = (struct driver *)ctxptr;
-        char buf[NVML_SYSTEM_DRIVER_VERSION_BUFFER_SIZE];
-
-        memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlSystemGetDriverVersion, buf, sizeof(buf)) < 0)
-                goto fail;
-        if ((res->driver_get_rm_version_res_u.vers = xstrdup(ctx->err, buf)) == NULL)
-                goto fail;
-        return (true);
-
- fail:
-        error_to_xdr(ctx->err, res);
         return (true);
 }
 
@@ -396,39 +349,6 @@ driver_get_cuda_version_1_svc(ptr_t ctxptr, driver_get_cuda_version_res *res, ma
                 goto fail;
         res->driver_get_cuda_version_res_u.vers.major = (unsigned int)version / 1000;
         res->driver_get_cuda_version_res_u.vers.minor = (unsigned int)version % 100 / 10;
-        return (true);
-
- fail:
-        error_to_xdr(ctx->err, res);
-        return (true);
-}
-
-int
-driver_get_device_count(struct driver *ctx, unsigned int *count)
-{
-        struct driver_get_device_count_res res = {0};
-        int rv = -1;
-
-        if (call_rpc(ctx, &res, driver_get_device_count_1) < 0)
-                goto fail;
-        *count = res.driver_get_device_count_res_u.count;
-        rv = 0;
-
- fail:
-        xdr_free((xdrproc_t)xdr_driver_get_device_count_res, (caddr_t)&res);
-        return (rv);
-}
-
-bool_t
-driver_get_device_count_1_svc(ptr_t ctxptr, driver_get_device_count_res *res, maybe_unused struct svc_req *req)
-{
-        struct driver *ctx = (struct driver *)ctxptr;
-        unsigned int count;
-
-        memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlDeviceGetCount_v2, &count) < 0)
-                goto fail;
-        res->driver_get_device_count_res_u.count = count;
         return (true);
 
  fail:
@@ -473,84 +393,8 @@ driver_get_device_1_svc(ptr_t ctxptr, u_int idx, driver_get_device_res *res, may
         if (call_cuda(ctx, cuDeviceGetAttribute, &deviceid, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, device_handles[idx].cuda) < 0)
                 goto fail;
         snprintf(buf, sizeof(buf), "%08x:%02x:%02x.0", domainid, busid, deviceid);
-        if (call_nvml(ctx, nvmlDeviceGetHandleByPciBusId_v2, buf, &device_handles[idx].nvml) < 0)
-                goto fail;
 
         res->driver_get_device_res_u.dev = (ptr_t)&device_handles[idx];
-        return (true);
-
- fail:
-        error_to_xdr(ctx->err, res);
-        return (true);
-}
-
-int
-driver_get_device_minor(struct driver *ctx, struct driver_device *dev, unsigned int *minor)
-{
-        struct driver_get_device_minor_res res = {0};
-        int rv = -1;
-
-        if (call_rpc(ctx, &res, driver_get_device_minor_1, (ptr_t)dev) < 0)
-                goto fail;
-        *minor = res.driver_get_device_minor_res_u.minor;
-        rv = 0;
-
- fail:
-        xdr_free((xdrproc_t)xdr_driver_get_device_minor_res, (caddr_t)&res);
-        return (rv);
-}
-
-bool_t
-driver_get_device_minor_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_minor_res *res, maybe_unused struct svc_req *req)
-{
-        struct driver *ctx = (struct driver *)ctxptr;
-        struct driver_device *handle = (struct driver_device *)dev;
-        unsigned int minor;
-
-        memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlDeviceGetMinorNumber, handle->nvml, &minor) < 0)
-                goto fail;
-        res->driver_get_device_minor_res_u.minor = minor;
-        return (true);
-
- fail:
-        error_to_xdr(ctx->err, res);
-        return (true);
-}
-
-int
-driver_get_device_busid(struct driver *ctx, struct driver_device *dev, char **busid)
-{
-        struct driver_get_device_busid_res res = {0};
-        int rv = -1;
-
-        if (call_rpc(ctx, &res, driver_get_device_busid_1, (ptr_t)dev) < 0)
-                goto fail;
-        if ((*busid = xstrdup(ctx->err, res.driver_get_device_busid_res_u.busid)) == NULL)
-                goto fail;
-        rv = 0;
-
- fail:
-        xdr_free((xdrproc_t)xdr_driver_get_device_busid_res, (caddr_t)&res);
-        return (rv);
-}
-
-bool_t
-driver_get_device_busid_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_busid_res *res, maybe_unused struct svc_req *req)
-{
-        struct driver *ctx = (struct driver *)ctxptr;
-        struct driver_device *handle = (struct driver_device *)dev;
-        int domainid, deviceid, busid;
-
-        memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuDeviceGetAttribute, &domainid, CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID, handle->cuda) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &busid, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, handle->cuda) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &deviceid, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, handle->cuda) < 0)
-                goto fail;
-        if (xasprintf(ctx->err, &res->driver_get_device_busid_res_u.busid, "%08x:%02x:%02x.0", domainid, busid, deviceid) < 0)
-                goto fail;
         return (true);
 
  fail:
@@ -580,13 +424,12 @@ driver_get_device_uuid_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_uuid_res
 {
         struct driver *ctx = (struct driver *)ctxptr;
         struct driver_device *handle = (struct driver_device *)dev;
-        char buf[NVML_DEVICE_UUID_BUFFER_SIZE];
+        CUuuid uid = {0};
 
-        memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlDeviceGetUUID, handle->nvml, buf, sizeof(buf)) < 0)
+        if (call_cuda(ctx, cuDeviceGetUuid, &uid, handle->cuda) < 0)
                 goto fail;
-        if ((res->driver_get_device_uuid_res_u.uuid = xstrdup(ctx->err, buf)) == NULL)
-                goto fail;
+//        if ((res->driver_get_device_uuid_res_u.uuid = xstrdup(ctx->err, buf)) == NULL)
+//                goto fail;
         return (true);
 
  fail:
@@ -619,68 +462,9 @@ driver_get_device_model_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_model_r
         char buf[NVML_DEVICE_NAME_BUFFER_SIZE];
 
         memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlDeviceGetName, handle->nvml, buf, sizeof(buf)) < 0)
+        if (call_cuda(ctx, cuDeviceGetName, buf, sizeof(buf), handle->cuda) < 0)
                 goto fail;
         if ((res->driver_get_device_model_res_u.model = xstrdup(ctx->err, buf)) == NULL)
-                goto fail;
-        return (true);
-
- fail:
-        error_to_xdr(ctx->err, res);
-        return (true);
-}
-
-int
-driver_get_device_brand(struct driver *ctx, struct driver_device *dev, char **brand)
-{
-        struct driver_get_device_brand_res res = {0};
-        int rv = -1;
-
-        if (call_rpc(ctx, &res, driver_get_device_brand_1, (ptr_t)dev) < 0)
-                goto fail;
-        if ((*brand = xstrdup(ctx->err, res.driver_get_device_brand_res_u.brand)) == NULL)
-                goto fail;
-        rv = 0;
-
- fail:
-        xdr_free((xdrproc_t)xdr_driver_get_device_brand_res, (caddr_t)&res);
-        return (rv);
-}
-
-bool_t
-driver_get_device_brand_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_brand_res *res, maybe_unused struct svc_req *req)
-{
-        struct driver *ctx = (struct driver *)ctxptr;
-        struct driver_device *handle = (struct driver_device *)dev;
-        nvmlBrandType_t brand;
-        const char *buf;
-
-        memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlDeviceGetBrand, handle->nvml, &brand) < 0)
-                goto fail;
-        switch (brand) {
-        case NVML_BRAND_QUADRO:
-                buf = "Quadro";
-                break;
-        case NVML_BRAND_TESLA:
-                buf = "Tesla";
-                break;
-        case NVML_BRAND_NVS:
-                buf = "NVS";
-                break;
-        case NVML_BRAND_GRID:
-                buf = "GRID";
-                break;
-        case NVML_BRAND_GEFORCE:
-                buf = "GeForce";
-                break;
-        case NVML_BRAND_TITAN:
-                buf = "TITAN";
-                break;
-        default:
-                buf = "Unknown";
-        }
-        if ((res->driver_get_device_brand_res_u.brand = xstrdup(ctx->err, buf)) == NULL)
                 goto fail;
         return (true);
 
