@@ -24,6 +24,7 @@ DATE     := $(shell date -u --iso-8601=minutes)
 REVISION := $(shell git rev-parse HEAD)
 COMPILER := $(realpath $(shell which $(CC)))
 PLATFORM ?= $(shell uname -m)
+JETSON   := $(shell test -f /etc/nv_tegra_release && echo "TRUE")
 
 ifeq ($(DATE),)
 $(error Invalid date format)
@@ -44,7 +45,7 @@ getarch = $(shell [ -f /etc/debian_version ] && echo "amd64" || echo "x86_64")
 else ifeq ($(PLATFORM),ppc64le)
 getarch = $(shell [ -f /etc/debian_version ] && echo "ppc64el" || echo "ppc64le")
 else ifeq ($(PLATFORM),aarch64)
-getarch = $(shell [ -f /etc/debian_version ] && echo "aarch64" || echo "aarch64")
+getarch = $(shell [ -f /etc/debian_version ] && echo "arm64" || echo "arm64")
 else
 $(error Unsupported architecture)
 endif
