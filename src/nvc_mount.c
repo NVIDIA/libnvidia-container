@@ -450,10 +450,6 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         if (mnt == NULL)
                 goto fail;
 
-        /* Procfs mount */
-        if ((*ptr++ = mount_procfs(&ctx->err, ctx->cfg.root, cnt)) == NULL)
-                goto fail;
-
         /* Application profile mount */
         if (cnt->flags & OPT_GRAPHICS_LIBS) {
                 if ((*ptr++ = mount_app_profile(&ctx->err, cnt)) == NULL)
