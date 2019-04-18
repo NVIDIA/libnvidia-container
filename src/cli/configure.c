@@ -279,12 +279,6 @@ configure_command(const struct context *ctx)
                 warnx("mount error: %s", nvc_error(nvc));
                 goto fail;
         }
-        for (size_t i = 0; i < dev->ngpus; ++i) {
-                if (gpus[i] != NULL && nvc_device_mount(nvc, cnt, gpus[i]) < 0) {
-                        warnx("mount error: %s", nvc_error(nvc));
-                        goto fail;
-                }
-        }
 
         /* Update the container ldcache. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_LDCACHE], ecaps_size(NVC_LDCACHE)) < 0) {
