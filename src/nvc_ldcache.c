@@ -363,8 +363,8 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
                         goto fail;
                 if (adjust_privileges(&ctx->err, cnt->uid, cnt->gid, drop_groups) < 0)
                         goto fail;
-                if (limit_syscalls(&ctx->err) < 0)
-                        goto fail;
+//                if (limit_syscalls(&ctx->err) < 0)
+//                       goto fail;
 
                 if (fd < 0)
                         execve(argv[0], argv, (char * const []){NULL});
