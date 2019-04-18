@@ -132,8 +132,8 @@ select_libraries(struct error *err, void *ptr, const char *root, const char *ori
                         goto done;
         }
         /* Check the driver version. */
-        if ((rv = str_has_suffix(lib, info->nvrm_version)) == false)
-                goto done;
+//        if ((rv = str_has_suffix(lib, info->nvrm_version)) == false)
+//                goto done;
         if (str_array_match_prefix(lib, graphics_libs_compat, nitems(graphics_libs_compat))) {
                 /* Only choose OpenGL/EGL libraries issued by NVIDIA. */
                 if ((rv = elftool_has_dependency(&et, "libnvidia-glcore.so")) != false)
