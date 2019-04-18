@@ -458,8 +458,6 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 
-        if (driver_get_rm_version(&ctx->drv, &info->nvrm_version) < 0)
-                goto fail;
         if (driver_get_cuda_version(&ctx->drv, &info->cuda_version) < 0)
                 goto fail;
         if (lookup_libraries(&ctx->err, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
@@ -501,7 +499,6 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
 {
         struct nvc_device_info *info;
         struct nvc_device *gpu;
-        unsigned int n, minor;
         struct driver_device *dev;
         /*int32_t flags;*/
 
@@ -518,8 +515,7 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 
-        if (driver_get_device_count(&ctx->drv, &n) < 0)
-                goto fail;
+        unsigned int n = 1;
         info->ngpus = n;
         info->gpus = gpu = xcalloc(&ctx->err, info->ngpus, sizeof(*info->gpus));
         if (info->gpus == NULL)
@@ -530,19 +526,8 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
                         goto fail;
                 if (driver_get_device_model(&ctx->drv, dev, &gpu->model) < 0)
                         goto fail;
-                if (driver_get_device_uuid(&ctx->drv, dev, &gpu->uuid) < 0)
-                        goto fail;
-                if (driver_get_device_busid(&ctx->drv, dev, &gpu->busid) < 0)
-                        goto fail;
                 if (driver_get_device_arch(&ctx->drv, dev, &gpu->arch) < 0)
                         goto fail;
-                if (driver_get_device_brand(&ctx->drv, dev, &gpu->brand) < 0)
-                        goto fail;
-                if (driver_get_device_minor(&ctx->drv, dev, &minor) < 0)
-                        goto fail;
-                if (xasprintf(&ctx->err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
-                        goto fail;
-                gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
 
                 log_infof("listing device %s (%s at %s)", gpu->node.path, gpu->uuid, gpu->busid);
         }
