@@ -451,34 +451,40 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 goto fail;
 
         /* Application profile mount */
+        log_info("mount application profile");
         if (cnt->flags & OPT_GRAPHICS_LIBS) {
                 if ((*ptr++ = mount_app_profile(&ctx->err, cnt)) == NULL)
                         goto fail;
         }
 
         /* Host binary and library mounts */
+        log_info("mount binaries");
         if (info->bins != NULL && info->nbins > 0) {
                 if ((tmp = (const char **)mount_files(&ctx->err, ctx->cfg.root, cnt, cnt->cfg.bins_dir, info->bins, info->nbins)) == NULL)
                         goto fail;
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
         }
+        log_info("mount libraries");
         if (info->libs != NULL && info->nlibs > 0) {
                 if ((tmp = (const char **)mount_files(&ctx->err, ctx->cfg.root, cnt, cnt->cfg.libs_dir, info->libs, info->nlibs)) == NULL)
                         goto fail;
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
         }
+        log_info("mount libraries32");
         if ((cnt->flags & OPT_COMPAT32) && info->libs32 != NULL && info->nlibs32 > 0) {
                 if ((tmp = (const char **)mount_files(&ctx->err, ctx->cfg.root, cnt, cnt->cfg.libs32_dir, info->libs32, info->nlibs32)) == NULL)
                         goto fail;
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
         }
+        log_info("mount symlinks");
         if (symlink_libraries(&ctx->err, cnt, mnt, (size_t)(ptr - mnt)) < 0)
                 goto fail;
 
         /* Container library mounts */
+        log_info("mount container library");
         if (cnt->libs != NULL && cnt->nlibs > 0) {
                 size_t nlibs = cnt->nlibs;
                 char **libs = array_copy(&ctx->err, (const char * const *)cnt->libs, cnt->nlibs);
@@ -495,6 +501,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 free(libs);
         }
 
+        log_info("mount IPCs");
         /* IPC mounts */
         for (size_t i = 0; i < info->nipcs; ++i) {
                 /* XXX Only utility libraries require persistenced IPC, everything else is compute only. */
@@ -515,10 +522,12 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 /* XXX Only display capability requires the modeset device. */
                 if (!(cnt->flags & OPT_DISPLAY) && minor(info->devs[i].id) == NV_MODESET_DEVICE_MINOR)
                         continue;
+                log_info("mount devices");
                 if (!(cnt->flags & OPT_NO_DEVBIND)) {
                         if ((*ptr++ = mount_device(&ctx->err, ctx->cfg.root, cnt, &info->devs[i])) == NULL)
                                 goto fail;
                 }
+                log_info("setup cgroups");
                 if (!(cnt->flags & OPT_NO_CGROUPS)) {
                         if (setup_cgroup(&ctx->err, cnt->dev_cg, info->devs[i].id) < 0)
                                 goto fail;
