@@ -558,6 +558,8 @@ file_create(struct error *err, const char *path, const char *data, uid_t uid, gi
                 if ((fd = open(path, flags, perm)) < 0) {
                         if (errno == ELOOP)
                                 errno = EEXIST; /* XXX Better error message if the file exists and is a symlink. */
+                        if (errno == ENXIO)
+                                return (0);
                         goto fail;
                 }
                 if (data != NULL && write(fd, data, size) < (ssize_t)size) {
