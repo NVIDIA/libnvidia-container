@@ -37,7 +37,7 @@ static int find_device_node(struct error *, const char *, const char *, struct n
 static int find_ipc_path(struct error *, const char *, const char *, char **);
 static int lookup_libraries(struct error *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct nvc_driver_info *, const char *, int32_t);
-static int lookup_devices(struct error *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_control_devices(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 
 /*
@@ -119,6 +119,19 @@ static const char * const graphics_libs_compat[] = {
         "libEGL.so",                        /* EGL legacy _or_ ICD loader (GLVND) */
         "libGLESv1_CM.so",                  /* OpenGL ES v1 common profile legacy _or_ ICD loader (GLVND) */
         "libGLESv2.so",                     /* OpenGL ES v2 legacy _or_ ICD loader (GLVND) */
+};
+
+static const char * const control_devices[] = {
+	"nvidiactl",
+	"nvhost-ctrl",
+	"nvhost-ctrl-gpu",
+	"nvhost-prof-gpu",
+	"nvmap",
+	"nvhost-gpu",
+	"nvhost-nvdec",
+	"tegra_dc_ctrl",
+	"nvhost-vic",
+	"nvhost-as-gpu",
 };
 
 static int
@@ -339,41 +352,41 @@ lookup_binaries(struct error *err, struct nvc_driver_info *info, const char *roo
 }
 
 static int
-lookup_devices(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
+lookup_control_devices(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
 {
-        struct nvc_device_node uvm, uvm_tools, modeset, *node;
-        int has_uvm = 0;
-        int has_uvm_tools = 0;
-        int has_modeset = 0;
+        char path[PATH_MAX];
+        int has_dev = 0;
+        size_t ndevs = 0;
 
-        if (!(flags & OPT_NO_UVM)) {
-                if ((has_uvm = find_device_node(err, root, NV_UVM_DEVICE_PATH, &uvm)) < 0)
-                        return (-1);
-                if ((has_uvm_tools = find_device_node(err, root, NV_UVM_TOOLS_DEVICE_PATH, &uvm_tools)) < 0)
-                        return (-1);
-        }
-        if (!(flags & OPT_NO_MODESET)) {
-                modeset.path = (char *)NV_MODESET_DEVICE_PATH;
-                modeset.id = makedev(NV_DEVICE_MAJOR, NV_MODESET_DEVICE_MINOR);
-                has_modeset = 1;
-        }
+        memset(path, 0, sizeof(*path));
 
-        info->ndevs = (size_t)(1 + has_uvm + has_uvm_tools + has_modeset);
-        info->devs = node = xcalloc(err, info->ndevs, sizeof(*info->devs));
+        info->ndevs = nitems(control_devices);
+        info->devs = xcalloc(err, info->ndevs, sizeof(*info->devs));
         if (info->devs == NULL)
                 return (-1);
 
-        node->path = (char *)NV_CTL_DEVICE_PATH;
-        node->id = makedev(NV_DEVICE_MAJOR, NV_CTL_DEVICE_MINOR);
-        if (has_uvm)
-                *(++node) = uvm;
-        if (has_uvm_tools)
-                *(++node) = uvm_tools;
-        if (has_modeset)
-                *(++node) = modeset;
+        for (unsigned int i = 0; i < nitems(control_devices); i++) {
+                if (path_join(err, path, _PATH_DEV, control_devices[i]) < 0)
+                        return (-1);
+
+                if ((has_dev = find_device_node(err, root, path, &info->devs[ndevs])) < 0)
+                        continue;
+
+                info->devs[ndevs].path = xstrdup(err, path);
+                if (info->devs[ndevs].path == NULL)
+                        return (-1);
+
+                ++ndevs;
+        }
+
+        info->ndevs = ndevs;
+        info->devs = xrealloc(err, info->devs, ndevs * sizeof(*info->devs));
+        if (info->devs == NULL)
+                return (-1);
 
         for (size_t i = 0; i < info->ndevs; ++i)
                 log_infof("listing device %s", info->devs[i].path);
+
         return (0);
 }
 
@@ -453,7 +466,7 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
                 goto fail;
         if (lookup_binaries(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
-        if (lookup_devices(&ctx->err, info, ctx->cfg.root, flags) < 0)
+        if (lookup_control_devices(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
         if (lookup_ipcs(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
@@ -475,6 +488,10 @@ nvc_driver_info_free(struct nvc_driver_info *info)
         array_free(info->libs, info->nlibs);
         array_free(info->libs32, info->nlibs32);
         array_free(info->ipcs, info->nipcs);
+
+        for (size_t i = 0; i < info->ndevs; ++i)
+                free(info->devs[i].path);
+
         free(info->devs);
         free(info);
 }
