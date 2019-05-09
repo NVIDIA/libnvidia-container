@@ -1,5 +1,5 @@
 libnvidia-container.a
-libnvidia-container.so.1.0.1
+libnvidia-container.so*
 nvidia-container-cli
 
 .debug/
