@@ -313,3 +313,18 @@ docker-%:
                     --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
                     -f $(MAKE_DIR)/Dockerfile.$${image%%:*} -t $(LIB_NAME):$${image/:} . ;\
 	$(DOCKER) run --rm -v $(DIST_DIR)/$${image/:}:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):$${image/:}
+
+podman: SHELL:=/bin/bash
+podman:
+	$(MKDIR) -p $(DIST_DIR)/arm/ubuntu ;\
+	podman build --network=host \
+                    -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static \
+                    -v $(CURDIR)/nv_tegra_release:/etc/nv_tegra_release \
+                    --build-arg IMAGESPEC=docker://arm64v8/ubuntu:latest \
+                    --build-arg USERSPEC=$(UID):$(GID) \
+                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
+                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
+                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
+                    -f $(MAKE_DIR)/Dockerfile.ubuntu -t $(LIB_NAME):arm64-ubuntu . ;\
+	podman run --rm -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static \
+	            -v $(DIST_DIR)/arm/ubuntu:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):arm64-ubuntu
