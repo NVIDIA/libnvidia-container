@@ -343,6 +343,8 @@ lookup_binaries(struct error *err, struct nvc_driver_info *info, const char *roo
 static int
 lookup_control_devices(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
 {
+        /// TODO conditionally mount UVM, UVM_TOOLS and MODESET
+        /// This will allow to keep feature parity with master
         char path[PATH_MAX];
         int has_dev = 0;
         size_t ndevs = 0;
