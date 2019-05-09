@@ -75,13 +75,6 @@ static const char * const compute_libs[] = {
         "libnvidia-ptxjitcompiler.so",      /* PTX-SASS JIT compiler (used by libcuda) */
         "libnvidia-fatbinaryloader.so",     /* fatbin loader (used by libcuda) */
         "libnvidia-compiler.so",            /* NVVM-PTX compiler for OpenCL (used by libnvidia-opencl) */
-
-        "librt.so",                         /* Jetson specific */
-        "libnvidia-rmapi-tegra.so",         /* Jetson specific */
-        "libnvimp.so",                      /* Jetson specific */
-        "libnvrm.so",                       /* Jetson specific */
-        "libnvrm_gpu.so",                   /* Jetson specific */
-        "libnvos.so",                       /* Jetson specific */
 };
 
 static const char * const video_libs[] = {
@@ -98,10 +91,6 @@ static const char * const graphics_libs[] = {
         "libnvidia-glsi.so",                /* OpenGL system interaction (used by libEGL_nvidia) */
         "libnvidia-fbc.so",                 /* Framebuffer capture */
         "libnvidia-ifr.so",                 /* OpenGL framebuffer capture */
-
-        "libnvdc.so",                       /* Jetson specific */
-        "libnvrm_graphics.so",              /* Jetson specific */
-        "libgstnvegl-1.0.so.0",             /* Jetson specific */
 };
 
 static const char * const graphics_libs_glvnd[] = {
