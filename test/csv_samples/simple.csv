@@ -1,0 +1,4 @@
+lib,/lib/target
+dir,/lib/target
+dev,/dev/target
+symlink,/source,/target

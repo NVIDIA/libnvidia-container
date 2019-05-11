@@ -42,6 +42,18 @@ struct nvc_device_node {
         dev_t id;
 };
 
+struct nvc_jetson_info {
+        char **libs;
+        size_t nlibs;
+        char **dirs;
+        size_t ndirs;
+        char **devs;
+        size_t ndevs;
+        char **symlinks_source;
+        char **symlinks_target;
+        size_t nsymlinks;
+};
+
 struct nvc_driver_info {
         char *nvrm_version;
         char *cuda_version;

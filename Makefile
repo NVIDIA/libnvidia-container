@@ -2,7 +2,7 @@
 # Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
 #
 
-.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean
+.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean test
 .DEFAULT_GOAL := all
 
 ##### Global variables #####
@@ -23,6 +23,7 @@ export includedir  = $(prefix)/include
 export pkgconfdir  = $(libdir)/pkgconfig
 
 export PKG_DIR     ?= $(CURDIR)/pkg
+export TESTS_DIR   ?= $(CURDIR)/test
 export SRCS_DIR    ?= $(CURDIR)/src
 export DEPS_DIR    ?= $(CURDIR)/deps
 export DIST_DIR    ?= $(CURDIR)/dist
@@ -56,6 +57,7 @@ LIB_SRCS     := $(SRCS_DIR)/driver.c        \
                 $(SRCS_DIR)/nvc_mount.c     \
                 $(SRCS_DIR)/nvc_container.c \
                 $(SRCS_DIR)/options.c       \
+                $(SRCS_DIR)/csv.c           \
                 $(SRCS_DIR)/utils.c
 
 # Order sensitive (see flags definitions)
@@ -73,6 +75,8 @@ BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
                 $(SRCS_DIR)/cli/main.c      \
                 $(SRCS_DIR)/error_generic.c \
                 $(SRCS_DIR)/utils.c
+
+TESTS_SRCS   := $(TESTS_DIR)/csv_test.c
 
 LIB_SCRIPT   = $(SRCS_DIR)/$(LIB_NAME).lds
 BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds
@@ -328,3 +332,14 @@ podman:
                     -f $(MAKE_DIR)/Dockerfile.ubuntu -t $(LIB_NAME):arm64-ubuntu . ;\
 	podman run --rm -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static \
 	            -v $(DIST_DIR)/arm/ubuntu:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):arm64-ubuntu
+
+comma := ,
+.PHONY:
+test: LIB_CFLAGS += -D TESTING=TRUE
+test: LIB_CFLAGS := $(filter-out -O2, $(LIB_CFLAGS))
+test: LIB_CFLAGS := $(filter-out -Wl$(comma)--gc-sections, $(LIB_CFLAGS))
+test: LIB_LDFLAGS := $(filter-out -Wl$(comma)--gc-sections, $(LIB_LDFLAGS))
+test: LIB_LDFLAGS := $(filter-out -shared, $(LIB_LDFLAGS))
+test: $(LIB_OBJS)
+	$(CC) -o $(DIST_DIR)/nvidia-container-tests -I$(SRCS_DIR) -L$(DEPS_DIR)$(libdir) $(LIB_CFLAGS) $(LIB_CPPFLAGS) $(LIB_LDFLAGS) $^ $(LIB_LDLIBS) $(TESTS_SRCS) -lcriterion
+	$(DIST_DIR)/nvidia-container-tests --verbose -j1

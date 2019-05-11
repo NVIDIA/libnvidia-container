@@ -43,17 +43,19 @@ int  log_pipe_output(struct error *, int[2]);
 #define log_warnf(fmt, ...) log_write('W', __FILE__, __LINE__, fmt, __VA_ARGS__)
 #define log_errf(fmt, ...)  log_write('E', __FILE__, __LINE__, fmt, __VA_ARGS__)
 
-void str_lower(char *);
-bool str_equal(const char *, const char *);
-bool str_case_equal(const char *, const char *);
-bool str_has_prefix(const char *, const char *);
-bool str_has_suffix(const char *, const char *);
-bool str_empty(const char *);
-bool str_array_match_prefix(const char *, const char * const [], size_t);
-bool str_array_match(const char *, const char * const [], size_t);
-int  str_to_pid(struct error *, const char *, pid_t *);
-int  str_to_ugid(struct error *, char *, uid_t *, gid_t *);
-int  str_join(struct error *, char **, const char *, const char *);
+void   str_lower(char *);
+bool   str_equal(const char *, const char *);
+bool   str_case_equal(const char *, const char *);
+bool   str_has_prefix(const char *, const char *);
+bool   str_has_suffix(const char *, const char *);
+bool   str_empty(const char *);
+bool   str_array_match_prefix(const char *, const char * const [], size_t);
+bool   str_array_match(const char *, const char * const [], size_t);
+int    str_to_pid(struct error *, const char *, pid_t *);
+int    str_to_ugid(struct error *, char *, uid_t *, gid_t *);
+int    str_join(struct error *, char **, const char *, const char *);
+size_t str_count(const char *, char, size_t);
+size_t str_ncspn(const char *, char, size_t);
 
 int ns_enter_at(struct error *, int, int);
 int ns_enter(struct error *, const char *, int);
@@ -66,6 +68,7 @@ size_t array_size(const char * const []);
 const char **array_append(const char **, const char * const [], size_t);
 
 void *file_map(struct error *, const char *, size_t *);
+void *file_map_prot(struct error *, const char *, size_t *, int);
 int  file_unmap(struct error *, const char *, void *, size_t);
 int  file_create(struct error *, const char *, const char *, uid_t, gid_t, mode_t);
 int  file_remove(struct error *, const char *);

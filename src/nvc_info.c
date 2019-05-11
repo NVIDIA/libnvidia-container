@@ -552,6 +552,39 @@ lookup_control_devices(struct error *err, struct nvc_driver_info *info, const ch
         return (0);
 }
 
+/*
+static int
+lookup_jetson_libraries(struct error *err, struct nvc_driver_info *info, const char *root)
+{
+
+        realloc(info->libs, info->nlibs + nitems(jetson_libs));
+        for (size_t i = 0; i < nitems(jetson_libs); ++i) {
+                if (doesnot_exist) {
+                        continue;
+                }
+
+                if (select() < 0) {
+                        continue
+                }
+
+                info->libs[info->nlibs + i] = xstrdup(ctx->err, jetson_libs[i]);
+                if (info->libs[info->nlibs + i] == NULL) {
+                        return (-1);
+                }
+
+                log();
+
+        }
+
+        for (size_t i = 0; info->libs != NULL && i < nitems(jetson_dirs); ++i) {
+                if (info->libs[info->nlibs + i] == NULL)
+                        log_warnf("missing library %s", libs[info->nlibs + i]);
+        }
+
+        array_pack(info->libs, &info->nlibs);
+        return (0);
+}*/
+
 static int
 lookup_ipcs(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
 {
@@ -602,6 +635,8 @@ match_library_flags(const char *lib, int32_t flags)
                 return (true);
         return (false);
 }
+
+
 
 struct nvc_driver_info *
 nvc_driver_info_new(struct nvc_context *ctx, const char *opts)

@@ -213,6 +213,32 @@ str_join(struct error *err, char **s1, const char *s2, const char *sep)
         return (0);
 }
 
+size_t
+str_ncspn(const char *base, char c, size_t size)
+{
+        size_t n = 0;
+
+        for (size_t i = 0; i < size; ++i) {
+                if (base[i] == c)
+                        break;
+                ++n;
+        }
+
+        return (n);
+}
+
+size_t
+str_count(const char *base, char c, size_t size)
+{
+        size_t n = 0;
+
+        for (size_t i = 0; i < size; ++i)
+                if (base[i] == c)
+                        ++n;
+
+        return (n);
+}
+
 int
 str_to_pid(struct error *err, const char *str, pid_t *pid)
 {
@@ -400,7 +426,7 @@ array_size(const char * const arr[])
 }
 
 void *
-file_map(struct error *err, const char *path, size_t *length)
+file_map_prot(struct error *err, const char *path, size_t *length, int prot)
 {
         int fd = -1;
         struct stat s;
@@ -412,7 +438,7 @@ file_map(struct error *err, const char *path, size_t *length)
                 goto fail;
 
         *length = (size_t)s.st_size;
-        if ((p = mmap(NULL, *length, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED) {
+        if ((p = mmap(NULL, *length, prot, MAP_PRIVATE, fd, 0)) == MAP_FAILED) {
                 p = NULL;
                 goto fail;
         }
@@ -423,6 +449,13 @@ file_map(struct error *err, const char *path, size_t *length)
         close(fd);
         return (p);
 }
+
+void *
+file_map(struct error *err, const char *path, size_t *length)
+{
+        return file_map_prot(err, path, length, PROT_READ);
+}
+
 
 int
 file_unmap(struct error *err, const char *path, void *addr, size_t length)
