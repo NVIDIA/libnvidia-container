@@ -19,6 +19,8 @@
 #include "ldcache.h"
 #include "options.h"
 #include "utils.h"
+#include "csv.h"
+#include "jetson_info.h"
 #include "xfuncs.h"
 
 #define MAX_BINS (nitems(utility_bins) + \
@@ -39,6 +41,7 @@ static int lookup_libraries(struct error *, struct nvc_driver_info *, const char
 static int lookup_binaries(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_control_devices(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_jetson(struct error *, struct nvc_driver_info *, const char *);
 
 /*
  * Display libraries are not needed.
@@ -124,174 +127,6 @@ static const char * const control_devices[] = {
         "tegra_dc_1",
         "nvhost-vic",
         "nvhost-as-gpu"
-};
-
-static const char * const jetson_dirs[] = {
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/include",
-        "/usr/lib/aarch64-linux-gnu/tegra-egl",
-        "/usr/src/tensorrt",
-        "/usr/local/cuda"
-};
-
-static const char * const jetson_libs[] = {
-        "/usr/lib/aarch64-linux-gnu/libv4l/plugins/libv4l2_nvvidconv.so",
-        "/usr/lib/aarch64-linux-gnu/libv4l/plugins/libv4l2_nvvideocodec.so",
-        "/usr/lib/aarch64-linux-gnu/libv4l1.so.0",
-        "/usr/lib/aarch64-linux-gnu/libv4l2.so",
-        "/usr/lib/aarch64-linux-gnu/libv4lconvert.so.0",
-
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvarguscamerasrc.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvcompositor.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvdrmvideosink.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnveglglessink.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnveglstreamsrc.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvegltransform.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvivafilter.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvjpeg.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvtee.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvvidconv.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvvideo4linux2.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvvideocuda.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvvideosink.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstnvvideosinks.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstomx.so",
-        "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/libgstpulseaudio.so",
-
-        "/usr/lib/aarch64-linux-gnu/libgstnvivameta.so",
-        "/usr/lib/aarch64-linux-gnu/libgstnvexifmeta.so",
-        "/usr/lib/aarch64-linux-gnu/libgstnvegl-1.0.so.0",
-        "/usr/lib/aarch64-linux-gnu/libnvonnxparser.so",
-        "/usr/lib/aarch64-linux-gnu/libnvinfer.so",
-        "/usr/lib/aarch64-linux-gnu/libnvinfer_plugin.so",
-        "/usr/lib/aarch64-linux-gnu/libnvparsers.so",
-        "/usr/lib/aarch64-linux-gnu/libcudnn.so",
-        "/usr/lib/aarch64-linux-gnu/libnvsample_cudaprocess.so",
-
-        "/usr/lib/aarch64-linux-gnu/tegra/libdrm.so.2",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvapputil.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvargus.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvargus_socketclient.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvargus_socketserver.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvavp.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvbuf_utils.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvcam_imageencoder.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvcameratools.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvcamerautils.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvcamlog.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvcamv4l2.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvcolorutil.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvdc.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvddk_2d_v2.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvddk_vic.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnveglstream_camconsumer.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnveglstreamproducer.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnveventlib.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvexif.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvfnet.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvfnetstoredefog.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvfnetstorehdfx.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_boot.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_camera.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_force.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_generic.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_gpucompute.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_graphics.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_il.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_spincircle.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_tbc.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvgov_ui.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvid_mapper.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-egl-wayland.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-eglcore.so.32.1.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-fatbinaryloader.so.32.1.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-glcore.so.32.1.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-glsi.so.32.1.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-glvkspirv.so.32.1.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-ptxjitcompiler.so.1",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-rmapi-tegra.so.32.1.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvidia-tls.so.32.1.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvimp.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvjpeg.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvll.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmedia.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmm.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmm_contentpipe.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmm_parser.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmm_utils.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmmlite.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmmlite_image.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmmlite_utils.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvmmlite_video.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvodm_imager.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvomx.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvomxilclient.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvos.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvosd.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvparser.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvphs.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvphsd.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvrm.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvrm_gpu.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvrm_graphics.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvscf.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvtestresults.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvtnr.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvtracebuf.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvtvmr.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvtx_helper.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libnvwinsys.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libsensors.hal-client.nvs.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libsensors.l4t.no_fusion.nvs.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libsensors_hal.nvs.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/libtegrav4l2.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/nvidia_icd.json",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/EGLWLInputEventExample",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/EGLWLMockNavigation",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/LayerManagerControl",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/desktop-shell.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/drm-backend.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/eglstream-backend.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/gl-renderer.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/hmi-controller.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/ivi-controller.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/ivi-shell.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/libilmClient.so.2.0.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/libilmCommon.so.2.0.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/libilmControl.so.2.0.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/libilmInput.so.2.0.0",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/libinput.so.10.10.1",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/spring-tool",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/wayland-backend.so",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-calibrator",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-clickdot",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-cliptest",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-desktop-shell",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-dnd",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-eventdemo",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-flower",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-fullscreen",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-image",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-info",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-ivi-shell-user-interface",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-keyboard",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-launch",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-multi-resource",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-resizor",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-scaler",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-screenshooter",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-simple-egl",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-simple-shm",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-simple-touch",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-smoke",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-stacking",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-subsurfaces",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-terminal",
-        "/usr/lib/aarch64-linux-gnu/tegra/weston/weston-transformed",
-
-        "/usr/lib/libvisionworks_tracking.so.0.88",
-        "/usr/lib/libvisionworks_sfm.so.0.90",
-        "/usr/lib/libvisionworks.so"
 };
 
 static int
@@ -512,80 +347,6 @@ lookup_binaries(struct error *err, struct nvc_driver_info *info, const char *roo
 }
 
 static int
-lookup_control_devices(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
-{
-        /// TODO conditionally mount UVM, UVM_TOOLS and MODESET
-        /// This will allow to keep feature parity with master
-        char path[PATH_MAX];
-        int has_dev = 0;
-        size_t ndevs = 0;
-
-        memset(path, 0, sizeof(*path));
-
-        info->ndevs = nitems(control_devices);
-        info->devs = xcalloc(err, info->ndevs, sizeof(*info->devs));
-        if (info->devs == NULL)
-                return (-1);
-
-        for (unsigned int i = 0; i < nitems(control_devices); i++) {
-                if (path_join(err, path, _PATH_DEV, control_devices[i]) < 0)
-                        return (-1);
-
-                if ((has_dev = find_device_node(err, root, path, &info->devs[ndevs])) < 0)
-                        continue;
-
-                info->devs[ndevs].path = xstrdup(err, path);
-                if (info->devs[ndevs].path == NULL)
-                        return (-1);
-
-                ++ndevs;
-        }
-
-        info->ndevs = ndevs;
-        info->devs = xrealloc(err, info->devs, ndevs * sizeof(*info->devs));
-        if (info->devs == NULL)
-                return (-1);
-
-        for (size_t i = 0; i < info->ndevs; ++i)
-                log_infof("listing device %s", info->devs[i].path);
-
-        return (0);
-}
-
-/*
-static int
-lookup_jetson_libraries(struct error *err, struct nvc_driver_info *info, const char *root)
-{
-
-        realloc(info->libs, info->nlibs + nitems(jetson_libs));
-        for (size_t i = 0; i < nitems(jetson_libs); ++i) {
-                if (doesnot_exist) {
-                        continue;
-                }
-
-                if (select() < 0) {
-                        continue
-                }
-
-                info->libs[info->nlibs + i] = xstrdup(ctx->err, jetson_libs[i]);
-                if (info->libs[info->nlibs + i] == NULL) {
-                        return (-1);
-                }
-
-                log();
-
-        }
-
-        for (size_t i = 0; info->libs != NULL && i < nitems(jetson_dirs); ++i) {
-                if (info->libs[info->nlibs + i] == NULL)
-                        log_warnf("missing library %s", libs[info->nlibs + i]);
-        }
-
-        array_pack(info->libs, &info->nlibs);
-        return (0);
-}*/
-
-static int
 lookup_ipcs(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
 {
         char **ptr;
@@ -608,6 +369,71 @@ lookup_ipcs(struct error *err, struct nvc_driver_info *info, const char *root, i
         }
         array_pack(info->ipcs, &info->nipcs);
         return (0);
+}
+
+static int
+lookup_jetson(struct error *err, struct nvc_driver_info *info, const char *root)
+{
+        char path[PATH_MAX];
+        struct csv ctx;
+        int rv = -1;
+
+        if ((info->jetson = xcalloc(err, 1, sizeof(struct nvc_jetson_info))) == NULL)
+                return (NULL);
+
+        csv_init(&ctx, err, "/opt/nvidia/nvdocker-list.d/bsp.csv");
+        if (csv_open(&ctx) < 0)
+                goto fail;
+
+        if (csv_lex(&ctx) < 0)
+                goto fail;
+
+        if (csv_parse(&ctx, info->jetson) < 0)
+                goto fail;
+
+        for (size_t i = 0; i < info->jetson->nlibs; ++i) {
+                if (path_resolve(err, path, root, info->jetson->libs[i]) < 0) {
+                        goto fail;
+                }
+
+                free(info->jetson->libs[i]);
+                info->jetson->libs[i] = NULL;
+
+                if (select_libraries(err, info, root, NULL, path) < 0) {
+                        log_infof("missing library %s", path);
+                        continue;
+                }
+
+                info->jetson->libs[i] = xstrdup(err, path);
+                if (info->jetson->libs[i] == NULL)
+                        return (-1);
+        }
+
+        array_pack(info->jetson->libs, &info->jetson->nlibs);
+
+        for (size_t i = 0; i < info->jetson->nlibs; ++i) {
+                if (path_resolve(err, path, root, info->jetson->libs[i]) < 0) {
+                        goto fail;
+                }
+
+                free(info->jetson->libs[i]);
+                info->jetson->libs[i] = NULL;
+
+                if (select_libraries(err, info, root, NULL, path) < 0) {
+                        log_infof("missing library %s", path);
+                        continue;
+                }
+
+                info->jetson->libs[i] = xstrdup(err, path);
+                if (info->jetson->libs[i] == NULL)
+                        return (-1);
+        }
+
+        rv = 0;
+fail:
+        csv_close(&ctx);
+
+        return (rv);
 }
 
 bool
@@ -636,8 +462,6 @@ match_library_flags(const char *lib, int32_t flags)
         return (false);
 }
 
-
-
 struct nvc_driver_info *
 nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
 {
@@ -661,10 +485,11 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
                 goto fail;
         if (lookup_binaries(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
-        if (lookup_control_devices(&ctx->err, info, ctx->cfg.root, flags) < 0)
-                goto fail;
         if (lookup_ipcs(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
+        if (lookup_jetson(&ctx->err, info, ctx->cfg.root) < 0)
+                goto fail;
+
         return (info);
 
  fail:
@@ -684,10 +509,9 @@ nvc_driver_info_free(struct nvc_driver_info *info)
         array_free(info->libs32, info->nlibs32);
         array_free(info->ipcs, info->nipcs);
 
-        for (size_t i = 0; i < info->ndevs; ++i)
-                free(info->devs[i].path);
+        jetson_info_free(info->jetson);
+        free(info->jetson);
 
-        free(info->devs);
         free(info);
 }
 
@@ -708,7 +532,7 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
                 return (NULL);
         */
 
-        log_infof("requesting device information with '%s'", opts);
+        log_infof("requesting device information with opts: '%s'", opts);
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 

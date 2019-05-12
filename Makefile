@@ -58,6 +58,7 @@ LIB_SRCS     := $(SRCS_DIR)/driver.c        \
                 $(SRCS_DIR)/nvc_container.c \
                 $(SRCS_DIR)/options.c       \
                 $(SRCS_DIR)/csv.c           \
+                $(SRCS_DIR)/jetson_info.c   \
                 $(SRCS_DIR)/utils.c
 
 # Order sensitive (see flags definitions)
@@ -111,7 +112,7 @@ LIB_PKGCFG  := $(LIB_NAME).pc
 
 # Common flags
 CPPFLAGS := -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D JETSON=$(JETSON) $(CPPFLAGS)
-CFLAGS   := -std=gnu11 -O2 -g -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
+CFLAGS   := -std=gnu11 -O2 -O0 -g -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
             -Wall -Wextra -Wcast-align -Wpointer-arith -Wmissing-prototypes -Wnonnull \
             -Wwrite-strings -Wlogical-op -Wformat=2 -Wmissing-format-attribute -Winit-self -Wshadow \
             -Wstrict-prototypes -Wunreachable-code -Wconversion -Wsign-conversion \
@@ -334,7 +335,7 @@ podman:
 	            -v $(DIST_DIR)/arm/ubuntu:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):arm64-ubuntu
 
 comma := ,
-.PHONY:
+.SILENT:
 test: LIB_CFLAGS += -D TESTING=TRUE
 test: LIB_CFLAGS := $(filter-out -O2, $(LIB_CFLAGS))
 test: LIB_CFLAGS := $(filter-out -Wl$(comma)--gc-sections, $(LIB_CFLAGS))

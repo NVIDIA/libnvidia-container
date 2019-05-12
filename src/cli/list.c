@@ -133,14 +133,14 @@ list_command(const struct context *ctx)
                         goto fail;
                 }
         }
-        if (ctx->devices != NULL) {
+/*        if (ctx->devices != NULL) {
                 for (size_t i = 0; i < drv->ndevs; ++i)
                         printf("%s\n", drv->devs[i].path);
                 for (size_t i = 0; i < dev->ngpus; ++i) {
                         if (gpus[i] != NULL)
                                 printf("%s\n", gpus[i]->node.path);
                 }
-        }
+        }*/
 
         /* List the driver components */
         if (ctx->list_bins) {

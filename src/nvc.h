@@ -65,8 +65,7 @@ struct nvc_driver_info {
         size_t nlibs32;
         char **ipcs;
         size_t nipcs;
-        struct nvc_device_node *devs;
-        size_t ndevs;
+        struct nvc_jetson_info *jetson;
 };
 
 struct nvc_device {

@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <criterion/criterion.h>
-#include <csv.h>
+
+#include "csv.h"
+#include "jetson_info.h"
 
 Test(csv_happy, lex_simple) {
         struct csv ctx;
         struct error err;
 
         csv_init(&ctx, &err, "./test/csv_samples/simple.csv");
-        csv_open(&ctx);
+        cr_assert(csv_open(&ctx) == 0);
 
         cr_assert(csv_lex(&ctx) == 0);
 
@@ -35,11 +37,11 @@ Test(csv_happy, lex_simple) {
 
 Test(csv_happy, parse_simple) {
         struct csv ctx;
-        struct error err;
-        struct nvc_jetson_info info;
+        struct error err = {0};
+        struct nvc_jetson_info info = {0};
 
         csv_init(&ctx, &err, "./test/csv_samples/simple.csv");
-        csv_open(&ctx);
+        cr_assert(csv_open(&ctx) == 0);
 
         cr_assert(csv_lex(&ctx) == 0);
         cr_assert(csv_parse(&ctx, &info) == 0);
@@ -58,15 +60,15 @@ Test(csv_happy, parse_simple) {
         cr_assert(!strcmp(info.symlinks_target[0], "/target"));
 
         csv_close(&ctx);
+        jetson_info_free(&info);
 }
-
 
 Test(csv_happy, lex_spaced) {
         struct csv ctx;
-        struct error err;
+        struct error err = {0};
 
         csv_init(&ctx, &err, "./test/csv_samples/spaced.csv");
-        csv_open(&ctx);
+        cr_assert(csv_open(&ctx) == 0);
 
         cr_assert(csv_lex(&ctx) == 0);
 
@@ -93,5 +95,25 @@ Test(csv_happy, lex_spaced) {
 }
 
 Test(csv_sad, parse_simple) {
-    cr_assert(1);
+        struct csv ctx;
+        struct error err = {0};
+        struct nvc_jetson_info info = {0};
+
+        csv_init(&ctx, &err, "./test/csv_samples/simple_wrong.csv");
+        cr_assert(csv_open(&ctx) == 0);
+
+        cr_assert(csv_lex(&ctx) == 0);
+        cr_assert(csv_parse(&ctx, &info) != 0);
+
+        csv_close(&ctx);
+        jetson_info_free(&info);
+}
+
+Test(csv_sad, file_does_not_exist) {
+        struct csv ctx;
+        struct error err = {0};
+        struct nvc_jetson_info info = {0};
+
+        csv_init(&ctx, &err, "./NOT-A-CSV.json");
+        cr_assert(csv_open(&ctx) != 0);
 }

@@ -23,7 +23,7 @@
 #include "xfuncs.h"
 
 static char **mount_files(struct error *, const char *, const struct nvc_container *, const char *, char *[], size_t);
-static char *mount_device(struct error *, const char *, const struct nvc_container *, const struct nvc_device_node *);
+static char *mount_device(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_ipc(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_procfs(struct error *, const char *, const struct nvc_container *);
 static char *mount_procfs_gpu(struct error *, const char *, const struct nvc_container *, const char *);
@@ -89,8 +89,56 @@ mount_files(struct error *err, const char *root, const struct nvc_container *cnt
         return (NULL);
 }
 
+static char **
+mount_full_path(struct error *err, const char *root, const struct nvc_container *cnt, char *paths[], size_t size)
+{
+        char src[PATH_MAX];
+        char dst[PATH_MAX];
+        mode_t mode;
+        char *src_end, *dst_end;
+        char **mnt, **ptr;
+
+        mnt = ptr = array_new(err, size + 1); /* NULL terminated. */
+        if (mnt == NULL)
+                return (NULL);
+
+        for (size_t i = 0; i < size; ++i) {
+                if (path_new(err, src, root) < 0)
+                        return (NULL);
+                if (path_resolve_full(err, dst, cnt->cfg.rootfs, paths[i]) < 0)
+                        return (NULL);
+
+                src_end = src + strlen(src);
+                dst_end = dst + strlen(dst);
+
+                if (path_append(err, src, paths[i]) < 0)
+                        goto fail;
+                if (file_mode(err, src, &mode) < 0)
+                        goto fail;
+                if (file_create(err, dst, NULL, cnt->uid, cnt->gid, mode) < 0)
+                        goto fail;
+
+                log_infof("mounting %s at %s", src, dst);
+                if (xmount(err, src, dst, NULL, MS_BIND, NULL) < 0)
+                        goto fail;
+                if (xmount(err, NULL, dst, NULL, MS_BIND|MS_REMOUNT | MS_RDONLY|MS_NODEV|MS_NOSUID, NULL) < 0)
+                        goto fail;
+                if ((*ptr++ = xstrdup(err, dst)) == NULL)
+                        goto fail;
+                *src_end = '\0';
+                *dst_end = '\0';
+        }
+        return (mnt);
+
+ fail:
+        for (size_t i = 0; i < size; ++i)
+                unmount(mnt[i]);
+        array_free(mnt, size);
+        return (NULL);
+}
+
 static char *
-mount_device(struct error *err, const char *root, const struct nvc_container *cnt, const struct nvc_device_node *dev)
+mount_device(struct error *err, const char *root, const struct nvc_container *cnt, const char *dev)
 {
         struct stat s;
         char src[PATH_MAX];
@@ -98,16 +146,12 @@ mount_device(struct error *err, const char *root, const struct nvc_container *cn
         mode_t mode;
         char *mnt;
 
-        if (path_join(err, src, root, dev->path) < 0)
+        if (path_join(err, src, root, dev) < 0)
                 return (NULL);
-        if (path_resolve_full(err, dst, cnt->cfg.rootfs, dev->path) < 0)
+        if (path_resolve_full(err, dst, cnt->cfg.rootfs, dev) < 0)
                 return (NULL);
         if (xstat(err, src, &s) < 0)
                 return (NULL);
-        if (s.st_rdev != dev->id) {
-                error_setx(err, "invalid device node: %s", src);
-                return (NULL);
-        }
         if (file_mode(err, src, &mode) < 0)
                 return (NULL);
         if (file_create(err, dst, NULL, cnt->uid, cnt->gid, mode) < 0)
@@ -434,8 +478,11 @@ int
 nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_driver_info *info)
 {
         const char **mnt, **ptr, **tmp;
+        char path[PATH_MAX];
+        struct stat s;
         size_t nmnt;
         int rv = -1;
+        char *dev;
 
         if (validate_context(ctx) < 0)
                 return (-1);
@@ -445,7 +492,8 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
                 return (-1);
 
-        nmnt = 2 + info->nbins + info->nlibs + cnt->nlibs + info->nlibs32 + info->nipcs + info->ndevs;
+        nmnt = 2 + info->nbins + info->nlibs + cnt->nlibs + info->nlibs32 + info->nipcs + info->jetson->nlibs +
+                info->jetson->ndirs + info->jetson->ndevs;
         mnt = ptr = (const char **)array_new(&ctx->err, nmnt);
         if (mnt == NULL)
                 goto fail;
@@ -465,6 +513,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
         }
+
         log_info("mount libraries");
         if (info->libs != NULL && info->nlibs > 0) {
                 if ((tmp = (const char **)mount_files(&ctx->err, ctx->cfg.root, cnt, cnt->cfg.libs_dir, info->libs, info->nlibs)) == NULL)
@@ -472,6 +521,23 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
         }
+
+        log_info("mount jetson libraries");
+        if (info->jetson->libs != NULL && info->jetson->nlibs > 0) {
+                if ((tmp = (const char **)mount_full_path(&ctx->err, ctx->cfg.root, cnt, info->jetson->libs, info->jetson->nlibs)) == NULL)
+                        goto fail;
+                ptr = array_append(ptr, tmp, array_size(tmp));
+                free(tmp);
+        }
+
+        log_info("mount jetson dirs");
+        if (info->jetson->libs != NULL && info->jetson->nlibs > 0) {
+                if ((tmp = (const char **)mount_full_path(&ctx->err, ctx->cfg.root, cnt, info->jetson->dirs, info->jetson->ndirs)) == NULL)
+                        goto fail;
+                ptr = array_append(ptr, tmp, array_size(tmp));
+                free(tmp);
+        }
+
         log_info("mount libraries32");
         if ((cnt->flags & OPT_COMPAT32) && info->libs32 != NULL && info->nlibs32 > 0) {
                 if ((tmp = (const char **)mount_files(&ctx->err, ctx->cfg.root, cnt, cnt->cfg.libs32_dir, info->libs32, info->nlibs32)) == NULL)
@@ -514,26 +580,30 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                         goto fail;
         }
 
+        log_info("mount devices");
         /* Device mounts */
-        for (size_t i = 0; i < info->ndevs; ++i) {
-                /* XXX Only compute libraries require specific devices (e.g. UVM). */
-                if (!(cnt->flags & OPT_COMPUTE_LIBS) && major(info->devs[i].id) != NV_DEVICE_MAJOR)
+        for (size_t i = 0; i < info->jetson->ndevs; ++i) {
+                dev = info->jetson->devs[i];
+
+                if (path_resolve_full(&ctx->err, path, ctx->cfg.root, dev) < 0)
+                        return (-1);
+                if (xstat(&ctx->err, path, &s) != 0)
                         continue;
-                /* XXX Only display capability requires the modeset device. */
-                if (!(cnt->flags & OPT_DISPLAY) && minor(info->devs[i].id) == NV_MODESET_DEVICE_MINOR)
-                        continue;
-                log_info("mount devices");
+
                 if (!(cnt->flags & OPT_NO_DEVBIND)) {
-                        if ((*ptr++ = mount_device(&ctx->err, ctx->cfg.root, cnt, &info->devs[i])) == NULL)
+                        if ((*ptr++ = mount_device(&ctx->err, ctx->cfg.root, cnt, dev)) == NULL)
                                 goto fail;
+
+                        log_infof("dev ptr: %p, tmp ptr: %p", dev, *(ptr - 1));
                 }
                 log_info("setup cgroups");
                 if (!(cnt->flags & OPT_NO_CGROUPS)) {
-                        if (setup_cgroup(&ctx->err, cnt->dev_cg, info->devs[i].id) < 0)
+                        if (setup_cgroup(&ctx->err, cnt->dev_cg, s.st_rdev) < 0)
                                 goto fail;
                 }
         }
         rv = 0;
+
 
  fail:
         if (rv < 0) {
@@ -564,7 +634,7 @@ nvc_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 return (-1);
 
         if (!(cnt->flags & OPT_NO_DEVBIND)) {
-                if ((dev_mnt = mount_device(&ctx->err, ctx->cfg.root, cnt, &dev->node)) == NULL)
+                if ((dev_mnt = mount_device(&ctx->err, ctx->cfg.root, cnt, dev->node.path)) == NULL)
                         goto fail;
         }
         if ((proc_mnt = mount_procfs_gpu(&ctx->err, ctx->cfg.root, cnt, dev->busid)) == NULL)
