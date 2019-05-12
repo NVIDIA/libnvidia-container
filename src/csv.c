@@ -13,6 +13,7 @@
 #include "csv.h"
 #include "utils.h"
 #include "xfuncs.h"
+#include "jetson_info.h"
 
 #define MAX_NUM_FIELDS_PER_LINE 3
 
@@ -70,7 +71,8 @@ csv_pack(struct csv *ctx)
                 if (ctx->lines[ptr].ntokens == 0)
                         continue;
 
-                if (ctx->lines[ptr].tokens[0][0] == '\0') {
+                // Evict empty lines
+                if (ctx->lines[ptr].ntokens == 1 && ctx->lines[ptr].tokens[0][0] == '\0') {
                         free(ctx->lines[ptr].tokens);
                         continue;
                 }
@@ -116,13 +118,16 @@ csv_lex(struct csv *ctx)
 
         // Each iteration matches parsing a line
         // ntoken = number of commas + 1
+        // We NULL terminated the file as part of the open step, which allows us to use strsep
+        // We aren't using array_new here because the table of string contains mmaped value
+        //    hence these can't be freed by array_free.
         for (size_t line = 0; line < ctx->nlines; ++line) {
                 file_len = (size_t) (file_end - ptr);
                 line_len = str_ncspn(ptr, '\n', file_len);
                 ntokens = str_count(ptr, ',', line_len) + 1;
 
                 ctx->lines[line].ntokens = ntokens;
-                ctx->lines[line].tokens = array_new(ctx->err, ntokens);
+                ctx->lines[line].tokens = xcalloc(ctx->err, ntokens, sizeof(char **));
                 if (ctx->lines[line].tokens == NULL)
                         return (-1);
 
@@ -138,7 +143,9 @@ csv_lex(struct csv *ctx)
                 }
         }
 
+        printf("packing\n");
         csv_pack(ctx);
+        printf("finished packing\n");
 
         return (0);
 }
@@ -147,7 +154,9 @@ int
 csv_parse(struct csv *ctx, struct nvc_jetson_info *info)
 {
         struct csv_line line;
-        size_t symlinks_target_hack = ctx->nlines;
+
+        if (jetson_info_init(ctx->err, info, ctx->nlines) < 0)
+                return (-1);
 
         for (size_t i = 0; i < ctx->nlines; ++i) {
                 line = ctx->lines[i];
@@ -156,23 +165,6 @@ csv_parse(struct csv *ctx, struct nvc_jetson_info *info)
 
                 error_setx(ctx->err, "malformed line %lu, expected at least 2 tokens", i);
                 return (-1);
-        }
-
-        struct {
-                char ***arr;
-                size_t *len;
-                const char *token;
-        } init[] = {
-                { &info->libs, &info->nlibs, CSV_TOKEN_LIB },
-                { &info->dirs, &info->ndirs, CSV_TOKEN_DIR },
-                { &info->devs, &info->ndevs, CSV_TOKEN_DEV },
-                { &info->symlinks_source, &info->nsymlinks, CSV_TOKEN_SYM },
-                { &info->symlinks_target, &symlinks_target_hack, CSV_TOKEN_SYM }
-        };
-
-        for (size_t i = 0; i < nitems(init); ++i) {
-                *(init[i].len) = ctx->nlines;
-                *(init[i].arr) = array_new(ctx->err, *(init[i].len));
         }
 
         for (size_t i = 0; i < ctx->nlines; ++i) {
@@ -235,11 +227,7 @@ csv_parse(struct csv *ctx, struct nvc_jetson_info *info)
                 }
         }
 
-        for (size_t i = 0; i < nitems(init); ++i) {
-                printf("packing %s with len: %lu\n", init[i].token, *(init[i].len));
-                array_pack(*(init[i].arr), init[i].len);
-                printf("packed %s to len: %lu\n", init[i].token, *(init[i].len));
-        }
+        jetson_info_pack(info, ctx->nlines);
 
         return (0);
 }
