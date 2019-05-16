@@ -112,7 +112,6 @@ Test(csv_sad, parse_simple) {
 Test(csv_sad, file_does_not_exist) {
         struct csv ctx;
         struct error err = {0};
-        struct nvc_jetson_info info = {0};
 
         csv_init(&ctx, &err, "./NOT-A-CSV.json");
         cr_assert(csv_open(&ctx) != 0);

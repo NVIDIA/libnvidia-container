@@ -30,7 +30,7 @@ static char *mount_procfs_gpu(struct error *, const char *, const struct nvc_con
 static char *mount_app_profile(struct error *, const struct nvc_container *);
 static int  update_app_profile(struct error *, const struct nvc_container *, dev_t);
 static void unmount(const char *);
-static int  setup_cgroup(struct error *, const char *, dev_t);
+static int  setup_cgroup(struct error *, const char *, const char *);
 static int  symlink_library(struct error *, const char *, const char *, const char *, uid_t, gid_t);
 static int  symlink_libraries(struct error *, const struct nvc_container *, const char * const [], size_t);
 static void filter_libraries(const struct nvc_driver_info *, char * [], size_t *);
@@ -387,11 +387,18 @@ unmount(const char *path)
 }
 
 static int
-setup_cgroup(struct error *err, const char *cgroup, dev_t id)
+setup_cgroup(struct error *err, const char *cgroup, const char *dev)
 {
         char path[PATH_MAX];
         FILE *fs;
         int rv = -1;
+        struct stat s;
+        dev_t id;
+
+        if (xstat(err, dev, &s) != 0)
+                return (-1);
+
+        id = s.st_rdev;
 
         if (path_join(err, path, cgroup, "devices.allow") < 0)
                 return (-1);
@@ -478,8 +485,6 @@ int
 nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_driver_info *info)
 {
         const char **mnt, **ptr, **tmp;
-        char path[PATH_MAX];
-        struct stat s;
         size_t nmnt;
         int rv = -1;
         char *dev;
@@ -585,11 +590,6 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         for (size_t i = 0; i < info->jetson->ndevs; ++i) {
                 dev = info->jetson->devs[i];
 
-                if (path_resolve_full(&ctx->err, path, ctx->cfg.root, dev) < 0)
-                        return (-1);
-                if (xstat(&ctx->err, path, &s) != 0)
-                        continue;
-
                 if (!(cnt->flags & OPT_NO_DEVBIND)) {
                         if ((*ptr++ = mount_device(&ctx->err, ctx->cfg.root, cnt, dev)) == NULL)
                                 goto fail;
@@ -598,7 +598,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 }
                 log_info("setup cgroups");
                 if (!(cnt->flags & OPT_NO_CGROUPS)) {
-                        if (setup_cgroup(&ctx->err, cnt->dev_cg, s.st_rdev) < 0)
+                        if (setup_cgroup(&ctx->err, cnt->dev_cg, dev) < 0)
                                 goto fail;
                 }
         }
@@ -644,7 +644,7 @@ nvc_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                         goto fail;
         }
         if (!(cnt->flags & OPT_NO_CGROUPS)) {
-                if (setup_cgroup(&ctx->err, cnt->dev_cg, dev->node.id) < 0)
+                if (setup_cgroup(&ctx->err, cnt->dev_cg, dev->node.path) < 0)
                         goto fail;
         }
         rv = 0;

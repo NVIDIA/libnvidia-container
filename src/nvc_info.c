@@ -39,9 +39,13 @@ static int find_device_node(struct error *, const char *, const char *, struct n
 static int find_ipc_path(struct error *, const char *, const char *, char **);
 static int lookup_libraries(struct error *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct nvc_driver_info *, const char *, int32_t);
-static int lookup_control_devices(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
+
 static int lookup_jetson(struct error *, struct nvc_driver_info *, const char *);
+static int parse_file(struct error *, const char *, const char *, struct nvc_jetson_info *);
+static int lookup_jetson_devices(struct error *, struct nvc_jetson_info *, const char *);
+static int lookup_jetson_dirs(struct error *, struct nvc_jetson_info *, const char *);
+static int lookup_jetson_libs(struct error *, struct nvc_jetson_info *, const char *);
 
 /*
  * Display libraries are not needed.
@@ -111,22 +115,6 @@ static const char * const graphics_libs_compat[] = {
         "libEGL.so",                        /* EGL legacy _or_ ICD loader (GLVND) */
         "libGLESv1_CM.so",                  /* OpenGL ES v1 common profile legacy _or_ ICD loader (GLVND) */
         "libGLESv2.so",                     /* OpenGL ES v2 legacy _or_ ICD loader (GLVND) */
-};
-
-static const char * const control_devices[] = {
-        "nvidiactl",
-        "nvhost-gpu",
-        "nvhost-ctrl",
-        "nvhost-nvdec",
-        "nvhost-ctrl-gpu",
-        "nvhost-prof-gpu",
-        "nvhost-dbg-gpu",
-        "nvmap",
-        "tegra_dc_ctrl",
-        "tegra_dc_0",
-        "tegra_dc_1",
-        "nvhost-vic",
-        "nvhost-as-gpu"
 };
 
 static int
@@ -372,68 +360,153 @@ lookup_ipcs(struct error *err, struct nvc_driver_info *info, const char *root, i
 }
 
 static int
-lookup_jetson(struct error *err, struct nvc_driver_info *info, const char *root)
+lookup_jetson_libs(struct error *err, struct nvc_jetson_info *info, const char *root)
 {
         char path[PATH_MAX];
+
+        for (size_t i = 0; i < info->nlibs; ++i) {
+                if (path_resolve(err, path, root, info->libs[i]) < 0)
+                        return (-1);
+
+                free(info->libs[i]);
+                info->libs[i] = NULL;
+
+                if (select_libraries(err, info, root, NULL, path) < 0) {
+                        log_infof("missing library %s", path);
+                        continue;
+                }
+
+                info->libs[i] = xstrdup(err, path);
+                if (info->libs[i] == NULL)
+                        return (-1);
+        }
+
+        array_pack(info->libs, &info->nlibs);
+
+        return (0);
+}
+
+static int
+lookup_jetson_dirs(struct error *err, struct nvc_jetson_info *info, const char *root)
+{
+        char path[PATH_MAX];
+        struct stat s;
+
+        for (size_t i = 0; i < info->ndirs; ++i) {
+                if (path_resolve(err, path, root, info->dirs[i]) < 0)
+                        return (-1);
+
+                free(info->dirs[i]);
+                info->dirs[i] = NULL;
+
+                if (xstat(err, path, &s) < 0) {
+                        log_warnf("missing directory %s", path);
+                        continue;
+                }
+
+                info->dirs[i] = xstrdup(err, path);
+                if (info->dirs[i] == NULL)
+                        return (-1);
+        }
+
+        array_pack(info->dirs, &info->ndirs);
+
+        return (0);
+}
+
+static int
+lookup_jetson_devices(struct error *err, struct nvc_jetson_info *info, const char *root)
+{
+        char path[PATH_MAX];
+        struct stat s;
+
+        for (size_t i = 0; i < info->ndevs; ++i) {
+                if (path_resolve(err, path, root, info->devs[i]) < 0)
+                        return (-1);
+
+                free(info->devs[i]);
+                info->devs[i] = NULL;
+
+                if (xstat(err, path, &s) < 0) {
+                        log_warnf("missing device %s", path);
+                        continue;
+                }
+
+                info->devs[i] = xstrdup(err, path);
+                if (info->devs[i] == NULL)
+                        return (-1);
+        }
+
+        array_pack(info->devs, &info->ndevs);
+
+        return (0);
+}
+
+static int
+parse_file(struct error *err, const char *path, const char *root, struct nvc_jetson_info *jetson)
+{
         struct csv ctx;
         int rv = -1;
 
-        if ((info->jetson = xcalloc(err, 1, sizeof(struct nvc_jetson_info))) == NULL)
-                return (NULL);
-
-        csv_init(&ctx, err, "/opt/nvidia/nvdocker-list.d/bsp.csv");
+        csv_init(&ctx, err, path);
         if (csv_open(&ctx) < 0)
-                goto fail;
+                return (-1);
 
         if (csv_lex(&ctx) < 0)
                 goto fail;
 
-        if (csv_parse(&ctx, info->jetson) < 0)
+        if (csv_parse(&ctx, jetson) < 0)
                 goto fail;
 
-        for (size_t i = 0; i < info->jetson->nlibs; ++i) {
-                if (path_resolve(err, path, root, info->jetson->libs[i]) < 0) {
-                        goto fail;
-                }
+        if (lookup_jetson_libs(err, jetson, root) < 0)
+                goto fail;
 
-                free(info->jetson->libs[i]);
-                info->jetson->libs[i] = NULL;
+        if (lookup_jetson_dirs(err, jetson, root) < 0)
+                goto fail;
 
-                if (select_libraries(err, info, root, NULL, path) < 0) {
-                        log_infof("missing library %s", path);
-                        continue;
-                }
-
-                info->jetson->libs[i] = xstrdup(err, path);
-                if (info->jetson->libs[i] == NULL)
-                        return (-1);
-        }
-
-        array_pack(info->jetson->libs, &info->jetson->nlibs);
-
-        for (size_t i = 0; i < info->jetson->nlibs; ++i) {
-                if (path_resolve(err, path, root, info->jetson->libs[i]) < 0) {
-                        goto fail;
-                }
-
-                free(info->jetson->libs[i]);
-                info->jetson->libs[i] = NULL;
-
-                if (select_libraries(err, info, root, NULL, path) < 0) {
-                        log_infof("missing library %s", path);
-                        continue;
-                }
-
-                info->jetson->libs[i] = xstrdup(err, path);
-                if (info->jetson->libs[i] == NULL)
-                        return (-1);
-        }
+        if (lookup_jetson_devices(err, jetson, root) < 0)
+                goto fail;
 
         rv = 0;
+
 fail:
         csv_close(&ctx);
 
         return (rv);
+}
+
+static int
+lookup_jetson(struct error *err, struct nvc_driver_info *info, const char *root)
+{
+        const char *base = "/opt/nvidia/nvidia-container-runtime/";
+        struct nvc_jetson_info jetson = {0};
+        struct nvc_jetson_info *dst, *tmp;
+        char **files;
+        size_t nfiles = 0;
+
+        if ((files = jetson_info_lookup_nvidia_dir(err, base, &nfiles)) == NULL)
+                return (-1);
+
+        if ((dst = xcalloc(err, 1, sizeof(struct nvc_jetson_info))) == NULL)
+                return (-1);
+
+        for (size_t i = 0; i < nfiles; ++i) {
+                if (parse_file(err, files[i], root, &jetson) < 0)
+                        return (-1);
+
+                if ((tmp = jetson_info_append(err, &jetson, dst)) == NULL)
+                        return (-1);
+
+                jetson_info_free(&jetson);
+                jetson_info_free(dst);
+                free(dst);
+
+                dst = tmp;
+        }
+
+        info->jetson = dst;
+
+        return (0);
 }
 
 bool
