@@ -469,6 +469,9 @@ filter_libraries(const struct nvc_driver_info *info, char * paths[], size_t *siz
          * XXX Filter out any library that matches the major version of RM to prevent us from
          * running into an unsupported configurations (e.g. CUDA compat on Geforce or non-LTS drivers).
          */
+        if (info->nvrm_version == NULL) {
+                return;
+        }
         for (size_t i = 0; i < *size; ++i) {
                 lib = basename(paths[i]);
                 if ((maj = strstr(lib, ".so.")) != NULL) {
