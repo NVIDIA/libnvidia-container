@@ -144,12 +144,25 @@ configure_parser(int key, char *arg, struct argp_state *state)
 static int
 check_cuda_version(const struct dsl_data *data, enum dsl_comparator cmp, const char *version)
 {
+        if (data->drv == NULL) {
+                return (true);
+        }
+        if (data->drv->cuda_version == NULL) {
+                return (true);
+        }
         return (dsl_compare_version(data->drv->cuda_version, cmp, version));
 }
 
 static int
 check_driver_version(const struct dsl_data *data, enum dsl_comparator cmp, const char *version)
 {
+        if (data->drv == NULL) {
+                return (true);
+        }
+        if (data->drv->nvrm_version == NULL) {
+                return (true);
+        }
+
         return (dsl_compare_version(data->drv->nvrm_version, cmp, version));
 }
 
@@ -167,6 +180,8 @@ check_device_brand(const struct dsl_data *data, enum dsl_comparator cmp, const c
 {
         /* XXX No device is visible, assume the brand is ok. */
         if (data->dev == NULL)
+                return (true);
+        if (data->dev->brand == NULL)
                 return (true);
         return (dsl_compare_string(data->dev->brand, cmp, brand));
 }
