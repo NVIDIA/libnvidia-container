@@ -18,8 +18,7 @@ jetson_info_init(struct error *err, struct nvc_jetson_info *info, size_t len)
                 { &info->libs, &info->nlibs },
                 { &info->dirs, &info->ndirs },
                 { &info->devs, &info->ndevs },
-                { &info->symlinks_source, &info->nsymlinks },
-                { &info->symlinks_target, &info->nsymlinks }
+                { &info->symlinks, &info->nsymlinks }
         };
 
         for (size_t i = 0; i < nitems(init); ++i) {
@@ -43,8 +42,7 @@ jetson_info_free(struct nvc_jetson_info *info)
                 { info->libs, info->nlibs },
                 { info->dirs, info->ndirs },
                 { info->devs, info->ndevs },
-                { info->symlinks_source, info->nsymlinks },
-                { info->symlinks_target, info->nsymlinks }
+                { info->symlinks, info->nsymlinks }
         };
 
         for (size_t i = 0; i < nitems(init); ++i) {
@@ -64,8 +62,7 @@ jetson_info_pack(struct nvc_jetson_info *info, size_t max_len)
                 { info->libs, &info->nlibs },
                 { info->dirs, &info->ndirs },
                 { info->devs, &info->ndevs },
-                { info->symlinks_source, &info->nsymlinks },
-                { info->symlinks_target, &info->nsymlinks }
+                { info->symlinks, &info->nsymlinks }
         };
 
 
@@ -102,8 +99,7 @@ jetson_info_append(struct error *err, struct nvc_jetson_info *a, struct nvc_jets
                 { a->libs, a->nlibs, b->libs, b->nlibs, &info->libs, &info->nlibs },
                 { a->dirs, a->ndirs, b->dirs, b->ndirs, &info->dirs, &info->ndirs },
                 { a->devs, a->ndevs, b->devs, b->ndevs, &info->devs, &info->ndevs },
-                { a->symlinks_source, a->nsymlinks, b->symlinks_source, b->nsymlinks, &info->symlinks_source, &info->nsymlinks },
-                { a->symlinks_target, a->nsymlinks, b->symlinks_target, b->nsymlinks, &info->symlinks_target, &info->nsymlinks }
+                { a->symlinks, a->nsymlinks, b->symlinks, b->nsymlinks, &info->symlinks, &info->nsymlinks }
         };
 
 
@@ -172,7 +168,7 @@ jetson_info_lookup_nvidia_dir(struct error *err, const char *base, size_t *len)
                 if (dnamelen < 4)
                         continue;
 
-                if (strcmp(dir->d_name + dnamelen - 4, ".csv"))
+                if (strcmp(dir->d_name + dnamelen - 5, ".conf"))
                         continue;
 
                 strcpy(path, base);

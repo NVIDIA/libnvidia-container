@@ -68,12 +68,8 @@ csv_pack(struct csv *ctx)
                 return;
 
         for (size_t ptr = 0; ptr < ctx->nlines; ++ptr) {
-                if (ctx->lines[ptr].ntokens == 0)
-                        continue;
-
                 // Evict empty lines
-                if (ctx->lines[ptr].ntokens == 1 && ctx->lines[ptr].tokens[0][0] == '\0') {
-                        free(ctx->lines[ptr].tokens);
+                if (strlen(ctx->lines[ptr].path) == 0) {
                         continue;
                 }
 
@@ -102,13 +98,7 @@ trim(char **strp)
 int
 csv_lex(struct csv *ctx)
 {
-        size_t file_len = 0;
-        size_t line_len = 0;
-        size_t ntokens = 0;
-
         char *ptr = ctx->base;
-        char *file_end = ((char *) ctx->base) + ctx->size;
-
         ctx->nlines = str_count(ptr, '\n', ctx->size);
         ctx->lines = xcalloc(ctx->err, ctx->nlines, sizeof(struct csv_line));
         if (ctx->lines == NULL)
@@ -122,25 +112,10 @@ csv_lex(struct csv *ctx)
         // We aren't using array_new here because the table of string contains mmaped value
         //    hence these can't be freed by array_free.
         for (size_t line = 0; line < ctx->nlines; ++line) {
-                file_len = (size_t) (file_end - ptr);
-                line_len = str_ncspn(ptr, '\n', file_len);
-                ntokens = str_count(ptr, ',', line_len) + 1;
+                ctx->lines[line].path = strsep(&ptr, "\n");
+		trim(&ctx->lines[line].path);
 
-                ctx->lines[line].ntokens = ntokens;
-                ctx->lines[line].tokens = xcalloc(ctx->err, ntokens, sizeof(char **));
-                if (ctx->lines[line].tokens == NULL)
-                        return (-1);
-
-                printf("[%lu] line_len: %lu\n", line, line_len);
-                printf("[%lu] ntokens: %lu\n", line, ntokens);
-                printf("[%lu] file_len: %lu\n", line, file_len);
-
-                for (size_t i = 0; i < ntokens; ++i) {
-                        ctx->lines[line].tokens[i] = strsep(&ptr, ",\n");
-                        trim(&ctx->lines[line].tokens[i]);
-
-                        printf("[%lu][%lu] token: '%s'\n", line, i, ctx->lines[line].tokens[i]);
-                }
+                printf("[%lu] path: '%s'\n", line, ctx->lines[line].path);
         }
 
         printf("packing\n");
@@ -160,71 +135,39 @@ csv_parse(struct csv *ctx, struct nvc_jetson_info *info)
 
         for (size_t i = 0; i < ctx->nlines; ++i) {
                 line = ctx->lines[i];
-                if (line.ntokens > 1)
-                        continue;
 
-                error_setx(ctx->err, "malformed line %lu, expected at least 2 tokens", i);
-                return (-1);
-        }
+		mode_t mode;
+		if (file_mode(ctx->err, line.path, &mode) < 0)
+			continue;
 
-        for (size_t i = 0; i < ctx->nlines; ++i) {
-                line = ctx->lines[i];
+		if (S_ISREG(mode)) {
+			info->libs[i] = xstrdup(ctx->err, line.path);
+			if (info->libs[i] == NULL)
+				return (-1);
 
-                if (!strcmp(line.tokens[0], CSV_TOKEN_LIB)) {
-                        if (line.ntokens != 2) {
-                                error_setx(ctx->err, "malformed line %lu, expected 2 tokens", i);
-                                return (-1);
-                        }
+			printf("[%lu] lib: '%s'\n", i, info->libs[i]);
+		} else if (S_ISDIR(mode)) {
+			info->dirs[i] = xstrdup(ctx->err, line.path);
+			if (info->dirs[i] == NULL)
+				return (-1);
 
-                        info->libs[i] = xstrdup(ctx->err, line.tokens[1]);
-                        if (info->libs[i] == NULL)
-                                return (-1);
+			printf("[%lu] dir: '%s'\n", i, info->dirs[i]);
+		} else if (S_ISBLK(mode) || S_ISCHR(mode)) {
+			info->devs[i] = xstrdup(ctx->err, line.path);
+			if (info->devs[i] == NULL)
+				return (-1);
 
-                        printf("[%lu] lib: '%s'\n", i, info->libs[i]);
-                } else if (!strcmp(line.tokens[0], CSV_TOKEN_DIR)) {
-                        if (line.ntokens != 2) {
-                                error_setx(ctx->err, "malformed line %lu, expected 2 tokens", i);
-                                return (-1);
-                        }
+			printf("[%lu] dev: '%s'\n", i, info->devs[i]);
+		} else if (S_ISLNK(mode)) {
+			info->symlinks[i] = xstrdup(ctx->err, line.path);
+			if (info->symlinks[i] == NULL)
+				return (-1);
 
-                        info->dirs[i] = xstrdup(ctx->err, line.tokens[1]);
-                        if (info->dirs[i] == NULL)
-                                return (-1);
-
-                        printf("[%lu] dir: '%s'\n", i, info->dirs[i]);
-                } else if (!strcmp(line.tokens[0], CSV_TOKEN_DEV)) {
-                        if (line.ntokens != 2) {
-                                error_setx(ctx->err, "malformed line %lu, expected 2 tokens", i);
-                                return (-1);
-                        }
-
-                        info->devs[i] = xstrdup(ctx->err, line.tokens[1]);
-                        if (info->devs[i] == NULL)
-                                return (-1);
-
-                        printf("[%lu] dev: '%s'\n", i, info->devs[i]);
-                } else if (!strcmp(line.tokens[0], CSV_TOKEN_SYM)) {
-                        if (line.ntokens != 3) {
-                                error_setx(ctx->err, "malformed line %lu, expected 3 tokens", i);
-                                return (-1);
-                        }
-
-                        info->symlinks_source[i] = xstrdup(ctx->err, line.tokens[1]);
-                        if (info->symlinks_source[i] == NULL)
-                                return (-1);
-
-                        info->symlinks_target[i] = xstrdup(ctx->err, line.tokens[2]);
-                        if (info->symlinks_target[i] == NULL)
-                                return (-1);
-
-                        printf("[%lu] symlink: source: '%s', dest: '%s'\n", i,
-                                        info->symlinks_source[i],
-                                        info->symlinks_target[i]);
-                } else {
-                        error_setx(ctx->err, "malformed line %lu, unexpected symbol '%s'", i,
-                                        line.tokens[0]);
-                        return (-1);
-                }
+			printf("[%lu] symlink: '%s'\n", i, info->symlinks[i]);
+		} else {
+			log_infof("malformed line: %s", line.path);
+			continue;
+		}
         }
 
         jetson_info_pack(info, ctx->nlines);

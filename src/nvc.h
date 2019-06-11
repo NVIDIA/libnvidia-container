@@ -49,8 +49,7 @@ struct nvc_jetson_info {
         size_t ndirs;
         char **devs;
         size_t ndevs;
-        char **symlinks_source;
-        char **symlinks_target;
+        char **symlinks;
         size_t nsymlinks;
 };
 

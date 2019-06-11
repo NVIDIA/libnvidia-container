@@ -11,14 +11,8 @@
 #include "error.h"
 #include "nvc.h"
 
-#define CSV_TOKEN_LIB "lib"
-#define CSV_TOKEN_DIR "dir"
-#define CSV_TOKEN_DEV "dev"
-#define CSV_TOKEN_SYM "symlink"
-
 struct csv_line {
-        char **tokens;
-        size_t ntokens;
+        char *path;
 };
 
 struct csv {
