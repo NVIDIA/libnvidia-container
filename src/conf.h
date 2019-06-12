@@ -11,17 +11,13 @@
 #include "error.h"
 #include "nvc.h"
 
-struct conf_line {
-        char *path;
-};
-
 struct conf {
         struct error *err;
         const char *path;
         void *base;
         size_t size;
 
-        struct conf_line *lines;
+        char **lines;
         size_t nlines;
 };
 

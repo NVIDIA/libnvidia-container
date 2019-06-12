@@ -69,7 +69,7 @@ conf_pack(struct conf *ctx)
 
         for (size_t ptr = 0; ptr < ctx->nlines; ++ptr) {
                 // Evict empty lines
-                if (strlen(ctx->lines[ptr].path) == 0) {
+                if (strlen(ctx->lines[ptr]) == 0) {
                         continue;
                 }
 
@@ -100,7 +100,7 @@ conf_lex(struct conf *ctx)
 {
         char *ptr = ctx->base;
         ctx->nlines = str_count(ptr, '\n', ctx->size);
-        ctx->lines = xcalloc(ctx->err, ctx->nlines, sizeof(struct conf_line));
+        ctx->lines = xcalloc(ctx->err, ctx->nlines, sizeof(char *));
         if (ctx->lines == NULL)
                 return (-1);
 
@@ -112,10 +112,10 @@ conf_lex(struct conf *ctx)
         // We aren't using array_new here because the table of string contains mmaped value
         //    hence these can't be freed by array_free.
         for (size_t line = 0; line < ctx->nlines; ++line) {
-                ctx->lines[line].path = strsep(&ptr, "\n");
-		trim(&ctx->lines[line].path);
+                ctx->lines[line] = strsep(&ptr, "\n");
+		trim(&ctx->lines[line]);
 
-                printf("[%lu] path: '%s'\n", line, ctx->lines[line].path);
+                printf("[%lu] path: '%s'\n", line, ctx->lines[line]);
         }
 
         printf("packing\n");
@@ -128,7 +128,7 @@ conf_lex(struct conf *ctx)
 int
 conf_parse(struct conf *ctx, struct nvc_jetson_info *info)
 {
-        struct conf_line line;
+        char *line;
 
         if (jetson_info_init(ctx->err, info, ctx->nlines) < 0)
                 return (-1);
@@ -137,35 +137,35 @@ conf_parse(struct conf *ctx, struct nvc_jetson_info *info)
                 line = ctx->lines[i];
 
 		mode_t mode;
-		if (file_mode(ctx->err, line.path, &mode) < 0)
+		if (file_mode(ctx->err, line, &mode) < 0)
 			continue;
 
 		if (S_ISREG(mode)) {
-			info->libs[i] = xstrdup(ctx->err, line.path);
+			info->libs[i] = xstrdup(ctx->err, line);
 			if (info->libs[i] == NULL)
 				return (-1);
 
 			printf("[%lu] lib: '%s'\n", i, info->libs[i]);
 		} else if (S_ISDIR(mode)) {
-			info->dirs[i] = xstrdup(ctx->err, line.path);
+			info->dirs[i] = xstrdup(ctx->err, line);
 			if (info->dirs[i] == NULL)
 				return (-1);
 
 			printf("[%lu] dir: '%s'\n", i, info->dirs[i]);
 		} else if (S_ISBLK(mode) || S_ISCHR(mode)) {
-			info->devs[i] = xstrdup(ctx->err, line.path);
+			info->devs[i] = xstrdup(ctx->err, line);
 			if (info->devs[i] == NULL)
 				return (-1);
 
 			printf("[%lu] dev: '%s'\n", i, info->devs[i]);
 		} else if (S_ISLNK(mode)) {
-			info->symlinks[i] = xstrdup(ctx->err, line.path);
+			info->symlinks[i] = xstrdup(ctx->err, line);
 			if (info->symlinks[i] == NULL)
 				return (-1);
 
 			printf("[%lu] symlink: '%s'\n", i, info->symlinks[i]);
 		} else {
-			log_infof("malformed line: %s", line.path);
+			log_infof("malformed line: %s", line);
 			continue;
 		}
         }
