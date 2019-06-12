@@ -18,7 +18,7 @@ jetson_info_init(struct error *err, struct nvc_jetson_info *info, size_t len)
                 { &info->libs, &info->nlibs },
                 { &info->dirs, &info->ndirs },
                 { &info->devs, &info->ndevs },
-                { &info->symlinks, &info->nsymlinks }
+                { &info->syms, &info->nsyms }
         };
 
         for (size_t i = 0; i < nitems(init); ++i) {
@@ -42,7 +42,7 @@ jetson_info_free(struct nvc_jetson_info *info)
                 { info->libs, info->nlibs },
                 { info->dirs, info->ndirs },
                 { info->devs, info->ndevs },
-                { info->symlinks, info->nsymlinks }
+                { info->syms, info->nsyms }
         };
 
         for (size_t i = 0; i < nitems(init); ++i) {
@@ -62,7 +62,7 @@ jetson_info_pack(struct nvc_jetson_info *info, size_t max_len)
                 { info->libs, &info->nlibs },
                 { info->dirs, &info->ndirs },
                 { info->devs, &info->ndevs },
-                { info->symlinks, &info->nsymlinks }
+                { info->syms, &info->nsyms }
         };
 
 
@@ -99,7 +99,7 @@ jetson_info_append(struct error *err, struct nvc_jetson_info *a, struct nvc_jets
                 { a->libs, a->nlibs, b->libs, b->nlibs, &info->libs, &info->nlibs },
                 { a->dirs, a->ndirs, b->dirs, b->ndirs, &info->dirs, &info->ndirs },
                 { a->devs, a->ndevs, b->devs, b->ndevs, &info->devs, &info->ndevs },
-                { a->symlinks, a->nsymlinks, b->symlinks, b->nsymlinks, &info->symlinks, &info->nsymlinks }
+                { a->syms, a->nsyms, b->syms, b->nsyms, &info->syms, &info->nsyms }
         };
 
 

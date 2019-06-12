@@ -159,11 +159,11 @@ conf_parse(struct conf *ctx, struct nvc_jetson_info *info)
 
 			printf("[%lu] dev: '%s'\n", i, info->devs[i]);
 		} else if (S_ISLNK(mode)) {
-			info->symlinks[i] = xstrdup(ctx->err, line);
-			if (info->symlinks[i] == NULL)
+			info->syms[i] = xstrdup(ctx->err, line);
+			if (info->syms[i] == NULL)
 				return (-1);
 
-			printf("[%lu] symlink: '%s'\n", i, info->symlinks[i]);
+			printf("[%lu] symlink: '%s'\n", i, info->syms[i]);
 		} else {
 			log_infof("malformed line: %s", line);
 			continue;

@@ -49,8 +49,8 @@ struct nvc_jetson_info {
         size_t ndirs;
         char **devs;
         size_t ndevs;
-        char **symlinks;
-        size_t nsymlinks;
+        char **syms;
+        size_t nsyms;
 };
 
 struct nvc_driver_info {
