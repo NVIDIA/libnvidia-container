@@ -478,7 +478,7 @@ fail:
 static int
 lookup_jetson(struct error *err, struct nvc_driver_info *info, const char *root)
 {
-        const char *base = "/opt/nvidia/nvidia-container-runtime/";
+        const char *base = "/opt/nvidia/nvidia-container-runtime/host-files-for-container.d/";
         struct nvc_jetson_info jetson = {0};
         struct nvc_jetson_info *dst, *tmp;
         char **files;
