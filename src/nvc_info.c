@@ -19,7 +19,7 @@
 #include "ldcache.h"
 #include "options.h"
 #include "utils.h"
-#include "csv.h"
+#include "conf.h"
 #include "jetson_info.h"
 #include "xfuncs.h"
 
@@ -445,17 +445,17 @@ lookup_jetson_devices(struct error *err, struct nvc_jetson_info *info, const cha
 static int
 parse_file(struct error *err, const char *path, const char *root, struct nvc_jetson_info *jetson)
 {
-        struct csv ctx;
+        struct conf ctx;
         int rv = -1;
 
-        csv_init(&ctx, err, path);
-        if (csv_open(&ctx) < 0)
+        conf_init(&ctx, err, path);
+        if (conf_open(&ctx) < 0)
                 return (-1);
 
-        if (csv_lex(&ctx) < 0)
+        if (conf_lex(&ctx) < 0)
                 goto fail;
 
-        if (csv_parse(&ctx, jetson) < 0)
+        if (conf_parse(&ctx, jetson) < 0)
                 goto fail;
 
         if (lookup_jetson_libs(err, jetson, root) < 0)
@@ -470,7 +470,7 @@ parse_file(struct error *err, const char *path, const char *root, struct nvc_jet
         rv = 0;
 
 fail:
-        csv_close(&ctx);
+        conf_close(&ctx);
 
         return (rv);
 }

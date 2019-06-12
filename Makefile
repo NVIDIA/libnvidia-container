@@ -57,7 +57,7 @@ LIB_SRCS     := $(SRCS_DIR)/driver.c        \
                 $(SRCS_DIR)/nvc_mount.c     \
                 $(SRCS_DIR)/nvc_container.c \
                 $(SRCS_DIR)/options.c       \
-                $(SRCS_DIR)/csv.c           \
+                $(SRCS_DIR)/conf.c           \
                 $(SRCS_DIR)/jetson_info.c   \
                 $(SRCS_DIR)/utils.c
 
@@ -77,7 +77,7 @@ BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
                 $(SRCS_DIR)/error_generic.c \
                 $(SRCS_DIR)/utils.c
 
-TESTS_SRCS   := $(TESTS_DIR)/csv_test.c
+TESTS_SRCS   := $(TESTS_DIR)/conf_test.c
 
 LIB_SCRIPT   = $(SRCS_DIR)/$(LIB_NAME).lds
 BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds

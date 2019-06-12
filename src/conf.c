@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "csv.h"
+#include "conf.h"
 #include "utils.h"
 #include "xfuncs.h"
 #include "jetson_info.h"
@@ -21,17 +21,17 @@
 # define printf(...)
 #endif
 
-static void csv_pack(struct csv *);
+static void conf_pack(struct conf *);
 static void trim(char **);
 
 void
-csv_init(struct csv *ctx, struct error *err, const char *path)
+conf_init(struct conf *ctx, struct error *err, const char *path)
 {
-        *ctx = (struct csv){err, path, NULL, 0, NULL, 0};
+        *ctx = (struct conf){err, path, NULL, 0, NULL, 0};
 }
 
 int
-csv_open(struct csv *ctx)
+conf_open(struct conf *ctx)
 {
         ctx->base = file_map_prot(ctx->err, ctx->path, &ctx->size, PROT_READ | PROT_WRITE);
         if (ctx->base == NULL)
@@ -49,7 +49,7 @@ csv_open(struct csv *ctx)
 
 
 int
-csv_close(struct csv *ctx)
+conf_close(struct conf *ctx)
 {
         if (file_unmap(ctx->err, ctx->path, ctx->base, ctx->size) < 0)
                 return (-1);
@@ -60,7 +60,7 @@ csv_close(struct csv *ctx)
 }
 
 void
-csv_pack(struct csv *ctx)
+conf_pack(struct conf *ctx)
 {
         size_t idx = 0;
 
@@ -96,11 +96,11 @@ trim(char **strp)
 }
 
 int
-csv_lex(struct csv *ctx)
+conf_lex(struct conf *ctx)
 {
         char *ptr = ctx->base;
         ctx->nlines = str_count(ptr, '\n', ctx->size);
-        ctx->lines = xcalloc(ctx->err, ctx->nlines, sizeof(struct csv_line));
+        ctx->lines = xcalloc(ctx->err, ctx->nlines, sizeof(struct conf_line));
         if (ctx->lines == NULL)
                 return (-1);
 
@@ -119,16 +119,16 @@ csv_lex(struct csv *ctx)
         }
 
         printf("packing\n");
-        csv_pack(ctx);
+        conf_pack(ctx);
         printf("finished packing\n");
 
         return (0);
 }
 
 int
-csv_parse(struct csv *ctx, struct nvc_jetson_info *info)
+conf_parse(struct conf *ctx, struct nvc_jetson_info *info)
 {
-        struct csv_line line;
+        struct conf_line line;
 
         if (jetson_info_init(ctx->err, info, ctx->nlines) < 0)
                 return (-1);
