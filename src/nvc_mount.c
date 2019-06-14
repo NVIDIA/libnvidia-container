@@ -21,6 +21,7 @@
 #include "options.h"
 #include "utils.h"
 #include "xfuncs.h"
+#include "jetson_mount.h"
 
 static char **mount_files(struct error *, const char *, const struct nvc_container *, const char *, char *[], size_t);
 static char *mount_device(struct error *, const char *, const struct nvc_container *, const char *);
@@ -29,7 +30,6 @@ static char *mount_procfs(struct error *, const char *, const struct nvc_contain
 static char *mount_procfs_gpu(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_app_profile(struct error *, const struct nvc_container *);
 static int  update_app_profile(struct error *, const struct nvc_container *, dev_t);
-static void unmount(const char *);
 static int  setup_cgroup(struct error *, const char *, const char *);
 static int  symlink_library(struct error *, const char *, const char *, const char *, uid_t, gid_t);
 static int  symlink_libraries(struct error *, const struct nvc_container *, const char * const [], size_t);
@@ -64,54 +64,6 @@ mount_files(struct error *err, const char *root, const struct nvc_container *cnt
                 if (path_append(err, src, paths[i]) < 0)
                         goto fail;
                 if (path_append(err, dst, file) < 0)
-                        goto fail;
-                if (file_mode(err, src, &mode) < 0)
-                        goto fail;
-                if (file_create(err, dst, NULL, cnt->uid, cnt->gid, mode) < 0)
-                        goto fail;
-
-                log_infof("mounting %s at %s", src, dst);
-                if (xmount(err, src, dst, NULL, MS_BIND, NULL) < 0)
-                        goto fail;
-                if (xmount(err, NULL, dst, NULL, MS_BIND|MS_REMOUNT | MS_RDONLY|MS_NODEV|MS_NOSUID, NULL) < 0)
-                        goto fail;
-                if ((*ptr++ = xstrdup(err, dst)) == NULL)
-                        goto fail;
-                *src_end = '\0';
-                *dst_end = '\0';
-        }
-        return (mnt);
-
- fail:
-        for (size_t i = 0; i < size; ++i)
-                unmount(mnt[i]);
-        array_free(mnt, size);
-        return (NULL);
-}
-
-static char **
-mount_full_path(struct error *err, const char *root, const struct nvc_container *cnt, char *paths[], size_t size)
-{
-        char src[PATH_MAX];
-        char dst[PATH_MAX];
-        mode_t mode;
-        char *src_end, *dst_end;
-        char **mnt, **ptr;
-
-        mnt = ptr = array_new(err, size + 1); /* NULL terminated. */
-        if (mnt == NULL)
-                return (NULL);
-
-        for (size_t i = 0; i < size; ++i) {
-                if (path_new(err, src, root) < 0)
-                        return (NULL);
-                if (path_resolve_full(err, dst, cnt->cfg.rootfs, paths[i]) < 0)
-                        return (NULL);
-
-                src_end = src + strlen(src);
-                dst_end = dst + strlen(dst);
-
-                if (path_append(err, src, paths[i]) < 0)
                         goto fail;
                 if (file_mode(err, src, &mode) < 0)
                         goto fail;
@@ -377,7 +329,7 @@ mount_procfs_gpu(struct error *err, const char *root, const struct nvc_container
         return (NULL);
 }
 
-static void
+void
 unmount(const char *path)
 {
         if (path == NULL || str_empty(path))
@@ -532,7 +484,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
 
         log_info("mount jetson libraries");
         if (info->jetson->libs != NULL && info->jetson->nlibs > 0) {
-                if ((tmp = (const char **)mount_full_path(&ctx->err, ctx->cfg.root, cnt, info->jetson->libs, info->jetson->nlibs)) == NULL)
+                if ((tmp = (const char **)mount_jetson_files(&ctx->err, ctx->cfg.root, cnt, info->jetson->libs, info->jetson->nlibs)) == NULL)
                         goto fail;
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
@@ -540,7 +492,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
 
         log_info("mount jetson dirs");
         if (info->jetson->libs != NULL && info->jetson->nlibs > 0) {
-                if ((tmp = (const char **)mount_full_path(&ctx->err, ctx->cfg.root, cnt, info->jetson->dirs, info->jetson->ndirs)) == NULL)
+                if ((tmp = (const char **)mount_jetson_files(&ctx->err, ctx->cfg.root, cnt, info->jetson->dirs, info->jetson->ndirs)) == NULL)
                         goto fail;
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);

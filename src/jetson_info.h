@@ -19,4 +19,4 @@ struct nvc_jetson_info *jetson_info_append(struct error *, struct nvc_jetson_inf
 
 char **jetson_info_lookup_nvidia_dir(struct error *, const char *, size_t *);
 
-#endif /* HEADER_CSV_H */
+#endif /* HEADER_JETSON_INFO_H */

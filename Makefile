@@ -59,6 +59,7 @@ LIB_SRCS     := $(SRCS_DIR)/driver.c        \
                 $(SRCS_DIR)/options.c       \
                 $(SRCS_DIR)/csv.c           \
                 $(SRCS_DIR)/jetson_info.c   \
+                $(SRCS_DIR)/jetson_mount.c  \
                 $(SRCS_DIR)/utils.c
 
 # Order sensitive (see flags definitions)
@@ -77,7 +78,8 @@ BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
                 $(SRCS_DIR)/error_generic.c \
                 $(SRCS_DIR)/utils.c
 
-TESTS_SRCS   := $(TESTS_DIR)/csv_test.c
+TESTS_SRCS   := $(TESTS_DIR)/csv_test.c      \
+                $(TESTS_DIR)/symlinks_test.c
 
 LIB_SCRIPT   = $(SRCS_DIR)/$(LIB_NAME).lds
 BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds
@@ -112,7 +114,7 @@ LIB_PKGCFG  := $(LIB_NAME).pc
 
 # Common flags
 CPPFLAGS := -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D JETSON=$(JETSON) $(CPPFLAGS)
-CFLAGS   := -std=gnu11 -O2 -O0 -g -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
+CFLAGS   := -std=gnu11 -O2 -O0 -g3 -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
             -Wall -Wextra -Wcast-align -Wpointer-arith -Wmissing-prototypes -Wnonnull \
             -Wwrite-strings -Wlogical-op -Wformat=2 -Wmissing-format-attribute -Winit-self -Wshadow \
             -Wstrict-prototypes -Wunreachable-code -Wconversion -Wsign-conversion \
