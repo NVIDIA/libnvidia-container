@@ -363,6 +363,8 @@ setup_cgroup(struct error *err, const char *cgroup, const char *dev)
                 error_set(err, "write error: %s", path);
                 goto fail;
         }
+
+        log_info("device node whitelisted");
         rv = 0;
 
  fail:
@@ -509,6 +511,10 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         if (symlink_libraries(&ctx->err, cnt, mnt, (size_t)(ptr - mnt)) < 0)
                 goto fail;
 
+        log_info("create jetson symlinks");
+        if (create_jetson_symlinks(&ctx->err, ctx->cfg.root, cnt, info->jetson->syms, info->jetson->nsyms) < 0)
+                goto fail;
+
         /* Container library mounts */
         log_info("mount container library");
         if (cnt->libs != NULL && cnt->nlibs > 0) {
@@ -566,7 +572,9 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                         unmount(mnt[i]);
                 assert_func(ns_enter_at(NULL, ctx->mnt_ns, CLONE_NEWNS));
         } else {
+                log_info("returning to original mount_ns");
                 rv = ns_enter_at(&ctx->err, ctx->mnt_ns, CLONE_NEWNS);
+                log_info("returned there");
         }
 
         array_free((char **)mnt, nmnt);

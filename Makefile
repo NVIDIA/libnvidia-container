@@ -113,8 +113,8 @@ LIB_PKGCFG  := $(LIB_NAME).pc
 ##### Flags definitions #####
 
 # Common flags
-CPPFLAGS := -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D JETSON=$(JETSON) $(CPPFLAGS)
-CFLAGS   := -std=gnu11 -O2 -O0 -g3 -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
+CPPFLAGS := -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -g3 -D JETSON=$(JETSON) $(CPPFLAGS)
+CFLAGS   := -std=gnu11 -O0 -g3 -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
             -Wall -Wextra -Wcast-align -Wpointer-arith -Wmissing-prototypes -Wnonnull \
             -Wwrite-strings -Wlogical-op -Wformat=2 -Wmissing-format-attribute -Winit-self -Wshadow \
             -Wstrict-prototypes -Wunreachable-code -Wconversion -Wsign-conversion \
@@ -208,6 +208,7 @@ $(BIN_NAME): $(BIN_OBJS)
 ##### Public rules #####
 
 all: CPPFLAGS += -DNDEBUG
+all: STRIP  := @echo skipping: strip
 all: shared static tools
 
 # Run with ASAN_OPTIONS="protect_shadow_gap=0" to avoid CUDA OOM errors

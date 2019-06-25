@@ -27,10 +27,9 @@ Test(csv_happy, lex_simple) {
         cr_assert(!strcmp(ctx.lines[2].tokens[0], "dev"));
         cr_assert(!strcmp(ctx.lines[2].tokens[1], "/dev/target"));
 
-        cr_assert(ctx.lines[3].ntokens == 3);
-        cr_assert(!strcmp(ctx.lines[3].tokens[0], "symlink"));
+        cr_assert(ctx.lines[3].ntokens == 2);
+        cr_assert(!strcmp(ctx.lines[3].tokens[0], "sym"));
         cr_assert(!strcmp(ctx.lines[3].tokens[1], "/source"));
-        cr_assert(!strcmp(ctx.lines[3].tokens[2], "/target"));
 
         csv_close(&ctx);
 }
@@ -55,9 +54,8 @@ Test(csv_happy, parse_simple) {
         cr_assert(info.ndevs == 1);
         cr_assert(!strcmp(info.devs[0], "/dev/target"));
 
-        cr_assert(info.nsymlinks == 1);
-        cr_assert(!strcmp(info.symlinks_source[0], "/source"));
-        cr_assert(!strcmp(info.symlinks_target[0], "/target"));
+        cr_assert(info.nsyms == 1);
+        cr_assert(!strcmp(info.syms[0], "/source"));
 
         csv_close(&ctx);
         jetson_info_free(&info);
@@ -86,10 +84,9 @@ Test(csv_happy, lex_spaced) {
         cr_assert(!strcmp(ctx.lines[2].tokens[0], "dir"));
         cr_assert(!strcmp(ctx.lines[2].tokens[1], "/lib/target"));
 
-        cr_assert(ctx.lines[3].ntokens == 3);
-        cr_assert(!strcmp(ctx.lines[3].tokens[0], "symlink"));
+        cr_assert(ctx.lines[3].ntokens == 2);
+        cr_assert(!strcmp(ctx.lines[3].tokens[0], "sym"));
         cr_assert(!strcmp(ctx.lines[3].tokens[1], "/source"));
-        cr_assert(!strcmp(ctx.lines[3].tokens[2], "/target"));
 
         csv_close(&ctx);
 }

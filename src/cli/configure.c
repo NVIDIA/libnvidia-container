@@ -295,6 +295,7 @@ configure_command(const struct context *ctx)
                 goto fail;
         }
 
+        log_info("ldcache");
         /* Update the container ldcache. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_LDCACHE], ecaps_size(NVC_LDCACHE)) < 0) {
                 warnx("permission error: %s", err.msg);

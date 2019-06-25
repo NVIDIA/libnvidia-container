@@ -32,99 +32,124 @@ recursive_remove(const char *path)
 }
 
 
-Test(jetson_resolve_symlink, happy_link) {
+#define SRC_FOLDER "symlink_tests_src"
+#define DST_FOLDER "symlink_tests_dst"
+
+/*
+Test(jetson_resolve_symlink, relative_link) {
         struct error err;
-        char link[][PATH_MAX] = {"./foo-symlink", "/tmp/foo-symlink" };
-        char dst[][PATH_MAX] = {"./bar-symlink", "/tmp/bar-symlink" };
+        char src[] = SRC_FOLDER "/foo";
+        char dst[] = "../" DST_FOLDER "/bar";
 
-        char buf[PATH_MAX];
-        char cwd[PATH_MAX];
-        char dst_lnk[PATH_MAX];
-        char src_lnk[PATH_MAX];
+        cr_assert(recursive_remove(SRC_FOLDER) >= 0 || errno == ENOENT);
+        cr_assert(mkdir(SRC_FOLDER, 0700) >= 0);
 
-        for (size_t i = 0; i < nitems(link); ++i) {
-                printf("i: %lu\n", i);
+        cr_assert(symlink(dst, src) >= 0);
 
-                if (link[i][0] != '/')
-                        cr_assert(getcwd(cwd, PATH_MAX) != NULL);
-                else
-                        memset(cwd, '\0', PATH_MAX);
+}*/
 
-                cr_assert((remove(link[i]) >= 0) || errno == ENOENT);
-                cr_assert(symlink(dst[i], link[i]) >= 0);
-
-                // Ignore "./" by adding + 2
-                cr_assert(path_new(&err, src_lnk, cwd) >= 0);
-                cr_assert(path_append(&err, src_lnk, link[i] + strspn(link[i], "./")) >= 0);
-
-                cr_assert(path_new(&err, dst_lnk, cwd) >= 0);
-                cr_assert(path_append(&err, dst_lnk, dst[i]  + strspn(dst[i], "./")) >= 0);
-
-                printf("src_lnk: %s\n", src_lnk);
-                printf("dst_lnk: %s\n", dst_lnk);
-                cr_assert(resolve_next_symlink(&err, src_lnk, buf) >= 0);
-                printf("buf: %s\n", buf);
-                cr_assert(strcmp(buf, dst_lnk) == 0);
-                cr_assert(remove(link[i]) >= 0);
-        }
-}
-
-Test(create_jetson_symlinks, happy_link) {
-        char test_dir_src[] = "./symlink_tests_src";
-        char test_dir_dst[] = "./symlink_tests_dst";
-
-        char src[PATH_MAX], src_lnk[PATH_MAX], dst[PATH_MAX], dst_lnk[PATH_MAX];
-        char src_dir[PATH_MAX], dst_dir[PATH_MAX];
+Test(create_jetson_symlinks, happy_absolute_links) {
+        char src[PATH_MAX], src_lnk[PATH_MAX], dst[PATH_MAX];
         char *paths[] = { src };
+
         char buf[PATH_MAX];
         char cwd[PATH_MAX];
+        char rootfs[PATH_MAX];
         struct error err;
         struct nvc_container cnt;
         ssize_t n;
 
         /* Cleanup and setup */
-        cr_assert(recursive_remove(test_dir_src) >= 0 || errno == ENOENT);
-        cr_assert(recursive_remove(test_dir_dst) >= 0 || errno == ENOENT);
-        cr_assert(mkdir(test_dir_src, 0700) >= 0);
-        cr_assert(mkdir(test_dir_dst, 0700) >= 0);
-
         cr_assert(getcwd(cwd, PATH_MAX) != NULL);
-        cr_assert(path_new(&err, src_dir, cwd) >= 0);
-        cr_assert(path_new(&err, dst_dir, cwd) >= 0);
+
+        cr_assert(recursive_remove("./" SRC_FOLDER) >= 0 || errno == ENOENT);
+        cr_assert(recursive_remove("./" DST_FOLDER) >= 0 || errno == ENOENT);
+        cr_assert(mkdir("./" SRC_FOLDER, 0700) >= 0);
+        cr_assert(mkdir("./" DST_FOLDER, 0700) >= 0);
+
         cr_assert(path_new(&err, src, cwd) >= 0);
         cr_assert(path_new(&err, src_lnk, cwd) >= 0);
-        cr_assert(path_new(&err, dst, cwd) >= 0);
-        cr_assert(path_new(&err, dst_lnk, cwd) >= 0);
-
-        cr_assert(path_append(&err, src_dir, test_dir_src + 2) >= 0);
-        cr_assert(path_append(&err, dst_dir, test_dir_dst + 2) >= 0);
-        cr_assert(path_append(&err, src, test_dir_src + 2) >= 0);
-        cr_assert(path_append(&err, src_lnk, test_dir_src + 2) >= 0);
-        cr_assert(path_append(&err, dst, test_dir_dst + 2) >= 0);
-        cr_assert(path_append(&err, dst_lnk, test_dir_dst + 2) >= 0);
-
+        cr_assert(path_append(&err, src, SRC_FOLDER) >= 0);
+        cr_assert(path_append(&err, src_lnk, SRC_FOLDER) >= 0);
         cr_assert(path_append(&err, src, "foo") >= 0);
         cr_assert(path_append(&err, src_lnk, "bar") >= 0);
-        cr_assert(path_append(&err, dst, src) >= 0);
-        cr_assert(path_append(&err, dst_lnk, src_lnk) >= 0);
 
-        printf("src: %s, src_lnk: %s, dst: %s, dst_lnk: %s\n", src, src_lnk, dst, dst_lnk);
-
+        sprintf(rootfs, "%s/%s", cwd, DST_FOLDER);
         cnt.uid = getuid();
         cnt.gid = getgid();
-        cnt.cfg.rootfs = dst_dir;
+        cnt.cfg.rootfs = rootfs;
+
+        printf("src: %s, src_lnk: %s, rootfs: %s\n", src, src_lnk, rootfs);
 
         cr_assert(symlink(src_lnk, src) >= 0);
+        /* end setup */
+
         cr_assert(create_jetson_symlinks(&err, "/", &cnt, paths, 1) >= 0);
+
+        cr_assert(path_new(&err, dst, cwd) >= 0);
+        cr_assert(path_append(&err, dst, DST_FOLDER) >= 0);
+        cr_assert(path_append(&err, dst, src) >= 0);
 
         n = readlink(dst, buf, PATH_MAX);
         cr_assert(n > 0 && n < PATH_MAX);
         buf[n] = '\0';
 
-        printf("buf: %s, dst_lnk: %s\n", buf, dst);
-        cr_assert(strcmp(buf, dst_lnk) == 0);
+        printf("buf: %s, dst: %s, dst_lnk: %s\n", buf, dst, src_lnk);
+        cr_assert(strcmp(buf, src_lnk) == 0);
 
         /* Cleanup */
-        cr_assert(recursive_remove(test_dir_src) >= 0 || errno == ENOENT);
-        cr_assert(recursive_remove(test_dir_dst) >= 0 || errno == ENOENT);
+        cr_assert(recursive_remove("./" SRC_FOLDER) >= 0 || errno == ENOENT);
+        cr_assert(recursive_remove("./" DST_FOLDER) >= 0 || errno == ENOENT);
+}
+
+Test(create_jetson_symlinks, happy_relative_links) {
+        char src_lnk[PATH_MAX] = "../bar";
+        char src[PATH_MAX], dst[PATH_MAX];
+        char *paths[] = { src };
+
+        char buf[PATH_MAX];
+        char cwd[PATH_MAX];
+        char rootfs[PATH_MAX];
+        struct error err;
+        struct nvc_container cnt;
+        ssize_t n;
+
+        /* Cleanup and setup */
+        cr_assert(getcwd(cwd, PATH_MAX) != NULL);
+
+        cr_assert(recursive_remove("./" SRC_FOLDER) >= 0 || errno == ENOENT);
+        cr_assert(recursive_remove("./" DST_FOLDER) >= 0 || errno == ENOENT);
+        cr_assert(mkdir("./" SRC_FOLDER, 0700) >= 0);
+        cr_assert(mkdir("./" DST_FOLDER, 0700) >= 0);
+
+        cr_assert(path_new(&err, src, cwd) >= 0);
+        cr_assert(path_append(&err, src, SRC_FOLDER) >= 0);
+        cr_assert(path_append(&err, src, "foo") >= 0);
+
+        sprintf(rootfs, "%s/%s", cwd, DST_FOLDER);
+        cnt.uid = getuid();
+        cnt.gid = getgid();
+        cnt.cfg.rootfs = rootfs;
+
+        printf("src: %s, src_lnk: %s, rootfs: %s\n", src, src_lnk, rootfs);
+
+        cr_assert(symlink(src_lnk, src) >= 0);
+        /* end setup */
+
+        cr_assert(create_jetson_symlinks(&err, "/", &cnt, paths, 1) >= 0);
+
+        cr_assert(path_new(&err, dst, cwd) >= 0);
+        cr_assert(path_append(&err, dst, DST_FOLDER) >= 0);
+        cr_assert(path_append(&err, dst, src) >= 0);
+
+        n = readlink(dst, buf, PATH_MAX);
+        cr_assert(n > 0 && n < PATH_MAX);
+        buf[n] = '\0';
+
+        printf("buf: %s, dst: %s, dst_lnk: %s\n", buf, dst, src_lnk);
+        cr_assert(strcmp(buf, src_lnk) == 0);
+
+        /* Cleanup */
+        cr_assert(recursive_remove("./" SRC_FOLDER) >= 0 || errno == ENOENT);
+        cr_assert(recursive_remove("./" DST_FOLDER) >= 0 || errno == ENOENT);
 }

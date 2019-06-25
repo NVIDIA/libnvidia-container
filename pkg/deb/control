@@ -31,7 +31,7 @@ Description: NVIDIA container runtime library (development files)
  .
  This package contains the files required to compile programs with the library.
 
-Package: libnvidia-container@MAJOR@-dbg
+Package: libnvidia-container-@MAJOR@-dbg
 Section: @SECTION@debug
 Priority: extra
 Architecture: any

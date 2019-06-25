@@ -3,7 +3,7 @@ lib,      /lib/target
 
 dir,/lib/target   
 
-symlink, /source, /target
+sym, /source
 
        
 

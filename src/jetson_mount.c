@@ -71,60 +71,41 @@ create_jetson_symlinks(struct error *err, const char *root, const struct nvc_con
         char src[PATH_MAX];
         char src_lnk[PATH_MAX];
         char dst[PATH_MAX];
-        char dst_lnk[PATH_MAX];
 
         for (size_t i = 0; i < size; ++i) {
                 if (path_new(err, src, root) < 0)
                         return (-1);
                 if (path_new(err, dst, cnt->cfg.rootfs) < 0)
                         return (-1);
-                if (path_new(err, dst_lnk, cnt->cfg.rootfs) < 0)
-                        return (-1);
 
                 if (path_append(err, src, paths[i]) < 0)
                         return (-1);
                 if (path_append(err, dst, paths[i]) < 0)
                         return (-1);
-                printf("src: %s, dst: %s\n", src, dst);
 
-                if (resolve_next_symlink(err, src, src_lnk) < 0)
-                        return (-1);
-                if (path_append(err, dst_lnk, src_lnk) < 0)
+                if (resolve_symlink(err, src, src_lnk) < 0)
                         return (-1);
 
+                printf("src: %s, src_lnk: %s, dst: %s, dst_lnk: %s\n", src, src_lnk, dst);
                 if (remove(dst) < 0 && errno != ENOENT)
                         return (-1);
 
-                log_infof("symlinking %s to %s", dst, dst_lnk);
-                if (file_create(err, dst, dst_lnk, cnt->uid, cnt->gid, S_IFLNK) < 0)
+                log_infof("symlinking %s to %s", dst, src_lnk);
+                if (file_create(err, dst, src_lnk, cnt->uid, cnt->gid, MODE_LNK(0777)) < 0)
                         return (-1);
         }
 
         return (0);
 }
 
-int resolve_next_symlink(struct error *err, const char *src, char *dst) {
-        char buf[PATH_MAX];
-        char lnk[PATH_MAX];
+int resolve_symlink(struct error *err, const char *src, char *dst) {
         ssize_t n;
 
-        if (path_new(err, lnk, src) < 0)
-                return (-1);
-
-        n = readlink(lnk, buf, PATH_MAX);
+        n = readlink(src, dst, PATH_MAX);
         if (n < 0 || n >= PATH_MAX)
                 return -1;
 
-        buf[n] = '\0';
-
-        if (buf[0] != '/') {
-                if (path_new(err, dst, dirname(lnk)) < 0)
-                        return (-1);
-        } else if (path_new(err, dst, "") < 0)
-                return (-1);
-
-        if (path_append(err, dst, buf + strspn(buf, "./")) < 0)
-                return (-1);
+        dst[n] = '\0';
 
         return (0);
 }

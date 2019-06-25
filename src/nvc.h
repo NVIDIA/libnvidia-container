@@ -13,10 +13,10 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define NVC_MAJOR   1
-#define NVC_MINOR   0
-#define NVC_PATCH   1
-#define NVC_VERSION "1.0.0+beta0"
+#define NVC_MAJOR   0
+#define NVC_MINOR   9
+#define NVC_PATCH   0
+#define NVC_VERSION "0.9.0+beta1"
 
 #define NVC_ARG_MAX 256
 
@@ -49,9 +49,8 @@ struct nvc_jetson_info {
         size_t ndirs;
         char **devs;
         size_t ndevs;
-        char **symlinks_source;
-        char **symlinks_target;
-        size_t nsymlinks;
+        char **syms;
+        size_t nsyms;
 };
 
 struct nvc_driver_info {

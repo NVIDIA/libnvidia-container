@@ -120,8 +120,8 @@ static const char * const graphics_libs_compat[] = {
 static int
 select_libraries(struct error *err, void *ptr, const char *root, const char *orig_path, const char *alt_path)
 {
+        (void) ptr;
         char path[PATH_MAX];
-        struct nvc_driver_info *info = ptr;
         struct elftool et;
         char *lib;
         int rv = true;
@@ -415,6 +415,34 @@ lookup_jetson_dirs(struct error *err, struct nvc_jetson_info *info, const char *
 }
 
 static int
+lookup_jetson_symlinks(struct error *err, struct nvc_jetson_info *info, const char *root)
+{
+        (void) root;
+
+        char path[PATH_MAX];
+        struct stat s;
+
+        for (size_t i = 0; i < info->nsyms; ++i) {
+                strcpy(path, info->syms[i]);
+                free(info->syms[i]);
+                info->syms[i] = NULL;
+
+                if (lstat(path, &s) < 0) {
+                        log_warnf("missing symlink %s", path);
+                        continue;
+                }
+
+                info->syms[i] = xstrdup(err, path);
+                if (info->syms[i] == NULL)
+                        return (-1);
+        }
+
+        array_pack(info->syms, &info->nsyms);
+
+        return (0);
+}
+
+static int
 lookup_jetson_devices(struct error *err, struct nvc_jetson_info *info, const char *root)
 {
         char path[PATH_MAX];
@@ -467,6 +495,9 @@ parse_file(struct error *err, const char *path, const char *root, struct nvc_jet
         if (lookup_jetson_devices(err, jetson, root) < 0)
                 goto fail;
 
+        if (lookup_jetson_symlinks(err, jetson, root) < 0)
+                goto fail;
+
         rv = 0;
 
 fail:
@@ -478,17 +509,20 @@ fail:
 static int
 lookup_jetson(struct error *err, struct nvc_driver_info *info, const char *root)
 {
-        const char *base = "/opt/nvidia/nvidia-container-runtime/";
+        const char *base = "/etc/nvidia-container-runtime/host-files-for-container.d";
         struct nvc_jetson_info jetson = {0};
         struct nvc_jetson_info *dst, *tmp;
         char **files;
         size_t nfiles = 0;
 
-        if ((files = jetson_info_lookup_nvidia_dir(err, base, &nfiles)) == NULL)
-                return (-1);
-
         if ((dst = xcalloc(err, 1, sizeof(struct nvc_jetson_info))) == NULL)
                 return (-1);
+
+        if ((files = jetson_info_lookup_nvidia_dir(err, base, &nfiles)) == NULL) {
+                info->jetson = dst;
+                return 0;
+        }
+
 
         for (size_t i = 0; i < nfiles; ++i) {
                 if (parse_file(err, files[i], root, &jetson) < 0)

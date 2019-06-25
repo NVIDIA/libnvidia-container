@@ -167,63 +167,34 @@ csv_parse(struct csv *ctx, struct nvc_jetson_info *info)
                 return (-1);
         }
 
+        struct {
+                const char *symbol;
+                char **target;
+        } jetson_csv_struct[] = {
+                { CSV_TOKEN_LIB, info->libs },
+                { CSV_TOKEN_DIR, info->dirs },
+                { CSV_TOKEN_DEV, info->devs },
+                { CSV_TOKEN_SYM, info->syms },
+        };
+
         for (size_t i = 0; i < ctx->nlines; ++i) {
                 line = ctx->lines[i];
 
-                if (!strcmp(line.tokens[0], CSV_TOKEN_LIB)) {
+                for (size_t j = 0; j < nitems(jetson_csv_struct); ++j) {
+                        if (strcmp(line.tokens[0], jetson_csv_struct[j].symbol) != 0)
+                                continue;
+
                         if (line.ntokens != 2) {
                                 error_setx(ctx->err, "malformed line %lu, expected 2 tokens", i);
                                 return (-1);
                         }
 
-                        info->libs[i] = xstrdup(ctx->err, line.tokens[1]);
-                        if (info->libs[i] == NULL)
+                        jetson_csv_struct[j].target[i] = xstrdup(ctx->err, line.tokens[1]);
+                        if (jetson_csv_struct[j].target[i] == NULL)
                                 return (-1);
 
-                        printf("[%lu] lib: '%s'\n", i, info->libs[i]);
-                } else if (!strcmp(line.tokens[0], CSV_TOKEN_DIR)) {
-                        if (line.ntokens != 2) {
-                                error_setx(ctx->err, "malformed line %lu, expected 2 tokens", i);
-                                return (-1);
-                        }
-
-                        info->dirs[i] = xstrdup(ctx->err, line.tokens[1]);
-                        if (info->dirs[i] == NULL)
-                                return (-1);
-
-                        printf("[%lu] dir: '%s'\n", i, info->dirs[i]);
-                } else if (!strcmp(line.tokens[0], CSV_TOKEN_DEV)) {
-                        if (line.ntokens != 2) {
-                                error_setx(ctx->err, "malformed line %lu, expected 2 tokens", i);
-                                return (-1);
-                        }
-
-                        info->devs[i] = xstrdup(ctx->err, line.tokens[1]);
-                        if (info->devs[i] == NULL)
-                                return (-1);
-
-                        printf("[%lu] dev: '%s'\n", i, info->devs[i]);
-                } else if (!strcmp(line.tokens[0], CSV_TOKEN_SYM)) {
-                        if (line.ntokens != 3) {
-                                error_setx(ctx->err, "malformed line %lu, expected 3 tokens", i);
-                                return (-1);
-                        }
-
-                        info->symlinks_source[i] = xstrdup(ctx->err, line.tokens[1]);
-                        if (info->symlinks_source[i] == NULL)
-                                return (-1);
-
-                        info->symlinks_target[i] = xstrdup(ctx->err, line.tokens[2]);
-                        if (info->symlinks_target[i] == NULL)
-                                return (-1);
-
-                        printf("[%lu] symlink: source: '%s', dest: '%s'\n", i,
-                                        info->symlinks_source[i],
-                                        info->symlinks_target[i]);
-                } else {
-                        error_setx(ctx->err, "malformed line %lu, unexpected symbol '%s'", i,
-                                        line.tokens[0]);
-                        return (-1);
+                        printf("[%lu] %s: '%s'\n", i, line.tokens[0], info->libs[i]);
+                        break;
                 }
         }
 
