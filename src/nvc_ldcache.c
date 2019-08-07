@@ -284,6 +284,15 @@ limit_syscalls(struct error *err)
                 SCMP_SYS(unlink),
                 SCMP_SYS(write),
                 SCMP_SYS(writev),
+#if defined(__aarch64__)
+                SCMP_SYS(mkdirat),
+                SCMP_SYS(unlinkat),
+                SCMP_SYS(readlinkat),
+                SCMP_SYS(faccessat),
+                SCMP_SYS(symlinkat),
+                SCMP_SYS(fchmodat),
+                SCMP_SYS(renameat),
+#endif
         };
         int rv = -1;
 
