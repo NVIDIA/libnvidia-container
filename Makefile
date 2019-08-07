@@ -304,12 +304,14 @@ rpm: all
 docker-%: SHELL:=/bin/bash
 docker-%:
 	image=$* ;\
-	$(MKDIR) -p $(DIST_DIR)/$${image/:} ;\
+	$(MKDIR) -p $(DIST_DIR)/$${image/:}/$(ARCH) ;\
 	$(DOCKER) build --network=host \
                     --build-arg IMAGESPEC=$* \
                     --build-arg USERSPEC=$(UID):$(GID) \
                     --build-arg WITH_LIBELF=$(WITH_LIBELF) \
                     --build-arg WITH_TIRPC=$(WITH_TIRPC) \
                     --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -f $(MAKE_DIR)/Dockerfile.$${image%%:*} -t $(LIB_NAME):$${image/:} . ;\
-	$(DOCKER) run --rm -v $(DIST_DIR)/$${image/:}:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):$${image/:}
+                    -f $(MAKE_DIR)/Dockerfile.$${image%%:*} -t $(LIB_NAME):$${image/:} . && \
+	$(DOCKER) run --cidfile $*.cid -e TAG -e DISTRIB -e SECTION $(LIB_NAME):$${image/:} && \
+	$(DOCKER) cp $$(cat $*.cid):/mnt/. $(DIST_DIR)/$${image/:}/$(ARCH) && \
+	$(DOCKER) rm $$(cat $*.cid) && rm $*.cid
