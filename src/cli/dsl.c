@@ -129,6 +129,7 @@ int
 dsl_evaluate(struct error *err, const char *predicate, void *ctx, const struct dsl_rule rules[], size_t size)
 {
         char *ptr, *expr = NULL;
+        char *predicate_format = NULL;
         char *or_expr, *and_expr;
         int ret = true;
         int rv = -1;
@@ -136,6 +137,10 @@ dsl_evaluate(struct error *err, const char *predicate, void *ctx, const struct d
 
         if ((expr = ptr = xstrdup(err, predicate)) == NULL)
                 goto fail;
+        if ((predicate_format = xstrdup(err, predicate)) == NULL)
+                goto fail;
+
+
         while ((or_expr = strsep(&ptr, " ")) != NULL) {
                 if (*or_expr == '\0')
                         continue;
@@ -153,12 +158,15 @@ dsl_evaluate(struct error *err, const char *predicate, void *ctx, const struct d
                         break;
         }
         if (!ret) {
-                error_setx(err, "unsatisfied condition: %s", buf);
+                predicate_format = strsep(&predicate_format, " ");
+                error_setx(err, "unsatisfied condition: %s", predicate_format);
+
                 goto fail;
         }
         rv = 0;
 
  fail:
         free(expr);
+        free(predicate_format);
         return (rv);
 }
