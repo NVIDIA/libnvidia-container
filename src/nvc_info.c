@@ -92,6 +92,8 @@ static const char * const graphics_libs[] = {
         "libnvidia-glsi.so",                /* OpenGL system interaction (used by libEGL_nvidia) */
         "libnvidia-fbc.so",                 /* Framebuffer capture */
         "libnvidia-ifr.so",                 /* OpenGL framebuffer capture */
+        "libnvidia-rtcore.so",              /* Optix */
+        "libnvoptix.so",                    /* Optix */
 };
 
 static const char * const graphics_libs_glvnd[] = {
