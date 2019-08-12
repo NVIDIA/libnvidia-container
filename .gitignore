@@ -1,0 +1,18 @@
+# Compiled source #
+###################
+
+*.o
+*.d
+*.lo
+*.so
+libnvidia-container.a
+libnvidia-container.so*
+
+.debug
+deps
+src/build.h
+
+src/driver_clt.c
+src/driver_rpc.h
+src/driver_svc.c
+src/driver_xdr.c
