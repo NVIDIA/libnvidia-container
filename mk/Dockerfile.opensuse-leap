@@ -33,7 +33,7 @@ ARG USERSPEC=0:0
 
 WORKDIR /tmp/libnvidia-container
 COPY . .
-RUN chown -R $USERSPEC $PWD
+RUN chown -R $USERSPEC $PWD /mnt
 USER $USERSPEC
 
 # META_NOECHO=echo is required to work around a bug in Leap 15's version of bmake,
