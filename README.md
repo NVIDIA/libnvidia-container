@@ -74,7 +74,7 @@ Refer to [NOTICE](https://github.com/NVIDIA/libnvidia-container/blob/master/NOTI
 
 ## Issues and Contributing
 
-A signed copy of the [Contributor License Agreement](https://raw.githubusercontent.com/NVIDIA/libnvidia-container/master/CLA) needs to be provided to <a href="mailto:digits@nvidia.com">digits@nvidia.com</a> before any change can be accepted.
+[Checkout the Contributing document!](CONTRIBUTING.md)
 
 * Please let us know by [filing a new issue](https://github.com/NVIDIA/libnvidia-container/issues/new)
 * You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)
