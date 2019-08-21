@@ -85,6 +85,12 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Wed Aug 21 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.4-1
+ - 61bfaf38 Update DSL to output the first element instead of the last in case of failure
+ - 5ce32c6c Add initial support for Optix
+ - acc38a22 Fix execveat typo
+ - b5e491b1 arm64: Add support for AARCH64 architecture
+
 * Thu Jul 18 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.3-1
 - b9545d7 Add support for Vulkan
 
