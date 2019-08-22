@@ -137,9 +137,6 @@ dsl_evaluate(struct error *err, const char *predicate, void *ctx, const struct d
 
         if ((expr = ptr = xstrdup(err, predicate)) == NULL)
                 goto fail;
-        if ((predicate_format = xstrdup(err, predicate)) == NULL)
-                goto fail;
-
 
         while ((or_expr = strsep(&ptr, " ")) != NULL) {
                 if (*or_expr == '\0')
@@ -158,6 +155,9 @@ dsl_evaluate(struct error *err, const char *predicate, void *ctx, const struct d
                         break;
         }
         if (!ret) {
+                if ((predicate_format = xstrdup(err, predicate)) == NULL)
+                        goto fail;
+
                 predicate_format = strsep(&predicate_format, " ");
                 error_setx(err, "unsatisfied condition: %s", predicate_format);
 
