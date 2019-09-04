@@ -297,7 +297,7 @@ rpm: all
 	$(CP) -T $(PKG_DIR)/rpm $(DESTDIR)
 	$(LN) -nsf $(CURDIR) $(DESTDIR)/BUILD
 	$(MKDIR) -p $(DESTDIR)/RPMS && $(LN) -nsf $(DIST_DIR) $(DESTDIR)/RPMS/$(ARCH)
-	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" -D"_tag $(TAG)" -D"_major $(MAJOR)" SPECS/*
+	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" -D"_major $(MAJOR)" SPECS/*
 	-cd $(DESTDIR) && rpmlint RPMS/*
 
 
@@ -312,6 +312,6 @@ docker-%:
                     --build-arg WITH_TIRPC=$(WITH_TIRPC) \
                     --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
                     -f $(MAKE_DIR)/Dockerfile.$${image%%:*} -t $(LIB_NAME):$${image/:} . && \
-	$(DOCKER) run --cidfile $*.cid -e TAG -e DISTRIB -e SECTION $(LIB_NAME):$${image/:} && \
+	$(DOCKER) run --cidfile $*.cid -e DISTRIB -e SECTION $(LIB_NAME):$${image/:} && \
 	$(DOCKER) cp $$(cat $*.cid):/mnt/. $(DIST_DIR)/$${image/:}/$(ARCH) && \
 	$(DOCKER) rm $$(cat $*.cid) && rm $*.cid
