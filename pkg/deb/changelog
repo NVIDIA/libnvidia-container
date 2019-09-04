@@ -1,3 +1,9 @@
+libnvidia-container (1.0.5-1) UNRELEASED; urgency=medium
+
+  * 688495e Add Opensuse15.1 support
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Wed, Sep 04 2019 10:50:40 -0700
+
 libnvidia-container (1.0.4-1) UNRELEASED; urgency=medium
 
   * 61bfaf38 Update DSL to output the first element instead of the last in case of failure

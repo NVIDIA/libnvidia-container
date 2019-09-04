@@ -85,6 +85,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Wed Sep 04 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.5-1
+ - 688495e Add Opensuse15.1 support
+
 * Wed Aug 21 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.4-1
  - 61bfaf38 Update DSL to output the first element instead of the last in case of failure
  - 5ce32c6c Add initial support for Optix
