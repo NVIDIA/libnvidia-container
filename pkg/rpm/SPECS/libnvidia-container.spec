@@ -85,6 +85,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Fri Sep 013 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.6-1
+ - b6aff41 Update error messages for CUDA version requirements
+
 * Wed Sep 04 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.5-1
  - 688495e Add Opensuse15.1 support
 
