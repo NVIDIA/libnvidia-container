@@ -13,6 +13,8 @@
 #include "utils.h"
 
 #define EXPR_MAX 128
+#define CUDA_REQUIRE_GREATER "cuda>="
+#define CUDA_REQUIRE_GREATER_LEN (sizeof(CUDA_REQUIRE_GREATER) - 1)
 
 static int evaluate_rule(char *, char *, void *, const struct dsl_rule [], size_t);
 
@@ -159,7 +161,10 @@ dsl_evaluate(struct error *err, const char *predicate, void *ctx, const struct d
                         goto fail;
 
                 predicate_format = strsep(&predicate_format, " ");
-                error_setx(err, "unsatisfied condition: %s", predicate_format);
+                if (strlen(predicate_format) >= CUDA_REQUIRE_GREATER_LEN && !strncmp(predicate_format, CUDA_REQUIRE_GREATER, CUDA_REQUIRE_GREATER_LEN))
+                        error_setx(err, "unsatisfied condition: %s, please update your driver to a newer version, or use an earlier cuda container", predicate_format);
+                else
+                        error_setx(err, "unsatisfied condition: %s", predicate_format);
 
                 goto fail;
         }
