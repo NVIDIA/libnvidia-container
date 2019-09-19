@@ -1,6 +1,5 @@
-ARG IMAGESPEC=opensuse/leap:15.0
-FROM ${IMAGESPEC}
-ARG IMAGESPEC=opensuse/leap:15.0
+ARG VERSION_ID
+FROM opensuse/leap:${VERSION_ID}
 
 RUN zypper install -y \
         bmake \

@@ -1,6 +1,5 @@
-ARG IMAGESPEC=centos:7
-FROM ${IMAGESPEC}
-ARG IMAGESPEC=centos:7
+ARG VERSION_ID
+FROM centos:${VERSION_ID}
 
 RUN yum install -y \
         bzip2 \

@@ -1,6 +1,5 @@
-ARG IMAGESPEC=ubuntu:16.04
-FROM ${IMAGESPEC}
-ARG IMAGESPEC=ubuntu:16.04
+ARG VERSION_ID
+FROM ubuntu:${VERSION_ID}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         apt-utils \

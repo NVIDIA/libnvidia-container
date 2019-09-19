@@ -1,6 +1,5 @@
-ARG IMAGESPEC=amazonlinux:2
-FROM ${IMAGESPEC}
-ARG IMAGESPEC=amazonlinux:2
+ARG VERSION_ID
+FROM amazonlinux:${VERSION_ID}
 
 RUN yum install -y \
         bzip2 \
