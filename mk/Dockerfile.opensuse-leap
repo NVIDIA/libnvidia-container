@@ -1,6 +1,5 @@
-ARG IMAGESPEC=opensuse/leap:15.0
-FROM ${IMAGESPEC}
-ARG IMAGESPEC=opensuse/leap:15.0
+ARG VERSION_ID
+FROM opensuse/leap:${VERSION_ID}
 
 RUN zypper install -y \
         bmake \
@@ -29,12 +28,8 @@ ENV WITH_LIBELF=${WITH_LIBELF}
 ENV WITH_TIRPC=${WITH_TIRPC}
 ENV WITH_SECCOMP=${WITH_SECCOMP}
 
-ARG USERSPEC=0:0
-
 WORKDIR /tmp/libnvidia-container
 COPY . .
-RUN chown -R $USERSPEC $PWD /mnt
-USER $USERSPEC
 
 # META_NOECHO=echo is required to work around a bug in Leap 15's version of bmake,
 # see also https://github.com/ptt/pttbbs/issues/30

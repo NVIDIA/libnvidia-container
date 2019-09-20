@@ -1,6 +1,5 @@
-ARG IMAGESPEC=ubuntu:16.04
-FROM ${IMAGESPEC}
-ARG IMAGESPEC=ubuntu:16.04
+ARG VERSION_ID
+FROM ubuntu:${VERSION_ID}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         apt-utils \
@@ -25,12 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV GPG_TTY /dev/console
 
-ARG USERSPEC=0:0
-
 WORKDIR /tmp/libnvidia-container
 COPY . .
-RUN chown -R $USERSPEC $PWD
-USER $USERSPEC
 
 ARG WITH_LIBELF=no
 ARG WITH_TIRPC=no

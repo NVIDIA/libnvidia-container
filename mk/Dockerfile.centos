@@ -1,6 +1,5 @@
-ARG IMAGESPEC=centos:7
-FROM ${IMAGESPEC}
-ARG IMAGESPEC=centos:7
+ARG VERSION_ID
+FROM centos:${VERSION_ID}
 
 RUN yum install -y \
         bzip2 \
@@ -35,12 +34,8 @@ RUN if [ "$WITH_LIBELF" = "no" ]; then \
         rm -rf $PWD \
     ; fi
 
-ARG USERSPEC=0:0
-
 WORKDIR /tmp/libnvidia-container
 COPY . .
-RUN chown -R $USERSPEC $PWD
-USER $USERSPEC
 
 RUN make distclean && make -j"$(nproc)"
 

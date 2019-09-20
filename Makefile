@@ -34,6 +34,7 @@ export DEBUG_DIR   ?= $(CURDIR)/.debug
 #export SECTION    ?=
 
 include $(MAKE_DIR)/common.mk
+include $(MAKE_DIR)/docker.mk
 
 ##### File definitions #####
 
@@ -299,19 +300,3 @@ rpm: all
 	$(MKDIR) -p $(DESTDIR)/RPMS && $(LN) -nsf $(DIST_DIR) $(DESTDIR)/RPMS/$(ARCH)
 	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" -D"_major $(MAJOR)" SPECS/*
 	-cd $(DESTDIR) && rpmlint RPMS/*
-
-
-docker-%: SHELL:=/bin/bash
-docker-%:
-	image=$* ;\
-	$(MKDIR) -p $(DIST_DIR)/$${image/:}/$(ARCH) ;\
-	$(DOCKER) build --network=host \
-                    --build-arg IMAGESPEC=$${image//-//} \
-                    --build-arg USERSPEC=$(UID):$(GID) \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -f $(MAKE_DIR)/Dockerfile.$${image%%:*} -t $(LIB_NAME):$${image/:} . && \
-	$(DOCKER) run --cidfile $*.cid -e DISTRIB -e SECTION $(LIB_NAME):$${image/:} && \
-	$(DOCKER) cp $$(cat $*.cid):/mnt/. $(DIST_DIR)/$${image/:}/$(ARCH) && \
-	$(DOCKER) rm $$(cat $*.cid) && rm $*.cid
