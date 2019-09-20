@@ -13,9 +13,10 @@
 # limitations under the License.
 #
 
+docker: SHELL:=/bin/bash
 docker: ubuntu18.04 ubuntu16.04 debian10 debian9 centos7 amazonlinux1 amazonlinux2 opensuse-leap15.1
 
-ubuntu%: SHELL:=/bin/bash
+ubuntu%: ARCH := amd64
 ubuntu%:
 	$(DOCKER) build --build-arg VERSION_ID=$* \
                     --build-arg WITH_LIBELF=$(WITH_LIBELF) \
@@ -27,7 +28,7 @@ ubuntu%:
 	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/ubuntu$*/$(ARCH)
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-debian%: SHELL:=/bin/bash
+debian%: ARCH := amd64
 debian%:
 	$(DOCKER) build --build-arg VERSION_ID=$* \
                     --build-arg WITH_LIBELF=$(WITH_LIBELF) \
@@ -39,7 +40,7 @@ debian%:
 	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/debian$*/$(ARCH)
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-centos%: SHELL:=/bin/bash
+centos%: ARCH := x86_64
 centos%:
 	$(DOCKER) build --build-arg VERSION_ID=$* \
                     --build-arg WITH_LIBELF=$(WITH_LIBELF) \
@@ -51,7 +52,7 @@ centos%:
 	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/centos$*/$(ARCH)
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-amazonlinux%: SHELL:=/bin/bash
+amazonlinux%: ARCH := x86_64
 amazonlinux%:
 	$(DOCKER) build --build-arg VERSION_ID=$* \
                     --build-arg WITH_LIBELF=$(WITH_LIBELF) \
@@ -64,7 +65,7 @@ amazonlinux%:
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
 
-opensuse-leap%: SHELL:=/bin/bash
+opensuse-leap%: ARCH := x86_64
 opensuse-leap%:
 	$(DOCKER) build --build-arg VERSION_ID=$* \
                     --build-arg WITH_LIBELF=$(WITH_LIBELF) \
