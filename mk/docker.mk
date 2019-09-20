@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-docker: ubuntu18.04 ubuntu16.04 debian10 debian9 centos7 amzn2 amzn1 opensuse-leap15.1
+docker: ubuntu18.04 ubuntu16.04 debian10 debian9 centos7 amazonlinux1 amazonlinux2 opensuse-leap15.1
 
 ubuntu%: SHELL:=/bin/bash
 ubuntu%:
