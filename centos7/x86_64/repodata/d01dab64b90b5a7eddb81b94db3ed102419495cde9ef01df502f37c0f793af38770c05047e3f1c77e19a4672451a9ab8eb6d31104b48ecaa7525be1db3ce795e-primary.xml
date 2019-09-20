@@ -1,0 +1,2139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xmlns="http://linux.duke.edu/metadata/common" xmlns:rpm="http://linux.duke.edu/metadata/rpm" packages="60">
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+  <checksum type="sha512" pkgid="YES">762f4cd1f8bd4cdaa72bcc4875119c625719002e7f7580c43750449922310cf2743f72ee49f4a0d4ab0e3af49b60780643c37da36789b6f0f94a59c20814f814</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1504829452"/>
+  <size package="5752" installed="4399" archive="5316"/>
+<location href="libnvidia-container-devel-1.0.0-0.1.alpha.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cbd046c723b1</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="3908"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.0"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+  <checksum type="sha512" pkgid="YES">c84e4afd792b8221b2b0a639103e6b6fad77d1a461ce2c4c5a184eeecd62c283d4f40000cff0b9b2fde19aa34afbf06f2024cb106e6884cbcfc254b3725da167</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1509409773"/>
+  <size package="6200" installed="4419" archive="5336"/>
+<location href="libnvidia-container-devel-1.0.0-0.1.alpha.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>357119a1e3b0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="4352"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.0"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+  <checksum type="sha512" pkgid="YES">252e338892427ca3d1df254dfa7b3e996005b7bdeaedb8af826735c0707b0c0112b13457670de62ed96ddd330ebbcbfd92c17acc8646045de6887804d8834591</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1515630326"/>
+  <size package="21064" installed="48455" archive="49880"/>
+<location href="libnvidia-container-devel-1.0.0-0.1.alpha.3.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9dc2602e2beb</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.3.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5568"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.0"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+  <checksum type="sha512" pkgid="YES">42183507b65e4a6fedbfd9bfdddcc262d2f0d2a7b5f6afe857cabd4733c03dc0597e20d6b175f2e0bc1cbed2886969d74ce54301cd46e7134fe0e59a288fafa2</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1520301929"/>
+  <size package="21496" installed="48475" archive="49900"/>
+<location href="libnvidia-container-devel-1.0.0-0.1.beta.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>e87b2e4faed0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.beta.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5996"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.0"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+  <checksum type="sha512" pkgid="YES">89d9ff53f9531fe515957e5a71c53b3f1678607b4374072f3362899be7f2df56e739fc2a0b2d30fabeb0d5eb075f299c4bb1d9dacfc26ef41c8744a91b37cf58</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1524784267"/>
+  <size package="21684" installed="48475" archive="49900"/>
+<location href="libnvidia-container-devel-1.0.0-0.1.rc.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9283292e87fe</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6184"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.0"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+  <checksum type="sha512" pkgid="YES">00158fa9d4baf80d2f6ca35ab6e984a2cc6c48e6103e15539345986c8220f883c9f38c4e1b4a232e65aa6da165572c62ec2608d37e72ebcc527f54d85fa3456f</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1528762818"/>
+  <size package="21932" installed="48475" archive="49900"/>
+<location href="libnvidia-container-devel-1.0.0-0.1.rc.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3a5ac6331303</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6432"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.0"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="1"/>
+  <checksum type="sha512" pkgid="YES">ff8862446cf098f541af1f066e5ae22736665ae6954e5643f5fd9a5396b2287aef8c6fb1981637c0e631b8c5731e3f6290125b0ce8f8675df552cc3fa5cc66fd</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1537475135"/>
+  <size package="22320" installed="48522" archive="49944"/>
+<location href="libnvidia-container-devel-1.0.0-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>98948ee20018</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6808"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.0"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.1" rel="1"/>
+  <checksum type="sha512" pkgid="YES">594de65f4312175165c79c5cbaf18446267431225b71666c8db1432ced5395c47f831ad9fa7f4ec57f7dfbbfac5b2139abce202b7736239edbf5ca3e46849900</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1547594817"/>
+  <size package="22420" installed="48522" archive="49944"/>
+<location href="libnvidia-container-devel-1.0.1-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cc95d26aac08</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.1-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6908"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.2" rel="1"/>
+  <checksum type="sha512" pkgid="YES">901810a7073f2661cf8d0c1a3487332e673b1187cb9038b61842f3277e45d569a4d45829cd2880c990b1f59b6457921c42f83d4439b04bcbf9b4ca0192e56284</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1553572610"/>
+  <size package="22572" installed="48522" archive="49944"/>
+<location href="libnvidia-container-devel-1.0.2-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>4f07c35e528d</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.2-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7060"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.3" rel="1"/>
+  <checksum type="sha512" pkgid="YES">3899aa07f6daf1c7ee4ebbb451063a86e9666d8e152fb7e9abb9b681e3c13ff3c18687299dce6ffadd6e2e8d5d24d7876f8d50f692ea3a74942a78e84d502f97</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1564787830"/>
+  <size package="22660" installed="48522" archive="49944"/>
+<location href="libnvidia-container-devel-1.0.3-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3aca0e67c723</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.3-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7148"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.3"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.4" rel="1"/>
+  <checksum type="sha512" pkgid="YES">56bf28f85fa6b327ab7c3f97959b0d5923748dd907b4337b65feae2af0c052a59ee893ee49eb5742f5623bb198fcbfe767d27ed1a7d02e4c8ab9df8ca2815e12</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1566600728"/>
+  <size package="25624" installed="58390" archive="59812"/>
+<location href="libnvidia-container-devel-1.0.4-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>41bf689c4d99</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.4-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7420"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.4"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-devel</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.5" rel="1"/>
+  <checksum type="sha512" pkgid="YES">16ee222997cd16b3e3fe04c7e9a5a53c0c6f60278ab72774c8f80bdd8ad917c1b667702fb7b58c32138988c16773e799b0b629a2f48c8b8cef6528f1c488b43d</checksum>
+  <summary>NVIDIA container runtime library (development files)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the files required to compile programs with the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789800" build="1567789212"/>
+  <size package="25712" installed="58390" archive="59812"/>
+<location href="libnvidia-container-devel-1.0.5-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>418bff38d249</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.5-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7508"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-devel" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+      <rpm:entry name="pkgconfig(libnvidia-container)" flags="EQ" epoch="0" ver="1.0.5"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/usr/bin/pkg-config"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+  <checksum type="sha512" pkgid="YES">ea29970227bde583ce2e4be47dc092e2008d80f886fcf5eee409f2398714483eb2fc7173061e0b4e97056e48b8de1a87a59b8f60f3dcb6c932235e94791f7978</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1504829452"/>
+  <size package="61596" installed="274269" archive="274868"/>
+<location href="libnvidia-container-static-1.0.0-0.1.alpha.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cbd046c723b1</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="3484"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+  <checksum type="sha512" pkgid="YES">3a1428f0086e356f79d834a314e54633db6588aa52721d2711cc4dc3d5f2f0ec171d5a444f0af4b70b998a53aebadf975936d9bc7b8a62f91a6af5d196a14745</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1509409773"/>
+  <size package="63356" installed="283085" archive="283684"/>
+<location href="libnvidia-container-static-1.0.0-0.1.alpha.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>357119a1e3b0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="3928"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+  <checksum type="sha512" pkgid="YES">f1e8c8f3b551b024faf012452c68912d11712a5bdeba6fa630c9a89dabf5acb8e4e312fb0482f2701e92c7eb0b67ac04e0d80a2dd4cb16d463dc69b5e1190177</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1515630326"/>
+  <size package="79604" installed="335911" archive="337016"/>
+<location href="libnvidia-container-static-1.0.0-0.1.alpha.3.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9dc2602e2beb</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.3.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5144"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+  <checksum type="sha512" pkgid="YES">fb03361ae6bef996a2f73688989f0a0a85b96b8aa09cf75c1bf46e6daec1ce508b4bfa7ac34e27d31e73e13d11668b680867c964d64f3a1ac5c229104659cace</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1520301929"/>
+  <size package="82136" installed="344695" archive="345800"/>
+<location href="libnvidia-container-static-1.0.0-0.1.beta.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>e87b2e4faed0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.beta.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5580"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+  <checksum type="sha512" pkgid="YES">d2a1250289b9d2a61b17571d32188ae15ecd31dd70bda0b46df950e8df96ab019629e3ebf7b58094c6743f00ddc96bd6bcc3cd614be43976e12361e74afd5d31</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1524784267"/>
+  <size package="83376" installed="348143" archive="349248"/>
+<location href="libnvidia-container-static-1.0.0-0.1.rc.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9283292e87fe</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5760"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+  <checksum type="sha512" pkgid="YES">8add8aa8cd61bb995e1642dea66da688a623fe72b3bd53ae9b69c16193a2edb8c1f835302574d1f9709b12ee28b3461b31ccd3d23161b5b49a818847d78771be</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1528762818"/>
+  <size package="83876" installed="348255" archive="349360"/>
+<location href="libnvidia-container-static-1.0.0-0.1.rc.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3a5ac6331303</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6008"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="1"/>
+  <checksum type="sha512" pkgid="YES">31f365d9c0b887e16fef091b9780bd0a3285c6d0a148f8ba449d3cb03a8f18a60d39732f4c4ab5a317fb2126dadfa1e449f11a8ff59efd96a03cf0ddcd0b76b7</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1537475135"/>
+  <size package="85748" installed="357519" archive="358624"/>
+<location href="libnvidia-container-static-1.0.0-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>98948ee20018</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6384"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.1" rel="1"/>
+  <checksum type="sha512" pkgid="YES">26a7db679718dab241c4778b7d81a3efd9b14ffdaba5830c0923a7d3458e802a7e4cd3e01f873c193006cc99cce431820be2ead4412f3784f091a15596e97401</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1547594817"/>
+  <size package="85872" installed="357551" archive="358656"/>
+<location href="libnvidia-container-static-1.0.1-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cc95d26aac08</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.1-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6484"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.2" rel="1"/>
+  <checksum type="sha512" pkgid="YES">5ad6e6f2cce0fb8ec46887e21f8f74cbfc4921b6ec44ff56b7394cd08f6224590ba452eb840114632d545e4324504fa1e8f308291f38f513745e9ce34ee2e066</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1553572610"/>
+  <size package="86016" installed="357575" archive="358680"/>
+<location href="libnvidia-container-static-1.0.2-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>4f07c35e528d</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.2-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="6636"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.3" rel="1"/>
+  <checksum type="sha512" pkgid="YES">85641c0fca33a386b5f8874d17249d07092c9991a6a8236d3967c36b2e6a9130b5181cdc92b26eaa6b2796e3aca0712a00f4310e3a2a03bc789b260cdb391bb9</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1564787830"/>
+  <size package="86208" installed="358055" archive="359160"/>
+<location href="libnvidia-container-static-1.0.3-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3aca0e67c723</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.3-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="6724"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.4" rel="1"/>
+  <checksum type="sha512" pkgid="YES">462a4200286e109e7cc7e4ffbf3fb2730c5881d94a8f0f2571c5baec66be1e9f857c81f1c1ce3861fdbacf51a856eca458d8000632bf1c9e6c94c1481fbe5ace</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1566600728"/>
+  <size package="89104" installed="368003" archive="369108"/>
+<location href="libnvidia-container-static-1.0.4-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>41bf689c4d99</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.4-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="6996"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-static</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.5" rel="1"/>
+  <checksum type="sha512" pkgid="YES">1ce49a40d1d7548d0f1d2c8966eb68467a7436847ee3db1afe0ff873da26e217cf52038e217de5749a59a9412312edbc886c54a14d8da13b392e17728fe0f683</checksum>
+  <summary>NVIDIA container runtime library (static library)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789805" build="1567789212"/>
+  <size package="89196" installed="368003" archive="369108"/>
+<location href="libnvidia-container-static-1.0.5-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>418bff38d249</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.5-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7084"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-static" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+      <rpm:entry name="libnvidia-container-static(x86-64)" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container-devel(x86-64)" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+  <checksum type="sha512" pkgid="YES">11c34a2314ac177ebb91679ab5a8a4e8aa2ee2fac4621977f7bd37d0ea33733346db64c6d31c5aa212cd54ee03dd00b65a57a08817ee2bb41853d16ce8afdfb4</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1504829452"/>
+  <size package="15532" installed="32221" archive="32820"/>
+<location href="libnvidia-container-tools-1.0.0-0.1.alpha.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cbd046c723b1</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="4016"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+  <checksum type="sha512" pkgid="YES">5cf8d85ac99b2996a6baaba6f0bfe9a5d8fef3757e576623f4f53415383df5268ad23e427866be31e17b6d76b5a298e96f3e8ddd8a826fcbc9f613f6d82b0ed6</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1509409773"/>
+  <size package="16180" installed="32221" archive="32820"/>
+<location href="libnvidia-container-tools-1.0.0-0.1.alpha.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>357119a1e3b0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="4460"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+  <checksum type="sha512" pkgid="YES">bb082537669a0b61b3a74b691980547401a42b8567155e03e7f6d263f629302b2bc37bfdfdb6e48de4ad3a97e26659df5210af161472ec4837222a3f8d107b8f</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1515630326"/>
+  <size package="31800" installed="80319" archive="81424"/>
+<location href="libnvidia-container-tools-1.0.0-0.1.alpha.3.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9dc2602e2beb</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.3.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5676"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+  <checksum type="sha512" pkgid="YES">35c4ee01643ab6e83bd96f241d4ceac42307d67d8a22d517f2c1e71a24e5402433719f5015aa95a973b77f210e2e955ed559dcc5cf3cec9d19c0bcd6ffe5f83a</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1520301929"/>
+  <size package="32444" installed="80327" archive="81432"/>
+<location href="libnvidia-container-tools-1.0.0-0.1.beta.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>e87b2e4faed0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.beta.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6108"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+  <checksum type="sha512" pkgid="YES">a2537f8138a3c3cc4e7283af3cbeb928a92d3d54e6f2442db845cfc3be0182fbaaa5bee6b7f284a23784ab95acc4554585d6a6167a33e28910c630c4bc0305cd</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1524784267"/>
+  <size package="32628" installed="80327" archive="81432"/>
+<location href="libnvidia-container-tools-1.0.0-0.1.rc.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9283292e87fe</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6292"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+  <checksum type="sha512" pkgid="YES">99ab88652369e534acb6a94c7a019837c0c2ce4ad059325318d68f2667cefc2aa4e868d4313862ba59120915b8123a1f0acfda4e02cfb869ee8f09ef6a6734ee</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1528762818"/>
+  <size package="32932" installed="80391" archive="81496"/>
+<location href="libnvidia-container-tools-1.0.0-0.1.rc.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3a5ac6331303</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6540"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="1"/>
+  <checksum type="sha512" pkgid="YES">443646083bef53fb1382dabaa302950a4bc5d7bfa9308b8bfe4177c719eb46c1118a61ec0cdf79f0c7cb80e788afb498628d8233001739b1ee5e62a4bf5e6892</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1537475135"/>
+  <size package="33432" installed="80391" archive="81496"/>
+<location href="libnvidia-container-tools-1.0.0-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>98948ee20018</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6912"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.0" rel="1"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.1" rel="1"/>
+  <checksum type="sha512" pkgid="YES">11bc7fe08b2fb0b54bee17c423d1492aa282fd87b823c63e7381b241efe0614307455d7c41f37d3d68de890bdb7602710c70d45bae1ee28695de111c348edba0</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1547594817"/>
+  <size package="33536" installed="80391" archive="81496"/>
+<location href="libnvidia-container-tools-1.0.1-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cc95d26aac08</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.1-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="7012"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.1" rel="1"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.2" rel="1"/>
+  <checksum type="sha512" pkgid="YES">29de95e7c6e67467f71ec1634aab4159193137669d836dcfda53d2a166cdd8871d62e75823e23a4e23f6bed134842f03e95663359772e3d815fe64e4c89fc025</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1553572610"/>
+  <size package="33688" installed="80391" archive="81496"/>
+<location href="libnvidia-container-tools-1.0.2-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>4f07c35e528d</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.2-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7164"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.2" rel="1"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.3" rel="1"/>
+  <checksum type="sha512" pkgid="YES">37b6d3314475c22ff14e84a1416041b4be5a7f07734cc644ef4189769de16b8b47ffee6f823fd0cc679554693ddda6ce7e9c4a03c11ce68340680cd90a4610ca</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1564787830"/>
+  <size package="33776" installed="80391" archive="81496"/>
+<location href="libnvidia-container-tools-1.0.3-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3aca0e67c723</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.3-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7252"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.3" rel="1"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.4" rel="1"/>
+  <checksum type="sha512" pkgid="YES">d0c8a3ff1a9c860c3861d1c91b57560cbd35c7a93a9329d35c1a962bd9fc796d2fbacd5376faa98e1da72f8d5a1f8136174915a35c7ebe0dae2a4012d501c72a</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1566600728"/>
+  <size package="36752" installed="90259" archive="91364"/>
+<location href="libnvidia-container-tools-1.0.4-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>41bf689c4d99</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.4-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7524"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.4" rel="1"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container-tools</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.5" rel="1"/>
+  <checksum type="sha512" pkgid="YES">2fc09a8e94ed33d121b4628465c506062364885dbe6d919e7d4d9029558a7bf7947b3fca334ce6f6aa5d5df7575799fc555ea3d292b9b97d854e7fd1864a1864</checksum>
+  <summary>NVIDIA container runtime library (command-line tools)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains command-line tools that facilitate using the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789809" build="1567789212"/>
+  <size package="36848" installed="90259" archive="91364"/>
+<location href="libnvidia-container-tools-1.0.5-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>418bff38d249</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.5-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7612"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container-tools" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+      <rpm:entry name="libnvidia-container-tools(x86-64)" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.8)(64bit)"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="GE" epoch="0" ver="1.0.5" rel="1"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+    </rpm:requires>
+    <file>/usr/bin/nvidia-container-cli</file>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+  <checksum type="sha512" pkgid="YES">8cdd75f919649b9ed5254e950aefc17d02d15659976efb7debe46c7885afb024495483fcc8283402af2eafb468b552b27331aa32c9ab19e2470a4e838f5048af</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1504829452"/>
+  <size package="53704" installed="139205" archive="139988"/>
+<location href="libnvidia-container1-1.0.0-0.1.alpha.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cbd046c723b1</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="4412"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+  <checksum type="sha512" pkgid="YES">0909e5d3f07d70b2f8d5f3cb9c5e138a289afb9708619b7e3d940e495a0fc3b76a86a83772cd0fb2d44fc3581d192d4b2932df4b3d2d81c4b4057b2e42ebab56</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1509409773"/>
+  <size package="55456" installed="144357" archive="145140"/>
+<location href="libnvidia-container1-1.0.0-0.1.alpha.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>357119a1e3b0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="4856"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+  <checksum type="sha512" pkgid="YES">09c44fd0f4b10d803ee1ce60818714ad0d66d20e5276370df523d6e4b641be86ec04719849ec72b9d98b260910ecb3c205a9c13c61f2e5c3a87e609a30daa828</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1515630326"/>
+  <size package="71104" installed="192463" archive="193752"/>
+<location href="libnvidia-container1-1.0.0-0.1.alpha.3.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9dc2602e2beb</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.3.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6072"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+  <checksum type="sha512" pkgid="YES">3390aae9352ca166c2256c16c5f0841db3cc09120d2d68b0d43535e64e6f7f93abec895798add760f07ba3e033ae3d77d46d247692538e1ff1f3d99611c02d0e</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1520301929"/>
+  <size package="72924" installed="196559" archive="197848"/>
+<location href="libnvidia-container1-1.0.0-0.1.beta.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>e87b2e4faed0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.beta.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6504"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+  <checksum type="sha512" pkgid="YES">8cdd19b83e3273c65f9e970ac623acff045e8989eba05968d0f8e1bc0e0fc32327b22438ce707881827799ec3877b4808604460a520bbbb086268ceae4e805d0</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1524784267"/>
+  <size package="73248" installed="196559" archive="197848"/>
+<location href="libnvidia-container1-1.0.0-0.1.rc.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9283292e87fe</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6696"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+  <checksum type="sha512" pkgid="YES">b69994a0d9939723123f8114d5b67fd8256fc5317a948cbee622d2802eab79a1fbc14d0b9b41ba7f631cb04787a0a4a383a5a1f8348818277bf83478832f0958</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1528762818"/>
+  <size package="73604" installed="196623" archive="197912"/>
+<location href="libnvidia-container1-1.0.0-0.1.rc.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3a5ac6331303</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6948"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="1"/>
+  <checksum type="sha512" pkgid="YES">3886a32d0c16ca7b0d4e4362abbda5d7804a09adb4ce0a7c3b1ce155802de87329a53666c483005d425657bc996dad75d230640a44683d4829e7d33aae757a0e</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1537475135"/>
+  <size package="75232" installed="200719" archive="202008"/>
+<location href="libnvidia-container1-1.0.0-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>98948ee20018</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="7332"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.1" rel="1"/>
+  <checksum type="sha512" pkgid="YES">beed80af54249d4039509ee0a3cc3147b01fca36ead779ce4081182d8b9732d00eed5e7bbb86501a548824626c5827ef7e2468eb0fcd53bde1e75eefc496a080</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1547594817"/>
+  <size package="75336" installed="200719" archive="202008"/>
+<location href="libnvidia-container1-1.0.1-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cc95d26aac08</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.1-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="7432"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.2" rel="1"/>
+  <checksum type="sha512" pkgid="YES">ee0fd66bee611e56912ddddbba05748e0dd0702c176a8cd5c3953180a035f8de8b3e90adca3f9bdc5c0e438e48bbf3d50939bf69b5ba68ae2229e6d9ff0cfa50</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1553572610"/>
+  <size package="75516" installed="200719" archive="202008"/>
+<location href="libnvidia-container1-1.0.2-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>4f07c35e528d</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.2-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7584"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.3" rel="1"/>
+  <checksum type="sha512" pkgid="YES">a6f8472e81f02603e4e018e4ec55be69b56e8d84cde52d2cac6b0d2da91ce585bc965163f40d97eb91d65482f8cdb0655c683328647d25935dd445c2806dd71d</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1564787830"/>
+  <size package="75684" installed="200719" archive="202008"/>
+<location href="libnvidia-container1-1.0.3-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3aca0e67c723</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.3-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7668"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.4" rel="1"/>
+  <checksum type="sha512" pkgid="YES">b842c4d7b87f44824b2e05870b3cec5c3a3169587545e84a7bf6d598d3ad4e4f8d34e85e55a06ee0bd97786f09146dc590cc9e6ace430aef280eac6f273f4b9e</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1566600728"/>
+  <size package="78652" installed="210587" archive="211876"/>
+<location href="libnvidia-container1-1.0.4-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>41bf689c4d99</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.4-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7940"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.5" rel="1"/>
+  <checksum type="sha512" pkgid="YES">30fa9152d6cfe828cc9f55c1dabdba5bc8aafd011f991e696927202c7e48cc451d88b2785c570b5d0c4336a08d85f5627edd09382a9869047378f579728d24d4</checksum>
+  <summary>NVIDIA container runtime library</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package requires the NVIDIA driver (&gt;= 340.29) to be installed separately.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789813" build="1567789212"/>
+  <size package="78740" installed="210587" archive="211876"/>
+<location href="libnvidia-container1-1.0.5-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>418bff38d249</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.5-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="8028"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container.so.1()(64bit)"/>
+      <rpm:entry name="libnvidia-container.so.1(NVC_1.0)(64bit)"/>
+      <rpm:entry name="libnvidia-container1" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="/sbin/ldconfig"/>
+      <rpm:entry name="rtld(GNU_HASH)"/>
+      <rpm:entry name="libseccomp.so.2()(64bit)"/>
+      <rpm:entry name="libdl.so.2()(64bit)"/>
+      <rpm:entry name="/sbin/ldconfig" pre="1"/>
+      <rpm:entry name="libc.so.6(GLIBC_2.17)(64bit)"/>
+      <rpm:entry name="libdl.so.2(GLIBC_2.2.5)(64bit)"/>
+      <rpm:entry name="libcap.so.2()(64bit)"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+  <checksum type="sha512" pkgid="YES">15146da1c6dbd1737119d525348f3f0ac99f117bc19b99a80ed322d815208dae2bc279a884683ac425af9e67e6cd545b0f5cd59ad318bf3b95a9b769a7b3ffc8</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1504829452"/>
+  <size package="200360" installed="950389" archive="951008"/>
+<location href="libnvidia-container1-debuginfo-1.0.0-0.1.alpha.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cbd046c723b1</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="3660"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+  <checksum type="sha512" pkgid="YES">d4ccc71abc4f92a999dd3d45fff1c614b4e1ffd8e5d2eb0e22591feb54d84ec7fa84aa3b6254cbedc1c0596ea5e4eb753a48041d29ee49122b1dbaecf7d2ec50</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1509409773"/>
+  <size package="204416" installed="971437" archive="972056"/>
+<location href="libnvidia-container1-debuginfo-1.0.0-0.1.alpha.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>357119a1e3b0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="4104"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.2"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+  <checksum type="sha512" pkgid="YES">7ea4842794bba43f1c32174458f937bf69c5ee4818cc982ab2cb2079e603939cc5a9844038cd16b3ddde33b2affb823437f9e32eb90f52900aedd1393d6351ef</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1515630326"/>
+  <size package="222084" installed="1032167" archive="1033292"/>
+<location href="libnvidia-container1-debuginfo-1.0.0-0.1.alpha.3.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9dc2602e2beb</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.alpha.3.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5320"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.alpha.3"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+  <checksum type="sha512" pkgid="YES">1e87e6726c4726a4a5ad5eeb9a3e2370bbf08bc5effa20012e190b63f846d58ba4c5dd3c0ffb9a3a8d649217ac115b2572b19597dea0bcf70543dfdbb0ea419a</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1520301929"/>
+  <size package="226164" installed="1050999" archive="1052124"/>
+<location href="libnvidia-container1-debuginfo-1.0.0-0.1.beta.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>e87b2e4faed0</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.beta.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5752"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.beta.1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+  <checksum type="sha512" pkgid="YES">2e6481f7b14a9f0c7a519e4e39a4cebeefd97600415704426afbcdefdcac3d722fb801953c1d0e47e2101de641ef646977a791e3f24eab550e8015e540b0a696</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1524784267"/>
+  <size package="228088" installed="1058015" archive="1059140"/>
+<location href="libnvidia-container1-debuginfo-1.0.0-0.1.rc.1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>9283292e87fe</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="5936"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+  <checksum type="sha512" pkgid="YES">00c2e42c81e6585b39267f512c8b5e6208e55904056f75b34988195b14461f42ab7de6c2bbcb419e7b467ed2b35e38b374ab9d560b4331ca57d0cdf5aff00972</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1528762818"/>
+  <size package="228592" installed="1058391" archive="1059516"/>
+<location href="libnvidia-container1-debuginfo-1.0.0-0.1.rc.2.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3a5ac6331303</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-0.1.rc.2.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6184"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="0.1.rc.2"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.0" rel="1"/>
+  <checksum type="sha512" pkgid="YES">4391b353fb4be65036c76a90091a5d621994c751ffd85233d4971705a2463524b46611007aa67e2210f551a240b2b86d654673c0424bb696e535a5dcdc0f4a23</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1537475135"/>
+  <size package="233040" installed="1078671" archive="1079796"/>
+<location href="libnvidia-container1-debuginfo-1.0.0-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>98948ee20018</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.0-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6560"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.0" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.1" rel="1"/>
+  <checksum type="sha512" pkgid="YES">7898e6a5bee2cd561d5b0ef6fe9d50c7272af3386ad47e38a920a7b9ab3ee57a389bca09e5987b0c6e03abcdd5e31be10382cff703c9929f2c26e8d081dc8b52</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1547594817"/>
+  <size package="233168" installed="1078671" archive="1079796"/>
+<location href="libnvidia-container1-debuginfo-1.0.1-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>cc95d26aac08</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.1-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="880" end="6660"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.1" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.2" rel="1"/>
+  <checksum type="sha512" pkgid="YES">a30f68f52cce06db10cc3195542033d31b7827fbac84a0c87676d9c8fa78a0133afa333583fa4d9cc99c7bf23d6ba84c5b790fdce29cd5e8ef6288aed4b1b9f8</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1553572610"/>
+  <size package="233416" installed="1078671" archive="1079796"/>
+<location href="libnvidia-container1-debuginfo-1.0.2-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>4f07c35e528d</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.2-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="6812"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.2" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.3" rel="1"/>
+  <checksum type="sha512" pkgid="YES">89a5aad6effa4933abda3db7d2bbb4f511f6320d7d033982e5c5e033dcaedbeb770c05db57690ab70c40fb41778a3c59584c1f7d506fc87bea79aa86ca539dab</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1564787830"/>
+  <size package="233512" installed="1078959" archive="1080084"/>
+<location href="libnvidia-container1-debuginfo-1.0.3-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>3aca0e67c723</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.3-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="6900"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.3" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.4" rel="1"/>
+  <checksum type="sha512" pkgid="YES">8edcca8c12d1dedb68fb0b9b2ef1e7dd9647e0d13e78b5c57ed45cd66bd25166c6b5a553007a161b1228d2ea92ad91197871ab8bfa6ee1e89422d081b1f3d065</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789776" build="1566600728"/>
+  <size package="236368" installed="1088827" archive="1089952"/>
+<location href="libnvidia-container1-debuginfo-1.0.4-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>41bf689c4d99</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.4-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7172"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.4" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+<package type="rpm">
+  <name>libnvidia-container1-debuginfo</name>
+  <arch>x86_64</arch>
+  <version epoch="0" ver="1.0.5" rel="1"/>
+  <checksum type="sha512" pkgid="YES">dddfaf607999f8cffbf137034c565ecd6c8a9cd89cbe74d906410606c00dfa7257f05393a29393885bce709677bf7fffc6f400f374e67cb6cab99d4e56a7076b</checksum>
+  <summary>NVIDIA container runtime library (debugging symbols)</summary>
+  <description>The nvidia-container library provides an interface to configure GNU/Linux
+containers leveraging NVIDIA hardware. The implementation relies on several
+kernel subsystems and is designed to be agnostic of the container runtime.
+
+This package contains the debugging symbols for the library.</description>
+  <packager>NVIDIA CORPORATION &lt;cudatools@nvidia.com&gt;</packager>
+  <url>https://github.com/NVIDIA/libnvidia-container</url>
+  <time file="1567789817" build="1567789212"/>
+  <size package="236456" installed="1088827" archive="1089952"/>
+<location href="libnvidia-container1-debuginfo-1.0.5-1.x86_64.rpm"/>
+  <format>
+    <rpm:license>BSD</rpm:license>
+    <rpm:vendor>NVIDIA CORPORATION</rpm:vendor>
+    <rpm:group>Unspecified</rpm:group>
+    <rpm:buildhost>418bff38d249</rpm:buildhost>
+    <rpm:sourcerpm>libnvidia-container-1.0.5-1.src.rpm</rpm:sourcerpm>
+    <rpm:header-range start="928" end="7260"/>
+    <rpm:provides>
+      <rpm:entry name="libnvidia-container1-debuginfo" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+      <rpm:entry name="libnvidia-container1-debuginfo(x86-64)" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+    </rpm:provides>
+    <rpm:requires>
+      <rpm:entry name="libnvidia-container1(x86-64)" flags="EQ" epoch="0" ver="1.0.5" rel="1"/>
+    </rpm:requires>
+  </format>
+</package>
+</metadata>
