@@ -29,8 +29,8 @@ ENV WITH_SECCOMP=${WITH_SECCOMP}
 RUN if [ "$WITH_LIBELF" = "no" ]; then \
         arch=$(uname -m) && \
         cd $(mktemp -d) && \
-        curl -fsSL -O https://mirrors.kernel.org/mageia/distrib/6/${arch}/media/core/release/pmake-1.45-16.mga6.${arch}.rpm && \
-        curl -fsSL -O https://mirrors.kernel.org/mageia/distrib/6/${arch}/media/core/release/bmake-20161212-1.mga6.${arch}.rpm && \
+        curl -fsSL -O https://mirrors.kernel.org/mageia/distrib/7.1/${arch}/media/core/release/pmake-1.45-17.mga7.${arch}.rpm && \
+        curl -fsSL -O https://mirrors.kernel.org/mageia/distrib/7.1/${arch}/media/core/release/bmake-20181221-1.mga7.${arch}.rpm && \
         rpm -i *.rpm && \
         rm -rf $PWD \
     ; fi
