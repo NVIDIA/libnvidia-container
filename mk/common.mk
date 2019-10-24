@@ -44,7 +44,7 @@ getarch = $(shell [ -f /etc/debian_version ] && echo "amd64" || echo "x86_64")
 else ifeq ($(PLATFORM),ppc64le)
 getarch = $(shell [ -f /etc/debian_version ] && echo "ppc64el" || echo "ppc64le")
 else ifeq ($(PLATFORM),aarch64)
-getarch = $(shell [ -f /etc/debian_version ] && echo "arm64")
+getarch = $(shell [ -f /etc/debian_version ] && echo "arm64" || echo "aarch64")
 else
 $(error Unsupported architecture)
 endif
