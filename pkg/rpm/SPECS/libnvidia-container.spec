@@ -85,6 +85,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Mon Nov 11 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.7-1
+ - 8d90918a Add Raytracing library
+
 * Fri Sep 013 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.6-1
  - b6aff41 Update error messages for CUDA version requirements
 
