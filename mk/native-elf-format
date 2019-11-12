@@ -25,10 +25,10 @@ $1 ~ "Class:" {
     }
 $1 ~ "Data:"  {
         if (match($0, "little")) {
-            elfdata = "LSB";
- 	} else {
-            elfdata = "MSB";
-	}
+                elfdata = "LSB";
+         } else {
+                elfdata = "MSB";
+        }
     }
 $1 ~ "Machine:" {
         if (match($0, "Intel.*386")) {
