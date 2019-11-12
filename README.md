@@ -12,14 +12,25 @@ The implementation relies on kernel primitives and is designed to be agnostic of
 
 ## Installing the library
 ### From packages
-Refer to the [repository configuration](https://nvidia.github.io/libnvidia-container/) for your Linux distribution.
+Configure the [package repository](https://nvidia.github.io/libnvidia-container/) for your Linux distribution.
+
+Install the packages:
+```bash
+libnvidia-container1
+libnvidia-container-tools
+```
 
 ### From sources
 With Docker:
 ```bash
-# Generate packages for a given distribution in the dist/ directory
-make docker-ubuntu:16.04
+# Generate docker images for a supported <os><version>
+make {ubuntu18.04, ubuntu16.04, debian10, debian9, centos7, amazonlinux1, amazonlinux2, opensuse-leap15.1}
+
+# Or generate docker images for all supported distributions in the dist/ directory
+make docker
 ````
+
+The resulting images have the name `nvidia/libnvidia-container/<os>:<version>`
 
 Without Docker:
 ```bash
