@@ -13,8 +13,12 @@
 # limitations under the License.
 #
 
+DOCKER_TARGETS = ubuntu18.04 ubuntu16.04 debian10 debian9 centos7 amazonlinux1 amazonlinux2 opensuse-leap15.1
+
 docker: SHELL:=/bin/bash
-docker: ubuntu18.04 ubuntu16.04 debian10 debian9 centos7 amazonlinux1 amazonlinux2 opensuse-leap15.1
+docker: $(DOCKER_TARGETS)
+
+$(DOCKER_TARGETS): # Added to explicity define possible targets for bash completion
 
 ubuntu%: ARCH := amd64
 ubuntu%:
