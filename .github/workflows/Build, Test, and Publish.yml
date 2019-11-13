@@ -1,0 +1,29 @@
+name: C/C++ CI
+
+on = "push"
+}
+
+action "Build" {
+  uses = "shinnn/actions-npm-alpine@master"
+  args = "install"
+}
+
+action "Test" {
+  needs = "Build"
+  uses = "shinnn/actions-npm-alpine@master"
+  args = "test"
+}
+
+# Filter for a new tag
+action "Tag" {
+  needs = "Test"
+  uses = "shinnn/actions-npm-alpine@master"
+  args = "tag"
+}
+
+action "Publish" {
+  needs = "Tag"
+  uses = "shinnn/actions-npm-alpine@master"
+  args = "publish --access public"
+  secrets = ["NPM_AUTH_TOKEN"]
+}
