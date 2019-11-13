@@ -104,8 +104,8 @@ static const char * const graphics_libs_glvnd[] = {
         "libEGL_nvidia.so",                 /* EGL ICD */
         "libGLESv2_nvidia.so",              /* OpenGL ES v2 ICD */
         "libGLESv1_CM_nvidia.so",           /* OpenGL ES v1 common profile ICD */
-	"libnvidia-glvkspirv.so",           /* SPIR-V Lib for Vulkan */
-	"libnvidia-cbl.so",                 /* VK_NV_ray_tracing */
+        "libnvidia-glvkspirv.so",           /* SPIR-V Lib for Vulkan */
+        "libnvidia-cbl.so",                 /* VK_NV_ray_tracing */
 };
 
 static const char * const graphics_libs_compat[] = {
