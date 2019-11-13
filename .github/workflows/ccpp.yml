@@ -11,12 +11,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: configure
       run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
     - name: Build, Tag, Publish Docker
       uses: HurricanKai/Publish-Docker-Github-Action@1.0
 
