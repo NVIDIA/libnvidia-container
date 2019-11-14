@@ -1,4 +1,4 @@
-# libnvidia-container
+# libnvidia-container-runtime
 
 [![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg?style=flat-square)](https://raw.githubusercontent.com/NVIDIA/libnvidia-container/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/NVIDIA/libnvidia-container/all.svg?style=flat-square)](https://github.com/NVIDIA/libnvidia-container/releases)
