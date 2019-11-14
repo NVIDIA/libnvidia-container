@@ -479,6 +479,7 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
         struct nvc_device_info *info;
         struct nvc_device *gpu;
         unsigned int n, minor;
+        bool mig_enabled;
         struct driver_device *dev;
         /*int32_t flags;*/
 
@@ -518,6 +519,8 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
                 if (driver_get_device_minor(&ctx->drv, dev, &minor) < 0)
                         goto fail;
                 if (xasprintf(&ctx->err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
+                        goto fail;
+                if (driver_get_device_mig_enabled(&ctx->drv, dev, &mig_enabled) < 0)
                         goto fail;
                 gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
 

@@ -727,3 +727,68 @@ driver_get_device_arch_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_arch_res
         error_to_xdr(ctx->err, res);
         return (true);
 }
+
+int
+driver_get_device_mig_enabled(struct driver *ctx, struct driver_device *dev, bool *enabled)
+{
+        // Initialize local variables.
+        unsigned int current, pending;
+        struct driver_get_device_mig_mode_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *enabled = false;
+
+        // Make an RPC call to determine if MIG mode is enabled or not.
+        if (call_rpc(ctx, &res, driver_get_device_mig_mode_1, (ptr_t)dev) < 0)
+                goto fail;
+
+        switch(res.driver_get_device_mig_mode_res_u.mode.error) {
+                // to determine if MIG mode is enabled or not.
+                case NVML_SUCCESS:
+                        current = res.driver_get_device_mig_mode_res_u.mode.current;
+                        pending = res.driver_get_device_mig_mode_res_u.mode.pending;
+                        *enabled = (current == NVML_DEVICE_MIG_ENABLE) && (current == pending);
+                        break;
+                // If the error indicates that the function wasn't found, then
+                // we are on an older version of NVML that doesn't support MIG.
+                // That's OK, we just need to set enabled to false in this
+                // case. We do the same if we determine that MIG is not
+                // supported on this device.
+                case NVML_ERROR_FUNCTION_NOT_FOUND:
+                case NVML_ERROR_NOT_SUPPORTED:
+                        *enabled = false;
+                        break;
+                // In all other cases, fail this function.
+                default:
+                        goto fail;
+        }
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+ fail:
+        // Free the results of the RPC call and return.
+        xdr_free((xdrproc_t)xdr_driver_get_device_arch_res, (caddr_t)&res);
+        return (rv);
+}
+
+bool_t
+driver_get_device_mig_mode_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_mig_mode_res *res, maybe_unused struct svc_req *req)
+{
+        // Initialize local variables.
+        struct driver *ctx = (struct driver *)ctxptr;
+        struct driver_device *handle = (struct driver_device *)dev;
+        unsigned int current, pending;
+
+        // Clear out 'res' which will hold the result of this RPC call.
+        memset(res, 0, sizeof(*res));
+
+        // Call into NVML to get the MIG mode. We don't directly catch the
+        // error here and return a failure. Instead, we capture the error and
+        // pass it as part of the return value for the caller to interpret.
+        if(call_nvml(ctx, nvmlDeviceGetMigMode, handle->nvml, &current, &pending) < 0)
+                res->driver_get_device_mig_mode_res_u.mode.error = ctx->err->code;
+        res->driver_get_device_mig_mode_res_u.mode.current = current;
+        res->driver_get_device_mig_mode_res_u.mode.pending = pending;
+        return (true);
+}

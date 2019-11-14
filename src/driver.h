@@ -50,5 +50,6 @@ int driver_get_device_uuid(struct driver *, struct driver_device *, char **);
 int driver_get_device_arch(struct driver *, struct driver_device *, char **);
 int driver_get_device_model(struct driver *, struct driver_device *, char **);
 int driver_get_device_brand(struct driver *, struct driver_device *, char **);
+int driver_get_device_mig_enabled(struct driver *, struct driver_device *, bool *);
 
 #endif /* HEADER_DRIVER_H */

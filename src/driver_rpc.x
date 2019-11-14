@@ -102,6 +102,19 @@ union driver_get_device_brand_res switch (int errcode) {
                 string errmsg<>;
 };
 
+struct driver_device_mig_mode {
+        int error;
+        unsigned int current;
+        unsigned int pending;
+};
+
+union driver_get_device_mig_mode_res switch (int errcode) {
+        case 0:
+                driver_device_mig_mode mode;
+        default:
+                string errmsg<>;
+};
+
 program DRIVER_PROGRAM {
         version DRIVER_VERSION {
                 driver_init_res DRIVER_INIT(ptr_t) = 1;
@@ -116,5 +129,6 @@ program DRIVER_PROGRAM {
                 driver_get_device_arch_res DRIVER_GET_DEVICE_ARCH(ptr_t, ptr_t) = 10;
                 driver_get_device_model_res DRIVER_GET_DEVICE_MODEL(ptr_t, ptr_t) = 11;
                 driver_get_device_brand_res DRIVER_GET_DEVICE_BRAND(ptr_t, ptr_t) = 12;
+                driver_get_device_mig_mode_res DRIVER_GET_DEVICE_MIG_MODE(ptr_t, ptr_t) = 13;
         } = 1;
 } = 0x1;
