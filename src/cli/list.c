@@ -79,7 +79,7 @@ list_command(const struct context *ctx)
         struct nvc_config *nvc_cfg = NULL;
         struct nvc_driver_info *drv = NULL;
         struct nvc_device_info *dev = NULL;
-        const struct nvc_device **gpus = NULL;
+        struct devices devices = {0};
         struct error err = {0};
         int rv = EXIT_FAILURE;
 
@@ -124,25 +124,33 @@ list_command(const struct context *ctx)
                 goto fail;
         }
 
-        /* List the visible GPU devices. */
+        /* Allocate space for selecting GPU devices and MIG devices */
+        if (new_devices(&err, dev, &devices) < 0) {
+                warn("memory allocation failed: %s", err.msg);
+                goto fail;
+        }
+
+        /* List the visible GPU devices and MIG devices */
         if (dev->ngpus > 0) {
-                gpus = alloca(dev->ngpus * sizeof(*gpus));
-                memset(gpus, 0, dev->ngpus * sizeof(*gpus));
-                if (select_devices(&err, ctx->devices, gpus, dev->gpus, dev->ngpus) < 0) {
+                if (select_devices(&err, ctx->devices, dev, &devices) < 0) {
                         warnx("device error: %s", err.msg);
                         goto fail;
                 }
         }
         if (ctx->devices != NULL) {
-                for (size_t i = 0; i < drv->ndevs; ++i)
+                for (size_t i = 0; i < drv->ndevs; ++i) {
                         printf("%s\n", drv->devs[i].path);
-                for (size_t i = 0; i < dev->ngpus; ++i) {
-                        if (gpus[i] != NULL)
-                                printf("%s\n", gpus[i]->node.path);
+                }
+                for (size_t i = 0; i < devices.ngpus; ++i) {
+                        printf("%s\n", devices.gpus[i]->node.path);
+                }
+                for (size_t i = 0; i < devices.nmigs; ++i) {
+                        printf("%s/%s\n", devices.migs[i]->gi_caps_path, NV_MIG_ACCESS_FILE);
+                        printf("%s/%s\n", devices.migs[i]->ci_caps_path, NV_MIG_ACCESS_FILE);
                 }
         }
 
-        /* List the driver components */
+        /* List the driver devices */
         if (ctx->list_bins) {
                 for (size_t i = 0; i < drv->nbins; ++i)
                         printf("%s\n", drv->bins[i]);
@@ -166,6 +174,7 @@ list_command(const struct context *ctx)
         }
         rv = EXIT_SUCCESS;
  fail:
+        free_devices(&devices);
         nvc_shutdown(nvc);
         nvc_device_info_free(dev);
         nvc_driver_info_free(drv);
