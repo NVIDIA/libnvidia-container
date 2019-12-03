@@ -11,6 +11,7 @@ libnvidia-container.so.1 libnvidia-container1 #MINVER#
  nvc_device_info_free@NVC_1.0 1.0.7
  nvc_device_info_new@NVC_1.0 1.0.7
  nvc_device_mount@NVC_1.0 1.0.7
+ nvc_mig_device_access_caps_mount@NVC_1.0 1.0.7
  nvc_driver_info_free@NVC_1.0 1.0.7
  nvc_driver_info_new@NVC_1.0 1.0.7
  nvc_driver_mount@NVC_1.0 1.0.7
