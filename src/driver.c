@@ -586,7 +586,7 @@ driver_get_device_uuid_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_uuid_res
 {
         struct driver *ctx = (struct driver *)ctxptr;
         struct driver_device *handle = (struct driver_device *)dev;
-        char buf[NVML_DEVICE_UUID_BUFFER_SIZE];
+        char buf[NVML_DEVICE_UUID_V2_BUFFER_SIZE];
 
         memset(res, 0, sizeof(*res));
         if (call_nvml(ctx, nvmlDeviceGetUUID, handle->nvml, buf, sizeof(buf)) < 0)
