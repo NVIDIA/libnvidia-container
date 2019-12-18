@@ -850,3 +850,73 @@ driver_get_device_max_mig_device_count_1_svc(ptr_t ctxptr, ptr_t dev, driver_get
         error_to_xdr(ctx->err, res);
         return (true);
 }
+
+int
+driver_get_device_mig_device(struct driver *ctx, struct driver_device *dev, unsigned int idx, struct driver_device **mig_dev)
+{
+        // Initialize local variables.
+        struct driver_get_device_mig_device_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *mig_dev = NULL;
+
+        // Make an RPC call to get the MIG device t index 'idx' for this device.
+        if (call_rpc(ctx, &res, driver_get_device_mig_device_1, (ptr_t)dev, idx) < 0)
+                goto fail;
+
+        // Extract the MIG device from the result of the RPC call and populate
+        // the 'mig_dev' return value.
+        *mig_dev = (struct driver_device *)res.driver_get_device_mig_device_res_u.dev;
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+
+ fail:
+        xdr_free((xdrproc_t)xdr_driver_get_device_mig_device_res, (caddr_t)&res);
+        return (rv);
+}
+
+bool_t
+driver_get_device_mig_device_1_svc(ptr_t ctxptr, ptr_t dev, u_int idx, driver_get_device_mig_device_res *res, maybe_unused struct svc_req *req)
+{
+        // Initialize local variables.
+        struct driver *ctx = (struct driver *)ctxptr;
+        struct driver_device *handle = (struct driver_device *)dev;
+
+        // Clear out 'res' which will hold the result of this RPC call.
+        memset(res, 0, sizeof(*res));
+
+        // Sanity check that we don't exceed MAX_MIG_DEVICES.
+        if (idx >= MAX_MIG_DEVICES) {
+                error_setx(ctx->err, "too many MIG devices");
+                goto fail;
+        }
+
+        // Grab a shorter reference to mig field embedded in the device handle
+        // for the MIG device.
+        nvmlDevice_t *mig_dev = &handle->mig[idx].nvml;
+
+        // Call into NVML to get the max MIG count and assign it to '*count'.
+        if (call_nvml(ctx, nvmlDeviceGetMigDeviceHandleByIndex, handle->nvml, idx, mig_dev) < 0) {
+                // If a device isn't found, then it's not an error, we just set
+                // the result to NULL in our return value.
+                switch (ctx->err->code) {
+                case NVML_ERROR_NOT_FOUND:
+                        res->driver_get_device_mig_device_res_u.dev = (ptr_t)NULL;
+                        return (true);
+                }
+                // In all other cases, fail if the NVML call is not successful.
+                goto fail;
+        }
+
+        // Assign the field embedded in the 'res' to point to the MIG device.
+        res->driver_get_device_mig_device_res_u.dev = (ptr_t)&handle->mig[idx];
+
+        return (true);
+
+ fail:
+        // Populate the error in the result of the RPC call and return.
+        error_to_xdr(ctx->err, res);
+        return (true);
+}
