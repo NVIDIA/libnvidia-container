@@ -30,6 +30,7 @@
 #include "xfuncs.h"
 
 #define MAX_DEVICES     64
+#define MAX_MIG_DEVICES  8
 #define REAP_TIMEOUT_MS 10
 
 static int reset_cuda_environment(struct error *);
@@ -37,9 +38,14 @@ static int setup_rpc_client(struct driver *);
 static noreturn void setup_rpc_service(struct driver *, const char *, uid_t, gid_t, pid_t);
 static int reap_process(struct error *, pid_t, int, bool);
 
-static struct driver_device {
+struct mig_device {
+        nvmlDevice_t nvml;
+};
+
+struct driver_device {
         nvmlDevice_t nvml;
         CUdevice cuda;
+        struct mig_device mig[MAX_MIG_DEVICES];
 } device_handles[MAX_DEVICES];
 
 #define call_nvml(ctx, sym, ...) __extension__ ({                                                      \
