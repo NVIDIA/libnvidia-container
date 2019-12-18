@@ -972,3 +972,54 @@ driver_get_device_gpu_instance_id_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_devi
         error_to_xdr(ctx->err, res);
         return (true);
 }
+
+int
+driver_get_device_compute_instance_id(struct driver *ctx, struct driver_device *dev, unsigned int *id)
+{
+        // Initialize local variables.
+        struct driver_get_device_compute_instance_id_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *id = 0;
+
+        // Make an RPC call to grab the instance ID of the Compute Instance.
+        if (call_rpc(ctx, &res, driver_get_device_compute_instance_id_1, (ptr_t)dev) < 0)
+                goto fail;
+
+        // Extract the id from the result of the RPC call and populate the 'id'
+        // return value.
+        *id = (unsigned int)res.driver_get_device_compute_instance_id_res_u.id;
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+
+ fail:
+        // Free the results of the RPC call and return.
+        xdr_free((xdrproc_t)xdr_driver_get_device_compute_instance_id_res, (caddr_t)&res);
+        return (rv);
+}
+
+bool_t
+driver_get_device_compute_instance_id_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_compute_instance_id_res *res, maybe_unused struct svc_req *req)
+{
+        // Initialize local variables.
+        struct driver *ctx = (struct driver *)ctxptr;
+        struct driver_device *handle = (struct driver_device *)dev;
+
+        // Clear out 'res' which will hold the result of this RPC call.
+        memset(res, 0, sizeof(*res));
+
+        // Grab a shorter reference to fields embedded in 'res' for the id.
+        unsigned int *id = (unsigned int *)&res->driver_get_device_compute_instance_id_res_u.id;
+
+        // Call into NVML to get the Compute Instance Info.
+        if (call_nvml(ctx, nvmlDeviceGetComputeInstanceId, handle->nvml, id) < 0)
+                goto fail;
+
+        return (true);
+ fail:
+        // Populate the error in the result of the RPC call and return.
+        error_to_xdr(ctx->err, res);
+        return (true);
+}

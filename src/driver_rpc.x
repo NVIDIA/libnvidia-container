@@ -136,6 +136,13 @@ union driver_get_device_gpu_instance_id_res switch (int errcode) {
                 string errmsg<>;
 };
 
+union driver_get_device_compute_instance_id_res switch (int errcode) {
+        case 0:
+               unsigned int id;
+        default:
+                string errmsg<>;
+};
+
 program DRIVER_PROGRAM {
         version DRIVER_VERSION {
                 driver_init_res DRIVER_INIT(ptr_t) = 1;
@@ -154,5 +161,6 @@ program DRIVER_PROGRAM {
                 driver_get_device_max_mig_device_count_res DRIVER_GET_DEVICE_MAX_MIG_DEVICE_COUNT(ptr_t, ptr_t) = 14;
                 driver_get_device_mig_device_res DRIVER_GET_DEVICE_MIG_DEVICE(ptr_t, ptr_t, unsigned int) = 15;
                 driver_get_device_gpu_instance_id_res DRIVER_GET_DEVICE_GPU_INSTANCE_ID(ptr_t, ptr_t) = 16;
+                driver_get_device_compute_instance_id_res DRIVER_GET_DEVICE_COMPUTE_INSTANCE_ID(ptr_t, ptr_t) = 17;
         } = 1;
 } = 0x1;
