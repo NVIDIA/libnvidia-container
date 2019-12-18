@@ -39,6 +39,8 @@ static int lookup_libraries(struct error *, struct nvc_driver_info *, const char
 static int lookup_binaries(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_devices(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
+static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
+static void clear_mig_device_info(struct nvc_mig_device_info *);
 
 /*
  * Display libraries are not needed.
@@ -396,6 +398,106 @@ lookup_ipcs(struct error *err, struct nvc_driver_info *info, const char *root, i
         return (0);
 }
 
+static int
+fill_mig_device_info(struct nvc_context *ctx, bool mig_enabled, struct driver_device *drv_device, struct nvc_device *device)
+{
+        // Initialize local variables.
+        struct nvc_mig_device_info *info = &device->mig_devices;
+        struct driver_device *mig_device;
+        unsigned int count = 0;
+
+        // Clear out the 'gpu_instance_info' struct embedded in the device.
+        memset(info, 0, sizeof(*info));
+
+        // If MIG is not enabled, we have nothing more to do, so exit.
+        if (!mig_enabled)
+            return 0;
+
+        // Otherwise, get the max count of MIG devices for the given device
+        // from the driver.
+        if (driver_get_device_max_mig_device_count(&ctx->drv, drv_device, &count) < 0)
+                goto fail;
+
+        // Allocate space in 'devices' to hold all of the MIG devices.
+        if ((info->devices = xcalloc(&ctx->err, count, sizeof(struct nvc_mig_device))) == NULL)
+                goto fail;
+
+        // Populate 'mig_device_info' with information about the MIG devices
+        // pulled from the driver.
+        for (unsigned int i = 0; i < count; ++i) {
+                // Get a reference to the MIG device at this index.
+                if (driver_get_device_mig_device(&ctx->drv, drv_device, i, &mig_device) < 0)
+                        goto fail;
+
+               // If no MIG device exists at this index, then we are done. Due
+               // to races, there may (temporarily) be more devices further on
+               // in the list, but we won't detect them.
+               if (mig_device == NULL)
+                        break;
+
+                // Get the ID of the GPU Instance for this MIG device from the driver.
+                if (driver_get_device_gpu_instance_id(&ctx->drv, mig_device, &info->devices[i].gi) < 0)
+                        goto fail;
+
+                // Get the ID of the Compute Instance for this MIG device from the driver.
+                if (driver_get_device_compute_instance_id(&ctx->drv, mig_device, &info->devices[i].ci) < 0)
+                        goto fail;
+
+                // Set a reference back to the device associated with the
+                // current MIG device.
+                info->devices[i].parent = device;
+
+                // Populate the UUID of the MIG device.
+                if (driver_get_device_uuid(&ctx->drv, mig_device, &info->devices[i].uuid) < 0)
+                        goto fail;
+
+                // Build a path to the MIG caps inside '/proc' associated
+                // with GPU Instance of the MIG device and set it inside
+                // 'info->devices[i]'.
+                if (xasprintf(&ctx->err, &info->devices[i].gi_caps_path, NV_GPU_INST_CAPS_PATH, minor(device->node.id), info->devices[i].gi) < 0)
+                        goto fail;
+
+                // Build a path to the MIG caps inside '/proc' associated
+                // with the Compute Instance of the MIG device and set it
+                // inside 'info->devices[i]'.
+                if (xasprintf(&ctx->err, &info->devices[i].ci_caps_path, NV_COMP_INST_CAPS_PATH, minor(device->node.id), info->devices[i].gi, info->devices[i].ci) < 0)
+                        goto fail;
+
+                // If we made it to here, update the total count of MIG dervices by 1
+                info->ndevices++;
+        }
+
+        return (0);
+
+ fail:
+        // On failure, free all driver memory associated with the GPU Instances
+        // and also free any memory allocated for the 'gpu_instance_info'
+        // itself before returning.
+        clear_mig_device_info(info);
+        return (-1);
+}
+
+static void
+clear_mig_device_info(struct nvc_mig_device_info *info)
+{
+        // Walk through each element in the MIG devices array and free any
+        // memory associated with it.
+        for (size_t i = 0; info->devices != NULL && i < info->ndevices; ++i) {
+                // Free the memory allocated for the UUID of the mig device.
+                free(info->devices[i].uuid);
+                // Free the memory allocated for the GPU Instance caps path.
+                free(info->devices[i].gi_caps_path);
+                // Free the memory allocated for the Compute Instance caps path.
+                free(info->devices[i].ci_caps_path);
+        }
+
+        // Free the memory for the device array itself.
+        free(info->devices);
+
+        // Zero out the info struct.
+        memset(info, 0, sizeof(*info));
+}
+
 bool
 match_binary_flags(const char *bin, int32_t flags)
 {
@@ -522,6 +624,8 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
                         goto fail;
                 if (driver_get_device_mig_enabled(&ctx->drv, dev, &mig_enabled) < 0)
                         goto fail;
+                if (fill_mig_device_info(ctx, mig_enabled, dev, gpu) < 0)
+                        goto fail;
                 gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
 
                 log_infof("listing device %s (%s at %s)", gpu->node.path, gpu->uuid, gpu->busid);
@@ -545,6 +649,7 @@ nvc_device_info_free(struct nvc_device_info *info)
                 free(info->gpus[i].arch);
                 free(info->gpus[i].brand);
                 free(info->gpus[i].node.path);
+                clear_mig_device_info(&info->gpus[i].mig_devices);
         }
         free(info->gpus);
         free(info);
