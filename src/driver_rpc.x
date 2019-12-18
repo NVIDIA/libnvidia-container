@@ -115,6 +115,13 @@ union driver_get_device_mig_mode_res switch (int errcode) {
                 string errmsg<>;
 };
 
+union driver_get_device_max_mig_device_count_res switch (int errcode) {
+        case 0:
+                unsigned int count;
+        default:
+                string errmsg<>;
+};
+
 program DRIVER_PROGRAM {
         version DRIVER_VERSION {
                 driver_init_res DRIVER_INIT(ptr_t) = 1;
@@ -130,5 +137,6 @@ program DRIVER_PROGRAM {
                 driver_get_device_model_res DRIVER_GET_DEVICE_MODEL(ptr_t, ptr_t) = 11;
                 driver_get_device_brand_res DRIVER_GET_DEVICE_BRAND(ptr_t, ptr_t) = 12;
                 driver_get_device_mig_mode_res DRIVER_GET_DEVICE_MIG_MODE(ptr_t, ptr_t) = 13;
+                driver_get_device_max_mig_device_count_res DRIVER_GET_DEVICE_MAX_MIG_DEVICE_COUNT(ptr_t, ptr_t) = 14;
         } = 1;
 } = 0x1;

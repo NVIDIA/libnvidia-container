@@ -52,5 +52,6 @@ int driver_get_device_arch(struct driver *, struct driver_device *, char **);
 int driver_get_device_model(struct driver *, struct driver_device *, char **);
 int driver_get_device_brand(struct driver *, struct driver_device *, char **);
 int driver_get_device_mig_enabled(struct driver *, struct driver_device *, bool *);
+int driver_get_device_max_mig_device_count(struct driver *, struct driver_device *, unsigned int *);
 
 #endif /* HEADER_DRIVER_H */
