@@ -242,6 +242,18 @@ select_mig_device(
                 }
         }
 
+        // Check if a dev matched a MIG index in the format
+        // <GPU_idx>:<MIG_idx>.
+        if (sscanf(dev, "%lu:%lu", &i, &j) == 2) {
+           if (i < available->ngpus) {
+                   gpu = &available->gpus[i];
+                   if (j < gpu->mig_devices.ndevices) {
+                           *mig = &gpu->mig_devices.devices[j];
+                           goto found;
+                   }
+           }
+        }
+
         // If no device was found, just return (without an error).
         return (0);
 
