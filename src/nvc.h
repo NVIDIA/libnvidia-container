@@ -77,6 +77,7 @@ struct nvc_device {
         char *busid;
         char *arch;
         char *brand;
+        char *mig_caps_path;
         struct nvc_mig_device_info mig_devices;
         struct nvc_device_node node;
 };
