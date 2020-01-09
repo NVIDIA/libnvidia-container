@@ -50,11 +50,14 @@ struct context {
         bool list_ipcs;
 
         char *devices;
+        char *mig_config;
+        char *mig_monitor;
 };
 
 bool matches_pci_format(const char *gpu, char *buf, size_t bufsize);
 
 struct devices {
+        bool all;
         const struct nvc_device **gpus;
         size_t max_gpus;
         size_t ngpus;
@@ -70,6 +73,18 @@ int select_devices(
     struct error *err,
     char *devs,
     const struct nvc_device_info *available,
+    struct devices *selected);
+
+int select_mig_config_devices(
+    struct error *err,
+    char *devs,
+    const struct devices *visible,
+    struct devices *selected);
+
+int select_mig_monitor_devices(
+    struct error *err,
+    char *devs,
+    const struct devices *visible,
     struct devices *selected);
 
 extern const struct argp info_usage;

@@ -127,6 +127,12 @@ int nvc_device_mount(struct nvc_context *, const struct nvc_container *, const s
 
 int nvc_mig_device_access_caps_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_mig_device *);
 
+int nvc_mig_config_global_caps_mount(struct nvc_context *, const struct nvc_container *);
+
+int nvc_mig_monitor_global_caps_mount(struct nvc_context *, const struct nvc_container *);
+
+int nvc_device_mig_caps_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
+
 int nvc_ldcache_update(struct nvc_context *, const struct nvc_container *);
 
 const char *nvc_error(struct nvc_context *);
