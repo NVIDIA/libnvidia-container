@@ -624,6 +624,8 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
                         goto fail;
                 if (xasprintf(&ctx->err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
                         goto fail;
+                if (driver_get_device_mig_capable(&ctx->drv, dev, &gpu->mig_capable) < 0)
+                        goto fail;
                 if (driver_get_device_mig_enabled(&ctx->drv, dev, &mig_enabled) < 0)
                         goto fail;
                 if (fill_mig_device_info(ctx, mig_enabled, dev, gpu) < 0)

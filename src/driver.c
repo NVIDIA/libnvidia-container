@@ -778,6 +778,41 @@ driver_get_device_mig_enabled(struct driver *ctx, struct driver_device *dev, boo
         return (rv);
 }
 
+int
+driver_get_device_mig_capable(struct driver *ctx, struct driver_device *dev, bool *supported)
+{
+        // Initialize local variables.
+        struct driver_get_device_mig_mode_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *supported= false;
+
+        // Make an RPC call to determine if MIG mode is enabled or not.
+        if (call_rpc(ctx, &res, driver_get_device_mig_mode_1, (ptr_t)dev) < 0)
+                goto fail;
+
+        switch(res.driver_get_device_mig_mode_res_u.mode.error) {
+                case NVML_SUCCESS:
+                        *supported = true;
+                        break;
+                case NVML_ERROR_FUNCTION_NOT_FOUND:
+                case NVML_ERROR_NOT_SUPPORTED:
+                        *supported = false;
+                        break;
+                // In all other cases, fail this function.
+                default:
+                        goto fail;
+        }
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+ fail:
+        // Free the results of the RPC call and return.
+        xdr_free((xdrproc_t)xdr_driver_get_device_arch_res, (caddr_t)&res);
+        return (rv);
+}
+
 bool_t
 driver_get_device_mig_mode_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_mig_mode_res *res, maybe_unused struct svc_req *req)
 {
