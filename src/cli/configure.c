@@ -203,6 +203,7 @@ configure_command(const struct context *ctx)
                 warn("memory allocation failed");
                 goto fail;
         }
+        nvc->no_pivot = ctx->no_pivot;
         nvc_cfg->uid = ctx->uid;
         nvc_cfg->gid = ctx->gid;
         nvc_cfg->root = ctx->root;

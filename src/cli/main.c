@@ -28,6 +28,7 @@ static struct argp usage = {
                 {NULL, 0, NULL, 0, "Options:", -1},
                 {"debug", 'd', "FILE", 0, "Log debug information", -1},
                 {"load-kmods", 'k', NULL, 0, "Load kernel modules", -1},
+                {"no-pivot", 'n', NULL, 0, "Do not use pivot_root", -1},
                 {"user", 'u', "UID[:GID]", OPTION_ARG_OPTIONAL, "User and group to use for privilege separation", -1},
                 {"root", 'r', "PATH", 0, "Path to the driver root directory", -1},
                 {"ldcache", 'l', "FILE", 0, "Path to the system's DSO cache", -1},
@@ -91,6 +92,9 @@ parser(int key, char *arg, struct argp_state *state)
                 ctx->load_kmods = true;
                 if (str_join(&err, &ctx->init_flags, "load-kmods", " ") < 0)
                         goto fatal;
+                break;
+        case 'n':
+                ctx->no_pivot = true;
                 break;
         case 'u':
                 if (arg != NULL) {

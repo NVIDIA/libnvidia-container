@@ -31,7 +31,7 @@
 
 static inline bool secure_mode(void);
 static pid_t create_process(struct error *, int);
-static int   change_rootfs(struct error *, const char *, bool, bool *);
+static int   change_rootfs(struct error *, const char *, bool, bool, bool *);
 static int   adjust_capabilities(struct error *, uid_t, bool);
 static int   adjust_privileges(struct error *, uid_t, gid_t, bool);
 static int   limit_resources(struct error *);
@@ -89,7 +89,7 @@ create_process(struct error *err, int flags)
 }
 
 static int
-change_rootfs(struct error *err, const char *rootfs, bool mount_proc, bool *drop_groups)
+change_rootfs(struct error *err, const char *rootfs, bool no_pivot, bool mount_proc, bool *drop_groups)
 {
         int rv = -1;
         int oldroot = -1;
@@ -108,20 +108,26 @@ change_rootfs(struct error *err, const char *rootfs, bool mount_proc, bool *drop
                 goto fail;
 
         /* Pivot to the new rootfs and unmount the previous one. */
-        if ((oldroot = xopen(err, "/", O_PATH|O_DIRECTORY)) < 0)
-                goto fail;
-        if ((newroot = xopen(err, rootfs, O_PATH|O_DIRECTORY)) < 0)
-                goto fail;
-        if (fchdir(newroot) < 0)
-                goto fail;
-        if (syscall(SYS_pivot_root, ".", ".") < 0)
-                goto fail;
-        if (fchdir(oldroot) < 0)
-                goto fail;
-        if (umount2(".", MNT_DETACH) < 0)
-                goto fail;
-        if (fchdir(newroot) < 0)
-                goto fail;
+        if (no_pivot) {
+                if (xmount(err, rootfs, "/", NULL, MS_MOVE, NULL) < 0) {
+                        goto fail;
+                }
+        } else {
+                if ((oldroot = xopen(err, "/", O_PATH|O_DIRECTORY)) < 0)
+                        goto fail;
+                if ((newroot = xopen(err, rootfs, O_PATH|O_DIRECTORY)) < 0)
+                        goto fail;
+                if (fchdir(newroot) < 0)
+                        goto fail;
+                if (syscall(SYS_pivot_root, ".", ".") < 0)
+                        goto fail;
+                if (fchdir(oldroot) < 0)
+                        goto fail;
+                if (umount2(".", MNT_DETACH) < 0)
+                        goto fail;
+                if (fchdir(newroot) < 0)
+                        goto fail;
+        }
         if (chroot(".") < 0)
                 goto fail;
 
@@ -366,7 +372,7 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
                         goto fail;
                 if (adjust_capabilities(&ctx->err, cnt->uid, host_ldconfig) < 0)
                         goto fail;
-                if (change_rootfs(&ctx->err, cnt->cfg.rootfs, host_ldconfig, &drop_groups) < 0)
+                if (change_rootfs(&ctx->err, cnt->cfg.rootfs, ctx->no_pivot, host_ldconfig, &drop_groups) < 0)
                         goto fail;
                 if (limit_resources(&ctx->err) < 0)
                         goto fail;
