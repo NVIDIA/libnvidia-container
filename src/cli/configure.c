@@ -295,6 +295,12 @@ configure_command(const struct context *ctx)
                         goto fail;
                 }
         }
+        for (size_t i = 0; i < devices.nmigs; ++i) {
+                if (nvc_mig_device_access_caps_mount(nvc, cnt, devices.migs[i]) < 0) {
+                        warnx("mount error: %s", nvc_error(nvc));
+                        goto fail;
+                }
+        }
 
         /* Update the container ldcache. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_LDCACHE], ecaps_size(NVC_LDCACHE)) < 0) {
