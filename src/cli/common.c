@@ -296,6 +296,7 @@ select_devices(
                 if (str_case_equal(dev, "all")) {
                         if (select_all_devices(&ierr, gpus, selected) < 0)
                                 goto fail;
+                        selected->all = true;
                         break;
                 }
 
@@ -318,6 +319,116 @@ select_devices(
                 // If 'dev' has not been captured by the time we get here, it
                 // is an error.
                 error_setx(&ierr, "unknown device");
+                goto fail;
+        }
+
+        return (0);
+
+ fail:
+        error_setx(err, "%s: %s", dev, ierr.msg);
+        error_reset(&ierr);
+        return (-1);
+}
+
+int
+select_mig_config_devices(
+    struct error *err,
+    char *devs,
+    const struct devices *visible,
+    struct devices *selected)
+{
+        // Initialize local variables.
+        char sep[2] = ",";
+        struct error ierr = {0};
+        char *dev = NULL;
+
+        // Walk trough the comma separated device string and populate
+        // 'selected' devices from it.
+        while ((dev = strsep(&devs, sep)) != NULL) {
+                // Allow extra commas between device strings.
+                if (*dev == '\0')
+                        continue;
+
+                // For now, only support the "all" string to select all visible devices.
+                if (str_case_equal(dev, "all")) {
+                        if (!visible->all && visible->nmigs > 0) {
+                                error_setx(&ierr, "cannot enable mig-config with specific MIG devices selected");
+                                goto fail;
+                        }
+                        for (size_t i = 0; i < visible->ngpus; i++) {
+                                if (!visible->gpus[i]->mig_capable)
+                                        continue;
+                                if (add_gpu_device(&ierr, visible->gpus[i], selected) < 0)
+                                        goto fail;
+                        }
+                        for (size_t i = 0; i < visible->nmigs; i++) {
+                                if (!visible->migs[i]->parent->mig_capable)
+                                        continue;
+                                if(add_gpu_device(&ierr, visible->migs[i]->parent, selected) < 0)
+                                        goto fail;
+                        }
+                        selected->all = true;
+                        break;
+                }
+
+                // If 'dev' has not been captured by the time we get here, it
+                // is an error.
+                error_setx(&ierr, "only 'all' devices are currently supported");
+                goto fail;
+        }
+
+        return (0);
+
+ fail:
+        error_setx(err, "%s: %s", dev, ierr.msg);
+        error_reset(&ierr);
+        return (-1);
+}
+
+int
+select_mig_monitor_devices(
+    struct error *err,
+    char *devs,
+    const struct devices *visible,
+    struct devices *selected)
+{
+        // Initialize local variables.
+        char sep[2] = ",";
+        struct error ierr = {0};
+        char *dev = NULL;
+
+        // Walk trough the comma separated device string and populate
+        // 'selected' devices from it.
+        while ((dev = strsep(&devs, sep)) != NULL) {
+                // Allow extra commas between device strings.
+                if (*dev == '\0')
+                        continue;
+
+                // For now, only support the "all" string to select all visible devices.
+                if (str_case_equal(dev, "all")) {
+                        if (!visible->all && visible->nmigs > 0) {
+                                error_setx(&ierr, "cannot enable mig-monitor with specific MIG devices selected");
+                                goto fail;
+                        }
+                        for (size_t i = 0; i < visible->ngpus; i++) {
+                                if (!visible->gpus[i]->mig_capable)
+                                        continue;
+                                if (add_gpu_device(&ierr, visible->gpus[i], selected) < 0)
+                                        goto fail;
+                        }
+                        for (size_t i = 0; i < visible->nmigs; i++) {
+                                if (!visible->migs[i]->parent->mig_capable)
+                                        continue;
+                                if(add_gpu_device(&ierr, visible->migs[i]->parent, selected) < 0)
+                                        goto fail;
+                        }
+                        selected->all = true;
+                        break;
+                }
+
+                // If 'dev' has not been captured by the time we get here, it
+                // is an error.
+                error_setx(&ierr, "only 'all' devices are currently supported");
                 goto fail;
         }
 

@@ -620,7 +620,11 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
                         goto fail;
                 if (driver_get_device_minor(&ctx->drv, dev, &minor) < 0)
                         goto fail;
+                if (xasprintf(&ctx->err, &gpu->mig_caps_path, NV_GPU_CAPS_PATH, minor) < 0)
+                        goto fail;
                 if (xasprintf(&ctx->err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
+                        goto fail;
+                if (driver_get_device_mig_capable(&ctx->drv, dev, &gpu->mig_capable) < 0)
                         goto fail;
                 if (driver_get_device_mig_enabled(&ctx->drv, dev, &mig_enabled) < 0)
                         goto fail;
@@ -648,6 +652,7 @@ nvc_device_info_free(struct nvc_device_info *info)
                 free(info->gpus[i].busid);
                 free(info->gpus[i].arch);
                 free(info->gpus[i].brand);
+                free(info->gpus[i].mig_caps_path);
                 free(info->gpus[i].node.path);
                 clear_mig_device_info(&info->gpus[i].mig_devices);
         }
