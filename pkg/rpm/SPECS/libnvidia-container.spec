@@ -85,6 +85,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Mon May 04 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.1.0-1
+ - 1b6fe993 Add support for MIG (Multi-Instance-Gpus)
+
 * Mon Nov 11 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.7-1
  - 8d90918a Add Raytracing library
 
