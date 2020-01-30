@@ -57,12 +57,27 @@ struct nvc_driver_info {
         size_t ndevs;
 };
 
+struct nvc_mig_device {
+        struct nvc_device *parent;
+        char *uuid;
+        unsigned int gi;
+        unsigned int ci;
+        char *gi_caps_path;
+        char *ci_caps_path;
+};
+
+struct nvc_mig_device_info {
+        struct nvc_mig_device *devices;
+        size_t ndevices;
+};
+
 struct nvc_device {
         char *model;
         char *uuid;
         char *busid;
         char *arch;
         char *brand;
+        struct nvc_mig_device_info mig_devices;
         struct nvc_device_node node;
 };
 
