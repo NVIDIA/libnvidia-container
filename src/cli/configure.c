@@ -2,7 +2,6 @@
  * Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
  */
 
-#include <alloca.h>
 #include <err.h>
 #include <stdlib.h>
 
@@ -179,8 +178,8 @@ configure_command(const struct context *ctx)
         struct nvc_device_info *dev = NULL;
         struct nvc_container *cnt = NULL;
         struct nvc_container_config *cnt_cfg = NULL;
-        const struct nvc_device **gpus = NULL;
         bool eval_reqs = true;
+        struct devices devices = {0};
         struct error err = {0};
         int rv = EXIT_FAILURE;
 
@@ -233,11 +232,15 @@ configure_command(const struct context *ctx)
                 goto fail;
         }
 
+        /* Allocate space for selecting GPU devices and MIG devices */
+        if (new_devices(&err, dev, &devices) < 0) {
+                warn("memory allocation failed: %s", err.msg);
+                goto fail;
+        }
+
         /* Select the visible GPU devices. */
         if (dev->ngpus > 0) {
-                gpus = alloca(dev->ngpus * sizeof(*gpus));
-                memset(gpus, 0, dev->ngpus * sizeof(*gpus));
-                if (select_devices(&err, ctx->devices, gpus, dev->gpus, dev->ngpus) < 0) {
+                if (select_devices(&err, ctx->devices, dev, &devices) < 0) {
                         warnx("device error: %s", err.msg);
                         goto fail;
                 }
@@ -247,11 +250,18 @@ configure_command(const struct context *ctx)
          * Check the container requirements.
          * Try evaluating per visible device first, and globally otherwise.
          */
-        for (size_t i = 0; i < dev->ngpus; ++i) {
-                if (gpus[i] == NULL)
-                        continue;
-
-                struct dsl_data data = {drv, gpus[i]};
+        for (size_t i = 0; i < devices.ngpus; ++i) {
+                struct dsl_data data = {drv, devices.gpus[i]};
+                for (size_t j = 0; j < ctx->nreqs; ++j) {
+                        if (dsl_evaluate(&err, ctx->reqs[j], &data, rules, nitems(rules)) < 0) {
+                                warnx("requirement error: %s", err.msg);
+                                goto fail;
+                        }
+                }
+                eval_reqs = false;
+        }
+        for (size_t i = 0; i < devices.nmigs; ++i) {
+                struct dsl_data data = {drv, devices.migs[i]->parent};
                 for (size_t j = 0; j < ctx->nreqs; ++j) {
                         if (dsl_evaluate(&err, ctx->reqs[j], &data, rules, nitems(rules)) < 0) {
                                 warnx("requirement error: %s", err.msg);
@@ -279,8 +289,8 @@ configure_command(const struct context *ctx)
                 warnx("mount error: %s", nvc_error(nvc));
                 goto fail;
         }
-        for (size_t i = 0; i < dev->ngpus; ++i) {
-                if (gpus[i] != NULL && nvc_device_mount(nvc, cnt, gpus[i]) < 0) {
+        for (size_t i = 0; i < devices.ngpus; ++i) {
+                if (nvc_device_mount(nvc, cnt, devices.gpus[i]) < 0) {
                         warnx("mount error: %s", nvc_error(nvc));
                         goto fail;
                 }
@@ -303,6 +313,7 @@ configure_command(const struct context *ctx)
         rv = EXIT_SUCCESS;
 
  fail:
+        free_devices(&devices);
         nvc_shutdown(nvc);
         nvc_container_free(cnt);
         nvc_device_info_free(dev);
