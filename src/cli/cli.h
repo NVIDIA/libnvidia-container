@@ -28,6 +28,7 @@ struct context {
         char *root;
         char *ldcache;
         bool load_kmods;
+        bool no_pivot;
         char *init_flags;
         const struct command *command;
 

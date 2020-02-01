@@ -40,6 +40,7 @@
 
 struct nvc_context {
         bool initialized;
+        bool no_pivot;
         struct error err;
         struct nvc_config cfg;
         int mnt_ns;
