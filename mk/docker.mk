@@ -13,7 +13,7 @@
 # limitations under the License.
 #
 
-DOCKER_TARGETS = ubuntu18.04 ubuntu16.04 debian10 debian9 centos7 amazonlinux1 amazonlinux2 opensuse-leap15.1 sle15
+DOCKER_TARGETS = ubuntu18.04 ubuntu16.04 debian10 debian9 centos7 amazonlinux1 amazonlinux2 opensuse-leap15.1 sle15.1
 
 docker: SHELL:=/bin/bash
 docker: $(DOCKER_TARGETS)
@@ -81,14 +81,14 @@ opensuse-leap%:
 	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/opensuse-leap$*/$(ARCH)
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-sle%: ARCH := x86_64
-sle%:
+sle15%: ARCH := x86_64
+sle15%:
 	$(DOCKER) build --build-arg VERSION_ID=$* \
                     --build-arg WITH_LIBELF=$(WITH_LIBELF) \
                     --build-arg WITH_TIRPC=$(WITH_TIRPC) \
                     --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -t nvidia/$(LIB_NAME)/sle:$* -f $(MAKE_DIR)/Dockerfile.sle .
-	$(MKDIR) -p $(DIST_DIR)/sle$*/$(ARCH)
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION nvidia/$(LIB_NAME)/sle:$*
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/sle$*/$(ARCH)
+                    -t nvidia/$(LIB_NAME)/sle15:15$* -f $(MAKE_DIR)/Dockerfile.sle15 .
+	$(MKDIR) -p $(DIST_DIR)/sle15$*/$(ARCH)
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION nvidia/$(LIB_NAME)/sle15:15$*
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/sle15$*/$(ARCH)
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid

@@ -1,0 +1,74 @@
+ARG VERSION_ID
+FROM registry.suse.com/suse/sle15:15${VERSION_ID}
+
+#rpmbuild
+#RUN zypper addrepo https://download.opensuse.org/repositories/home:jayvdb:branches:Base:SystemRpm/SLE_15/home:jayvdb:branches:Base:SystemRpm.repo
+#git
+# RUN zypper addrepo https://download.opensuse.org/repositories/devel:tools:scm/SLE_15/devel:tools:scm.repo
+#bmake
+# RUN zypper addrepo https://download.opensuse.org/repositories/devel:tools:building/SLE_15/devel:tools:building.repo
+#createrepo and rpmlint
+# RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:Leap:15.1/standard/openSUSE:Leap:15.1.repo
+
+#python-lxml (needed by createrepo)
+RUN zypper addrepo https://download.opensuse.org/repositories/devel:languages:python:backports/SLE_15_SP1/devel:languages:python:backports.repo
+
+#can't find rpm-python in suse repos (needed by createrepo)
+COPY rpm-python-4.11.2-14.13.1.x86_64.rpm rpm-python-4.11.2-14.13.1.x86_64.rpm
+RUN rpm -ivh --nodeps rpm-python-4.11.2-14.13.1.x86_64.rpm
+
+#can't find python-deltarpm in suse repos (needed by createrepo)
+COPY python-deltarpm-3.6-3.el7.x86_64.rpm python-deltarpm-3.6-3.el7.x86_64.rpm
+RUN rpm -ivh --nodeps python-deltarpm-3.6-3.el7.x86_64.rpm
+
+#can't find yum-metadata-parser in suse repos (needed by createrepo)
+COPY yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm
+RUN rpm -ivh --nodeps yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm
+
+# can't find it in suse repos (needed by createreopo)
+COPY python2-yum-3.4.3-lp151.6.1.x86_64.rpm python2-yum-3.4.3-lp151.6.1.x86_64.rpm
+RUN rpm -ivh --nodeps python2-yum-3.4.3-lp151.6.1.x86_64.rpm
+
+ADD repos.d/*.repo /etc/zypp/repos.d/
+ADD services.d/*.service /etc/zypp/services.d/
+
+RUN zypper --gpg-auto-import-keys refresh
+
+RUN zypper install -y \
+        bmake \
+        bzip2 \
+        createrepo \
+        curl \
+        gcc \
+        git \
+        groff \
+        libcap-devel \
+        libelf-devel \
+        libseccomp-devel \
+        m4 \
+        make \
+        lsb-release \
+        pkg-config \
+        rpm-build \
+        rpmlint \
+        which && \
+    rm -rf /var/cache/zypp/*
+
+ARG WITH_LIBELF=no
+ARG WITH_TIRPC=no
+ARG WITH_SECCOMP=yes
+ENV WITH_LIBELF=${WITH_LIBELF}
+ENV WITH_TIRPC=${WITH_TIRPC}
+ENV WITH_SECCOMP=${WITH_SECCOMP}
+
+WORKDIR /tmp/libnvidia-container
+COPY . .
+
+# META_NOECHO=echo is required to work around a bug in Leap 15's version of bmake,
+# see also https://github.com/ptt/pttbbs/issues/30
+RUN export META_NOECHO=echo && \
+    make distclean && make -j"$(nproc)"
+
+ENV DIST_DIR /mnt
+VOLUME $DIST_DIR
+CMD make dist && make rpm
