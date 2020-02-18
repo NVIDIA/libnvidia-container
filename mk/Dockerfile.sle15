@@ -11,23 +11,23 @@ FROM registry.suse.com/suse/sle15:15${VERSION_ID}
 # RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:Leap:15.1/standard/openSUSE:Leap:15.1.repo
 
 #python-lxml (needed by createrepo)
-RUN zypper addrepo https://download.opensuse.org/repositories/devel:languages:python:backports/SLE_15_SP1/devel:languages:python:backports.repo
+#RUN zypper addrepo https://download.opensuse.org/repositories/devel:languages:python:backports/SLE_15_SP1/devel:languages:python:backports.repo
 
 #can't find rpm-python in suse repos (needed by createrepo)
-COPY rpm-python-4.11.2-14.13.1.x86_64.rpm rpm-python-4.11.2-14.13.1.x86_64.rpm
-RUN rpm -ivh --nodeps rpm-python-4.11.2-14.13.1.x86_64.rpm
+# COPY rpm-python-4.11.2-14.13.1.x86_64.rpm rpm-python-4.11.2-14.13.1.x86_64.rpm
+# RUN rpm -ivh --nodeps rpm-python-4.11.2-14.13.1.x86_64.rpm
 
 #can't find python-deltarpm in suse repos (needed by createrepo)
-COPY python-deltarpm-3.6-3.el7.x86_64.rpm python-deltarpm-3.6-3.el7.x86_64.rpm
-RUN rpm -ivh --nodeps python-deltarpm-3.6-3.el7.x86_64.rpm
+# COPY python-deltarpm-3.6-3.el7.x86_64.rpm python-deltarpm-3.6-3.el7.x86_64.rpm
+# RUN rpm -ivh --nodeps python-deltarpm-3.6-3.el7.x86_64.rpm
 
 #can't find yum-metadata-parser in suse repos (needed by createrepo)
-COPY yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm
-RUN rpm -ivh --nodeps yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm
+# COPY yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm
+# RUN rpm -ivh --nodeps yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm
 
 # can't find it in suse repos (needed by createreopo)
-COPY python2-yum-3.4.3-lp151.6.1.x86_64.rpm python2-yum-3.4.3-lp151.6.1.x86_64.rpm
-RUN rpm -ivh --nodeps python2-yum-3.4.3-lp151.6.1.x86_64.rpm
+# COPY python2-yum-3.4.3-lp151.6.1.x86_64.rpm python2-yum-3.4.3-lp151.6.1.x86_64.rpm
+# RUN rpm -ivh --nodeps python2-yum-3.4.3-lp151.6.1.x86_64.rpm
 
 ADD repos.d/*.repo /etc/zypp/repos.d/
 ADD services.d/*.service /etc/zypp/services.d/
@@ -37,7 +37,6 @@ RUN zypper --gpg-auto-import-keys refresh
 RUN zypper install -y \
         bmake \
         bzip2 \
-        createrepo \
         curl \
         gcc \
         git \
@@ -51,8 +50,15 @@ RUN zypper install -y \
         pkg-config \
         rpm-build \
         rpmlint \
-        which && \
-    rm -rf /var/cache/zypp/*
+        which 
+
+RUN zypper install -y wget
+RUN wget https://download.opensuse.org/repositories/system:/packagemanager/SLE_15_SP1/x86_64/createrepo-0.10.4-76.1.x86_64.rpm
+RUN rpm -ivh --nodeps createrepo-0.10.4-76.1.x86_64.rpm
+RUN rm createrepo-0.10.4-76.1.x86_64.rpm
+RUN zypper rm -y wget
+
+RUN rm -rf /var/cache/zypp/*
 
 ARG WITH_LIBELF=no
 ARG WITH_TIRPC=no
