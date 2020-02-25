@@ -13,82 +13,108 @@
 # limitations under the License.
 #
 
-DOCKER_TARGETS = ubuntu18.04 ubuntu16.04 debian10 debian9 centos7 amazonlinux1 amazonlinux2 opensuse-leap15.1 sle15.1
+DOCKER_TARGETS = ubuntu18.04-amd64 ubuntu16.04-amd64 debian10-amd64 debian9-amd64 centos7-x86_64 amazonlinux2-x86_64 amazonlinux1-x86_64 opensuse-leap15.1-x86_64 sle15.1-x86_64 ubuntu16.04-ppc64le ubuntu18.04-ppc64le centos7-ppc64le
 
 docker: SHELL:=/bin/bash
 docker: $(DOCKER_TARGETS)
 
 $(DOCKER_TARGETS): # Added to explicity define possible targets for bash completion
 
-ubuntu%: ARCH := amd64
-ubuntu%:
-	$(DOCKER) build --build-arg VERSION_ID=$* \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -t nvidia/$(LIB_NAME)/ubuntu:$* -f $(MAKE_DIR)/Dockerfile.ubuntu .
-	$(MKDIR) -p $(DIST_DIR)/ubuntu$*/$(ARCH)
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION nvidia/$(LIB_NAME)/ubuntu:$*
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/ubuntu$*/$(ARCH)
+ubuntu18.04-%:
+	$(DOCKER) build --build-arg VERSION_ID="18.04" \
+                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+                    -t "nvidia/$(LIB_NAME)/ubuntu18.04-$*" -f $(MAKE_DIR)/$*/Dockerfile.ubuntu .
+	$(MKDIR) -p $(DIST_DIR)/ubuntu18.04/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/ubuntu18.04-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/ubuntu18.04/$*
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-debian%: ARCH := amd64
-debian%:
-	$(DOCKER) build --build-arg VERSION_ID=$* \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -t nvidia/$(LIB_NAME)/debian:$* -f $(MAKE_DIR)/Dockerfile.debian .
-	$(MKDIR) -p $(DIST_DIR)/debian$*/$(ARCH)
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION nvidia/$(LIB_NAME)/debian:$*
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/debian$*/$(ARCH)
+ubuntu16.04-%:
+	$(DOCKER) build --build-arg VERSION_ID="16.04" \
+                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+                    -t "nvidia/$(LIB_NAME)/ubuntu16.04-$*" -f $(MAKE_DIR)/$*/Dockerfile.ubuntu .
+	$(MKDIR) -p $(DIST_DIR)/ubuntu16.04/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/ubuntu16.04-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/ubuntu16.04/$*
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-centos%: ARCH := x86_64
-centos%:
-	$(DOCKER) build --build-arg VERSION_ID=$* \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -t nvidia/$(LIB_NAME)/centos:$* -f $(MAKE_DIR)/Dockerfile.centos .
-	$(MKDIR) -p $(DIST_DIR)/centos$*/$(ARCH)
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION nvidia/$(LIB_NAME)/centos:$*
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/centos$*/$(ARCH)
+debian10-%:
+	$(DOCKER) build --build-arg VERSION_ID="10" \
+                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+                    -t "nvidia/$(LIB_NAME)/debian10-$*" -f $(MAKE_DIR)/$*/Dockerfile.debian .
+	$(MKDIR) -p $(DIST_DIR)/debian10/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/debian10-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/debian10/$*
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-amazonlinux%: ARCH := x86_64
-amazonlinux%:
-	$(DOCKER) build --build-arg VERSION_ID=$* \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -t nvidia/$(LIB_NAME)/amazonlinux:$* -f $(MAKE_DIR)/Dockerfile.amazonlinux .
-	$(MKDIR) -p $(DIST_DIR)/amazonlinux$*/$(ARCH)
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION nvidia/$(LIB_NAME)/amazonlinux:$*
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/amazonlinux$*/$(ARCH)
+debian9-%:
+	$(DOCKER) build --build-arg VERSION_ID="9" \
+                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+                    -t "nvidia/$(LIB_NAME)/debian9-$*" -f $(MAKE_DIR)/$*/Dockerfile.debian .
+	$(MKDIR) -p $(DIST_DIR)/debian9/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/debian9-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/debian9/$*
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-
-opensuse-leap%: ARCH := x86_64
-opensuse-leap%:
-	$(DOCKER) build --build-arg VERSION_ID=$* \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -t nvidia/$(LIB_NAME)/opensuse-leap:$* -f $(MAKE_DIR)/Dockerfile.opensuse-leap .
-	$(MKDIR) -p $(DIST_DIR)/opensuse-leap$*/$(ARCH)
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION nvidia/$(LIB_NAME)/opensuse-leap:$*
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/opensuse-leap$*/$(ARCH)
+centos7-%:
+	$(DOCKER) build --build-arg VERSION_ID="7" \
+                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+                    -t "nvidia/$(LIB_NAME)/centos7-$*" -f $(MAKE_DIR)/$*/Dockerfile.centos .
+	$(MKDIR) -p $(DIST_DIR)/centos7/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/centos7-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/centos7/$*
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
 
-sle15%: ARCH := x86_64
-sle15%:
-	$(DOCKER) build --build-arg VERSION_ID=$* \
+amazonlinux1-%:
+	$(DOCKER) build --build-arg VERSION_ID="1" \
+                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+                    -t "nvidia/$(LIB_NAME)/amazonlinux1-$*" -f $(MAKE_DIR)/$*/Dockerfile.amazonlinux .
+	$(MKDIR) -p $(DIST_DIR)/amazonlinux1/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/amazonlinux1-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/amazonlinux1/$*
+	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+
+amazonlinux2-%:
+	$(DOCKER) build --build-arg VERSION_ID="2" \
+                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+                    -t "nvidia/$(LIB_NAME)/amazonlinux2-$*" -f $(MAKE_DIR)/$*/Dockerfile.amazonlinux .
+	$(MKDIR) -p $(DIST_DIR)/amazonlinux2/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/amazonlinux2-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/amazonlinux2/$*
+	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+
+opensuse-leap15.1-%:
+	$(DOCKER) build --build-arg VERSION_ID="15.1" \
+                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+                    -t "nvidia/$(LIB_NAME)/opensuse-leap15.1-$*" -f $(MAKE_DIR)/$*/Dockerfile.opensuse-leap .
+	$(MKDIR) -p $(DIST_DIR)/opensuse-leap15.1/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/opensuse-leap15.1-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/opensuse-leap15.1/$*
+	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+
+sle15.1-%:
+	$(DOCKER) build --build-arg VERSION_ID="15.1" \
                     --build-arg WITH_LIBELF=$(WITH_LIBELF) \
                     --build-arg WITH_TIRPC=$(WITH_TIRPC) \
                     --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -t nvidia/$(LIB_NAME)/sle15:15$* -f $(MAKE_DIR)/Dockerfile.sle15 .
-	$(MKDIR) -p $(DIST_DIR)/sle15$*/$(ARCH)
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION nvidia/$(LIB_NAME)/sle15:15$*
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/sle15$*/$(ARCH)
+                    -t nvidia/$(LIB_NAME)/sle15:15.1-$* -f $(MAKE_DIR)/$*/Dockerfile.sle15 .
+	$(MKDIR) -p $(DIST_DIR)/sle15.1/$*
+	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/sle15:15.1-$*"
+	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/sle15.1/$*
 	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
