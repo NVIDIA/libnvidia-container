@@ -1,34 +1,10 @@
 ARG VERSION_ID
 FROM registry.suse.com/suse/sle15:15${VERSION_ID}
 
-#rpmbuild
-#RUN zypper addrepo https://download.opensuse.org/repositories/home:jayvdb:branches:Base:SystemRpm/SLE_15/home:jayvdb:branches:Base:SystemRpm.repo
-#git
-# RUN zypper addrepo https://download.opensuse.org/repositories/devel:tools:scm/SLE_15/devel:tools:scm.repo
-#bmake
-# RUN zypper addrepo https://download.opensuse.org/repositories/devel:tools:building/SLE_15/devel:tools:building.repo
-#createrepo and rpmlint
-# RUN zypper addrepo https://download.opensuse.org/repositories/openSUSE:Leap:15.1/standard/openSUSE:Leap:15.1.repo
-
-#python-lxml (needed by createrepo)
-#RUN zypper addrepo https://download.opensuse.org/repositories/devel:languages:python:backports/SLE_15_SP1/devel:languages:python:backports.repo
-
-#can't find rpm-python in suse repos (needed by createrepo)
-# COPY rpm-python-4.11.2-14.13.1.x86_64.rpm rpm-python-4.11.2-14.13.1.x86_64.rpm
-# RUN rpm -ivh --nodeps rpm-python-4.11.2-14.13.1.x86_64.rpm
-
-#can't find python-deltarpm in suse repos (needed by createrepo)
-# COPY python-deltarpm-3.6-3.el7.x86_64.rpm python-deltarpm-3.6-3.el7.x86_64.rpm
-# RUN rpm -ivh --nodeps python-deltarpm-3.6-3.el7.x86_64.rpm
-
-#can't find yum-metadata-parser in suse repos (needed by createrepo)
-# COPY yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm
-# RUN rpm -ivh --nodeps yum-metadata-parser-1.1.2-lp151.2.3.x86_64.rpm
-
-# can't find it in suse repos (needed by createreopo)
-# COPY python2-yum-3.4.3-lp151.6.1.x86_64.rpm python2-yum-3.4.3-lp151.6.1.x86_64.rpm
-# RUN rpm -ivh --nodeps python2-yum-3.4.3-lp151.6.1.x86_64.rpm
-
+# Please register your SLES and follow below steps before you run this script.
+#  1. Make sure PackageHub and sle-module-develpment-tools product are registered, this can ensure some 
+#     necessary packages can be installed.
+#  2. Copy /etc/zypp/repos.d and /etc/zypp/services.d to libnvidia-container directory.
 ADD repos.d/*.repo /etc/zypp/repos.d/
 ADD services.d/*.service /etc/zypp/services.d/
 
@@ -52,6 +28,7 @@ RUN zypper install -y \
         rpmlint \
         which 
 
+# So far SLE15 doesn't suppport createrepo, so we need to download it directly, then install.
 RUN zypper install -y wget
 RUN wget https://download.opensuse.org/repositories/system:/packagemanager/SLE_15_SP1/x86_64/createrepo-0.10.4-76.1.x86_64.rpm
 RUN rpm -ivh --nodeps createrepo-0.10.4-76.1.x86_64.rpm
