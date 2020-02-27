@@ -1,5 +1,5 @@
 ARG VERSION_ID
-FROM registry.suse.com/suse/sle15:15${VERSION_ID}
+FROM registry.suse.com/suse/sle15:${VERSION_ID}
 
 # Please register your SLES and follow below steps before you run this script.
 #  1. Make sure PackageHub and sle-module-develpment-tools product are registered, this can ensure some 
