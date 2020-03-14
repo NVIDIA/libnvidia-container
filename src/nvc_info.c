@@ -628,9 +628,10 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
                         goto fail;
                 if (driver_get_device_mig_enabled(&ctx->drv, dev, &mig_enabled) < 0)
                         goto fail;
+                gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
+
                 if (fill_mig_device_info(ctx, mig_enabled, dev, gpu) < 0)
                         goto fail;
-                gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
 
                 log_infof("listing device %s (%s at %s)", gpu->node.path, gpu->uuid, gpu->busid);
         }
