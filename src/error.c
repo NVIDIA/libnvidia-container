@@ -9,7 +9,6 @@
 
 #include <libelf.h>
 
-#include "cuda.h"
 #include "nvml.h"
 
 #include "error.h"
@@ -42,27 +41,6 @@ error_set_nvml(struct error *err, void *handle, int errcode, const char *fmt, ..
         }
         if (errfn.ptr != NULL || dlerror() == NULL)
                 errmsg = (*errfn.fn)((nvmlReturn_t)errcode);
-
-        va_start(ap, fmt);
-        rv = error_vset(err, errcode, errmsg, fmt, ap);
-        va_end(ap);
-        return (rv);
-}
-
-int
-error_set_cuda(struct error *err, void *handle, int errcode, const char *fmt, ...)
-{
-        static union {void *ptr; CUresult (*fn)(CUresult, const char **);} errfn;
-        const char *errmsg = "unknown error";
-        va_list ap;
-        int rv;
-
-        if (errfn.ptr == NULL) {
-                dlerror();
-                errfn.ptr = dlsym(handle, "cuGetErrorString");
-        }
-        if (errfn.ptr != NULL || dlerror() == NULL)
-                (*errfn.fn)((CUresult)errcode, &errmsg);
 
         va_start(ap, fmt);
         rv = error_vset(err, errcode, errmsg, fmt, ap);

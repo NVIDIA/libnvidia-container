@@ -17,7 +17,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "cuda.h"
 #include "nvml.h"
 
 #pragma GCC diagnostic push
@@ -33,7 +32,6 @@
 #define MAX_MIG_DEVICES  8
 #define REAP_TIMEOUT_MS 10
 
-static int reset_cuda_environment(struct error *);
 static int setup_rpc_client(struct driver *);
 static noreturn void setup_rpc_service(struct driver *, const char *, uid_t, gid_t, pid_t);
 static int reap_process(struct error *, pid_t, int, bool);
@@ -44,7 +42,6 @@ struct mig_device {
 
 struct driver_device {
         nvmlDevice_t nvml;
-        CUdevice cuda;
         struct mig_device mig[MAX_MIG_DEVICES];
 } device_handles[MAX_DEVICES];
 
@@ -60,18 +57,6 @@ struct driver_device {
         (r_ == NVML_SUCCESS) ? 0 : -1;                                                                 \
 })
 
-#define call_cuda(ctx, sym, ...) __extension__ ({                                                      \
-        union {void *ptr; __typeof__(&sym) fn;} u_;                                                    \
-        CUresult r_;                                                                                   \
-                                                                                                       \
-        dlerror();                                                                                     \
-        u_.ptr = dlsym((ctx)->cuda_dl, #sym);                                                          \
-        r_ = (dlerror() == NULL) ? (*u_.fn)(__VA_ARGS__) : CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND;  \
-        if (r_ != CUDA_SUCCESS)                                                                        \
-                error_set_cuda((ctx)->err, (ctx)->cuda_dl, r_, "cuda error");                          \
-        (r_ == CUDA_SUCCESS) ? 0 : -1;                                                                 \
-})
-
 #define call_rpc(ctx, res, func, ...) __extension__ ({                                                 \
         enum clnt_stat r_;                                                                             \
         struct sigaction osa_, sa_ = {.sa_handler = SIG_IGN};                                          \
@@ -85,29 +70,6 @@ struct driver_device {
         sigaction(SIGPIPE, &osa_, NULL);                                                               \
         (r_ == RPC_SUCCESS && (res)->errcode == 0) ? 0 : -1;                                           \
 })
-
-static int
-reset_cuda_environment(struct error *err)
-{
-        const struct { const char *name, *value; } env[] = {
-                {"CUDA_DISABLE_UNIFIED_MEMORY", "1"},
-                {"CUDA_CACHE_DISABLE", "1"},
-                {"CUDA_DEVICE_ORDER", "PCI_BUS_ID"},
-                {"CUDA_VISIBLE_DEVICES", NULL},
-                {"CUDA_MPS_PIPE_DIRECTORY", "/dev/null"},
-        };
-        int ret;
-
-        for (size_t i = 0; i < nitems(env); ++i) {
-                ret = (env[i].value == NULL) ? unsetenv(env[i].name) :
-                    setenv(env[i].name, env[i].value, 1);
-                if (ret < 0) {
-                        error_set(err, "environment reset failed");
-                        return (-1);
-                }
-        }
-        return (0);
-}
 
 static int
 setup_rpc_client(struct driver *ctx)
@@ -159,7 +121,7 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         /*
          * Drop privileges and capabilities for security reasons.
          *
-         * We might be inside a user namespace with full capabilities, this should also help prevent CUDA and NVML
+         * We might be inside a user namespace with full capabilities, this should also help prevent NVML
          * from potentially adjusting the host device nodes based on the (wrong) driver registry parameters.
          *
          * If we are not changing group, then keep our supplementary groups as well.
@@ -168,8 +130,6 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         if (perm_drop_privileges(ctx->err, uid, gid, (getegid() != gid)) < 0)
                 goto fail;
         if (perm_set_capabilities(ctx->err, CAP_PERMITTED, NULL, 0) < 0)
-                goto fail;
-        if (reset_cuda_environment(ctx->err) < 0)
                 goto fail;
 
         /*
@@ -183,8 +143,6 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         if (getppid() != ppid)
                 kill(getpid(), SIGTERM);
 
-        if ((ctx->cuda_dl = xdlopen(ctx->err, SONAME_LIBCUDA, RTLD_NOW)) == NULL)
-                goto fail;
         if ((ctx->nvml_dl = xdlopen(ctx->err, SONAME_LIBNVML, RTLD_NOW)) == NULL)
                 goto fail;
 
@@ -201,7 +159,6 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
  fail:
         if (rv != EXIT_SUCCESS)
                 log_errf("could not start driver service: %s", ctx->err->msg);
-        xdlclose(NULL, ctx->cuda_dl);
         xdlclose(NULL, ctx->nvml_dl);
         if (ctx->rpc_svc != NULL)
                 svc_destroy(ctx->rpc_svc);
@@ -290,8 +247,6 @@ driver_init_1_svc(ptr_t ctxptr, driver_init_res *res, maybe_unused struct svc_re
         struct driver *ctx = (struct driver *)ctxptr;
 
         memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuInit, 0) < 0)
-                goto fail;
         if (call_nvml(ctx, nvmlInit_v2) < 0)
                 goto fail;
         return (true);
@@ -398,8 +353,9 @@ driver_get_cuda_version_1_svc(ptr_t ctxptr, driver_get_cuda_version_res *res, ma
         int version;
 
         memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuDriverGetVersion, &version) < 0)
+        if (call_nvml(ctx, nvmlSystemGetCudaDriverVersion_v2, &version) < 0)
                 goto fail;
+
         res->driver_get_cuda_version_res_u.vers.major = (unsigned int)version / 1000;
         res->driver_get_cuda_version_res_u.vers.minor = (unsigned int)version % 100 / 10;
         return (true);
@@ -462,24 +418,13 @@ bool_t
 driver_get_device_1_svc(ptr_t ctxptr, u_int idx, driver_get_device_res *res, maybe_unused struct svc_req *req)
 {
         struct driver *ctx = (struct driver *)ctxptr;
-        int domainid, deviceid, busid;
-        char buf[NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE + 1];
 
         memset(res, 0, sizeof(*res));
         if (idx >= MAX_DEVICES) {
                 error_setx(ctx->err, "too many devices");
                 goto fail;
         }
-        if (call_cuda(ctx, cuDeviceGet, &device_handles[idx].cuda, (int)idx) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &domainid, CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID, device_handles[idx].cuda) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &busid, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, device_handles[idx].cuda) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &deviceid, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, device_handles[idx].cuda) < 0)
-                goto fail;
-        snprintf(buf, sizeof(buf), "%08x:%02x:%02x.0", domainid, busid, deviceid);
-        if (call_nvml(ctx, nvmlDeviceGetHandleByPciBusId_v2, buf, &device_handles[idx].nvml) < 0)
+        if (call_nvml(ctx, nvmlDeviceGetHandleByIndex_v2, (unsigned)idx, &device_handles[idx].nvml) < 0)
                 goto fail;
 
         res->driver_get_device_res_u.dev = (ptr_t)&device_handles[idx];
@@ -546,16 +491,13 @@ driver_get_device_busid_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_busid_r
 {
         struct driver *ctx = (struct driver *)ctxptr;
         struct driver_device *handle = (struct driver_device *)dev;
-        int domainid, deviceid, busid;
+        nvmlPciInfo_t pci;
 
         memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuDeviceGetAttribute, &domainid, CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID, handle->cuda) < 0)
+        if (call_nvml(ctx, nvmlDeviceGetPciInfo, handle->nvml, &pci) < 0)
                 goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &busid, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, handle->cuda) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &deviceid, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, handle->cuda) < 0)
-                goto fail;
-        if (xasprintf(ctx->err, &res->driver_get_device_busid_res_u.busid, "%08x:%02x:%02x.0", domainid, busid, deviceid) < 0)
+
+        if (xasprintf(ctx->err, &res->driver_get_device_busid_res_u.busid, "%08x:%02x:%02x.0", pci.domain, pci.bus, pci.device) < 0)
                 goto fail;
         return (true);
 
@@ -721,10 +663,9 @@ driver_get_device_arch_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_arch_res
         int major, minor;
 
         memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuDeviceGetAttribute, &major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, handle->cuda) < 0)
+        if (call_nvml(ctx, nvmlDeviceGetCudaComputeCapability, handle->nvml, &major, &minor) < 0)
                 goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, handle->cuda) < 0)
-                goto fail;
+
         res->driver_get_device_arch_res_u.arch.major = (unsigned int)major;
         res->driver_get_device_arch_res_u.arch.minor = (unsigned int)minor;
         return (true);
