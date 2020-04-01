@@ -38,7 +38,7 @@ $1 ~ "Machine:" {
         } else if (match($0, ".*[xX]86-64")) {
             elfarch = "EM_X86_64";
         } else if (match($0, "AArch64")) {
-            elfarch = "EM_X86_64";
+            elfarch = "EM_AARCH64";
         } else {
             elfarch = "unknown";
         }
