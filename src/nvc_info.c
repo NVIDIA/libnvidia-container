@@ -76,6 +76,7 @@ static const char * const compute_libs[] = {
         "libnvidia-opencl.so",              /* NVIDIA OpenCL ICD */
         "libnvidia-ptxjitcompiler.so",      /* PTX-SASS JIT compiler (used by libcuda) */
         "libnvidia-fatbinaryloader.so",     /* fatbin loader (used by libcuda) */
+        "libnvidia-allocator.so",           /* NVIDIA allocator runtime library */
         "libnvidia-compiler.so",            /* NVVM-PTX compiler for OpenCL (used by libnvidia-opencl) */
 };
 
