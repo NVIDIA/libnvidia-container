@@ -13,8 +13,16 @@ RUN --mount=type=secret,id=rhel-credentials,dst=/rhel-credentials.env \
         --password "$RHEL_PASSWORD" \
         --auto-attach && \
     \
-    subscription-manager repos \
-        --enable=codeready-builder-for-rhel-${OS_VERSION}-${OS_ARCH}-rpms; \
+    if [ "${OS_VERSION}" = "8" ]; then \
+        subscription-manager repos \
+            --enable=codeready-builder-for-rhel-${OS_VERSION}-${OS_ARCH}-rpms; \
+    elif [ "${OS_ARCH}" = "ppc64le" ]; then \
+        subscription-manager repos \
+            --enable=rhel-${OS_VERSION}-for-power-le-e4s-optional-rpms; \
+    else \
+        subscription-manager repos \
+            --enable=rhel-${OS_VERSION}-server-e4s-optional-rpms; \
+    fi && \
     \
     yum install -y \
         bzip2 \

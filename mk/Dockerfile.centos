@@ -1,6 +1,16 @@
 ARG BASEIMAGE
 FROM ${BASEIMAGE}
 
+ARG OS_VERSION
+RUN if [ "${OS_VERSION}" = "8" ]; then \
+        yum --enablerepo=PowerTools install -y \
+            rpcgen \
+            libseccomp-devel; \
+    else \
+        yum install -y \
+            libseccomp-devel; \
+    fi
+
 RUN yum install -y \
         bzip2 \
         createrepo \
@@ -8,10 +18,10 @@ RUN yum install -y \
         gcc \
         git \
         libcap-devel \
-        libseccomp-devel \
         m4 \
         make \
         redhat-lsb-core \
+        libtirpc-devel \
         rpm-build \
         rpm-sign \
         rpmlint \
@@ -37,6 +47,8 @@ RUN if [ "$WITH_LIBELF" = "no" ]; then \
 WORKDIR /tmp/libnvidia-container
 COPY . .
 
+ENV CFLAGS=-I/usr/include/tirpc
+ENV LDLIBS=-ltirpc
 RUN make distclean && make -j"$(nproc)"
 
 ENV DIST_DIR /dist
