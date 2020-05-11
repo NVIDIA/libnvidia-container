@@ -17,6 +17,8 @@
 AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
 X86_64_TARGETS := centos7 rhel8 amazonlinux1 amazonlinux2 opensuse-leap15.1
 PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7 rhel8
+ARM64_TARGETS := ubuntu18.04
+AARCH64_TARGETS := rhel8
 
 # Define top-level build targets
 docker%: SHELL:=/bin/bash
@@ -29,6 +31,10 @@ $(X86_64_TARGETS): %: %-x86_64
 else ifeq ($(PLATFORM),ppc64le)
 NATIVE_TARGETS := $(PPC64LE_TARGETS)
 $(PPC64LE_TARGETS): %: %-ppc64le
+else ifeq ($(PLATFORM),aarch64)
+NATIVE_TARGETS := $(ARM64_TARGETS) $(AARCH64_TARGETS)
+$(ARM64_TARGETS): %: %-arm64
+$(AARCH64_TARGETS): %: %-aarch64
 endif
 docker-native: $(NATIVE_TARGETS)
 
@@ -44,6 +50,18 @@ $(X86_64_TARGETS): ARCH := x86_64
 $(X86_64_TARGETS): %: --%
 docker-x86_64: $(X86_64_TARGETS)
 
+# arm64 targets
+ARM64_TARGETS := $(patsubst %, %-arm64, $(ARM64_TARGETS))
+$(ARM64_TARGETS): ARCH := arm64
+$(ARM64_TARGETS): %: --%
+docker-arm64: $(ARM64_TARGETS)
+
+# aarch64 targets
+AARCH64_TARGETS := $(patsubst %, %-aarch64, $(AARCH64_TARGETS))
+$(AARCH64_TARGETS): ARCH := aarch64
+$(AARCH64_TARGETS): %: --%
+docker-aarch64: $(AARCH64_TARGETS)
+
 # ppc64le targets
 PPC64LE_TARGETS := $(patsubst %, %-ppc64le, $(PPC64LE_TARGETS))
 $(PPC64LE_TARGETS): ARCH := ppc64le
@@ -53,6 +71,7 @@ docker-ppc64le: $(PPC64LE_TARGETS)
 
 # docker target to build for all os/arch combinations
 docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
+            $(ARM64_TARGETS) $(AARCH64_TARGETS) \
             $(PPC64LE_TARGETS)
 
 # Default variables for all private '--' targets below.
