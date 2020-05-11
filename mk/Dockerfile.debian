@@ -1,5 +1,5 @@
-ARG VERSION_ID
-FROM ubuntu:${VERSION_ID}
+ARG BASEIMAGE
+FROM ${BASEIMAGE}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         apt-utils \
@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         dh-make \
         fakeroot \
         git \
+        gnupg2 \
         libcap-dev \
         libelf-dev \
         libseccomp-dev \
@@ -36,6 +37,6 @@ ENV WITH_SECCOMP=${WITH_SECCOMP}
 
 RUN make distclean && make -j"$(nproc)"
 
-ENV DIST_DIR /mnt
+ENV DIST_DIR /dist
 VOLUME $DIST_DIR
 CMD make dist && make deb

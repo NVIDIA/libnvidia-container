@@ -13,97 +13,90 @@
 # limitations under the License.
 #
 
-DOCKER_TARGETS = ubuntu18.04-amd64 ubuntu16.04-amd64 debian10-amd64 debian9-amd64 centos7-x86_64 amazonlinux2-x86_64 amazonlinux1-x86_64 opensuse-leap15.1-x86_64 ubuntu16.04-ppc64le ubuntu18.04-ppc64le centos7-ppc64le
+# Supported OSs by architecture
+AMD64_TARGETS := ubuntu18.04 ubuntu16.04 debian10 debian9
+X86_64_TARGETS := centos7 amazonlinux1 amazonlinux2 opensuse-leap15.1
+PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7
 
-docker: SHELL:=/bin/bash
-docker: $(DOCKER_TARGETS)
+# Define top-level build targets
+docker%: SHELL:=/bin/bash
 
-$(DOCKER_TARGETS): # Added to explicity define possible targets for bash completion
+# Native targets (for tab completion by OS name only on native platform)
+ifeq ($(PLATFORM),x86_64)
+NATIVE_TARGETS := $(AMD64_TARGETS) $(X86_64_TARGETS)
+$(AMD64_TARGETS): %: %-amd64
+$(X86_64_TARGETS): %: %-x86_64
+else ifeq ($(PLATFORM),ppc64le)
+NATIVE_TARGETS := $(PPC64LE_TARGETS)
+$(PPC64LE_TARGETS): %: %-ppc64le
+endif
+docker-native: $(NATIVE_TARGETS)
 
-ubuntu18.04-%:
-	$(DOCKER) build --build-arg VERSION_ID="18.04" \
-                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
-                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
-                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
-                    -t "nvidia/$(LIB_NAME)/ubuntu18.04-$*" -f $(MAKE_DIR)/$*/Dockerfile.ubuntu .
-	$(MKDIR) -p $(DIST_DIR)/ubuntu18.04/$*
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/ubuntu18.04-$*"
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/ubuntu18.04/$*
-	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+# amd64 targets
+AMD64_TARGETS := $(patsubst %, %-amd64, $(AMD64_TARGETS))
+$(AMD64_TARGETS): ARCH := amd64
+$(AMD64_TARGETS): %: --%
+docker-amd64: $(AMD64_TARGETS)
 
-ubuntu16.04-%:
-	$(DOCKER) build --build-arg VERSION_ID="16.04" \
-                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
-                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
-                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
-                    -t "nvidia/$(LIB_NAME)/ubuntu16.04-$*" -f $(MAKE_DIR)/$*/Dockerfile.ubuntu .
-	$(MKDIR) -p $(DIST_DIR)/ubuntu16.04/$*
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/ubuntu16.04-$*"
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/ubuntu16.04/$*
-	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+# x86_64 targets
+X86_64_TARGETS := $(patsubst %, %-x86_64, $(X86_64_TARGETS))
+$(X86_64_TARGETS): ARCH := x86_64
+$(X86_64_TARGETS): %: --%
+docker-x86_64: $(X86_64_TARGETS)
 
-debian10-%:
-	$(DOCKER) build --build-arg VERSION_ID="10" \
-                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
-                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
-                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
-                    -t "nvidia/$(LIB_NAME)/debian10-$*" -f $(MAKE_DIR)/$*/Dockerfile.debian .
-	$(MKDIR) -p $(DIST_DIR)/debian10/$*
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/debian10-$*"
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/debian10/$*
-	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+# ppc64le targets
+PPC64LE_TARGETS := $(patsubst %, %-ppc64le, $(PPC64LE_TARGETS))
+$(PPC64LE_TARGETS): ARCH := ppc64le
+$(PPC64LE_TARGETS): WITH_LIBELF := yes
+$(PPC64LE_TARGETS): %: --%
+docker-ppc64le: $(PPC64LE_TARGETS)
 
-debian9-%:
-	$(DOCKER) build --build-arg VERSION_ID="9" \
-                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
-                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
-                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
-                    -t "nvidia/$(LIB_NAME)/debian9-$*" -f $(MAKE_DIR)/$*/Dockerfile.debian .
-	$(MKDIR) -p $(DIST_DIR)/debian9/$*
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/debian9-$*"
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/debian9/$*
-	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+# docker target to build for all os/arch combinations
+docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
+            $(PPC64LE_TARGETS)
 
-centos7-%:
-	$(DOCKER) build --build-arg VERSION_ID="7" \
-                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
-                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
-                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
-                    -t "nvidia/$(LIB_NAME)/centos7-$*" -f $(MAKE_DIR)/$*/Dockerfile.centos .
-	$(MKDIR) -p $(DIST_DIR)/centos7/$*
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/centos7-$*"
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/centos7/$*
-	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+# Default variables for all private '--' targets below.
+# One private target is defined for each OS we support.
+--%: TARGET_PLATFORM = $(*)
+--%: VERSION = $(patsubst $(OS)%-$(ARCH),%,$(TARGET_PLATFORM))
+--%: BASEIMAGE = $(OS):$(VERSION)
+--%: BUILDIMAGE = nvidia/$(LIB_NAME)/$(OS)$(VERSION)-$(ARCH)
+--%: DOCKERFILE = $(MAKE_DIR)/Dockerfile.$(OS)
+--%: ARTIFACTS_DIR = $(DIST_DIR)/$(OS)$(VERSION)/$(ARCH)
+--%: docker-build-%
+	@
 
-amazonlinux1-%:
-	$(DOCKER) build --build-arg VERSION_ID="1" \
-                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
-                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
-                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
-                    -t "nvidia/$(LIB_NAME)/amazonlinux1-$*" -f $(MAKE_DIR)/$*/Dockerfile.amazonlinux .
-	$(MKDIR) -p $(DIST_DIR)/amazonlinux1/$*
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/amazonlinux1-$*"
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/amazonlinux1/$*
-	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+# private OS targets with defaults
+--ubuntu%: OS := ubuntu
+--debian%: OS := debian
+--centos%: OS := centos
+--amazonlinux%: OS := amazonlinux
 
-amazonlinux2-%:
-	$(DOCKER) build --build-arg VERSION_ID="2" \
-                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
-                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
-                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
-                    -t "nvidia/$(LIB_NAME)/amazonlinux2-$*" -f $(MAKE_DIR)/$*/Dockerfile.amazonlinux .
-	$(MKDIR) -p $(DIST_DIR)/amazonlinux2/$*
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/amazonlinux2-$*"
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/amazonlinux2/$*
-	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+# private opensuse-leap target with overrides
+--opensuse-leap%: OS := opensuse-leap
+--opensuse-leap%: BASEIMAGE = opensuse/leap:$(VERSION)
 
-opensuse-leap15.1-%:
-	$(DOCKER) build --build-arg VERSION_ID="15.1" \
-                    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
-                    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
-                    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
-                    -t "nvidia/$(LIB_NAME)/opensuse-leap15.1-$*" -f $(MAKE_DIR)/$*/Dockerfile.opensuse-leap .
-	$(MKDIR) -p $(DIST_DIR)/opensuse-leap15.1/$*
-	$(DOCKER) run --cidfile $@.cid -e DISTRIB -e SECTION "nvidia/$(LIB_NAME)/opensuse-leap15.1-$*"
-	$(DOCKER) cp $$(cat $@.cid):/mnt/. $(DIST_DIR)/opensuse-leap15.1/$*
-	$(DOCKER) rm $$(cat $@.cid) && rm $@.cid
+docker-build-%:
+	@echo "Building for $(TARGET_PLATFORM)"
+	docker pull --platform=linux/$(ARCH) $(BASEIMAGE)
+	DOCKER_BUILDKIT=1 \
+	$(DOCKER) build \
+	    --progress=plain \
+	    --build-arg BASEIMAGE=$(BASEIMAGE) \
+	    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
+	    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
+	    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
+	    $(EXTRA_BUILD_ARGS) \
+	    --tag $(BUILDIMAGE) \
+	    --file $(DOCKERFILE) .
+	$(DOCKER) run \
+	    -e DISTRIB \
+	    -e SECTION \
+	    -v $(ARTIFACTS_DIR):/dist \
+	    $(BUILDIMAGE)
+
+docker-clean:
+	IMAGES=$$(docker images "nvidia/$(LIB_NAME)/*" --format="{{.ID}}"); \
+	if [ "$${IMAGES}" != "" ]; then \
+	    docker rmi -f $${IMAGES}; \
+	fi
