@@ -18,7 +18,7 @@ AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
 X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux1 amazonlinux2 opensuse-leap15.1
 PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7 centos8 rhel7 rhel8
 ARM64_TARGETS := ubuntu18.04
-AARCH64_TARGETS := rhel8
+AARCH64_TARGETS := centos8 rhel8
 
 # Define top-level build targets
 docker%: SHELL:=/bin/bash
@@ -85,11 +85,6 @@ docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
 --%: docker-build-%
 	@
 
-# private verify target to be customized
-# by specific targets below (if desired)
---%-verify:
-	@
-
 # private OS targets with defaults
 --ubuntu%: OS := ubuntu
 --debian%: OS := debian
@@ -100,33 +95,12 @@ docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
 --opensuse-leap%: OS := opensuse-leap
 --opensuse-leap%: BASEIMAGE = opensuse/leap:$(VERSION)
 
-# private rhel target with extra variables and overrides
---rhel%: OS = rhel
---rhel%: BASEIMAGE = registry.access.redhat.com/ubi$(VERSION)
---rhel%: RHEL_CREDENTIALS_FILE ?= $(CURDIR)/rhel-credentials.env
---rhel%: EXTRA_BUILD_ARGS = --secret id=rhel-credentials,src=$(RHEL_CREDENTIALS_FILE)
+# private rhel target (actually built on centos)
+--rhel%: OS := centos
+--rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
+--rhel%: ARTIFACTS_DIR = $(DIST_DIR)/rhel$(VERSION)/$(ARCH)
 
---rhel%-verify:
-	@if [ ! -f "$(RHEL_CREDENTIALS_FILE)" ]; then \
-	     echo "Error: Missing \$$RHEL_CREDENTIALS_FILE"; \
-	     echo ""; \
-	     echo "In order to build for rhel platforms, you need to setup a \$$RHEL_CREDENTIALS_FILE"; \
-	     echo "This file should contain the following 2 lines:"; \
-	     echo ""; \
-	     echo "  RHEL_USERNAME=<username>"; \
-	     echo "  RHEL_PASSWORD=<password>"; \
-	     echo ""; \
-	     echo "By default this file will be searched for at:"; \
-	     echo ""; \
-	     echo "  $(CURDIR)/rhel-credentials.env"; \
-	     echo ""; \
-	     echo "Otherwise you can set an environment variable called \$$RHEL_CREDENTIALS_FILE"; \
-	     echo "to point to a file of your choice."; \
-	     echo ""; \
-	     false; \
-	 fi
-
-docker-build-%: --%-verify
+docker-build-%:
 	@echo "Building for $(TARGET_PLATFORM)"
 	docker pull --platform=linux/$(ARCH) $(BASEIMAGE)
 	DOCKER_BUILDKIT=1 \
