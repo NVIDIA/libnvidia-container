@@ -85,23 +85,23 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Mon May 04 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.1.0-1
- - 1b6fe993 Add support for MIG (Multi-Instance-Gpus)
+* Fri May 15 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.1.0-1
+- 1ddcdfc1 Add support for MIG (Multi-Instance-Gpus)
 
 * Mon Nov 11 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.7-1
- - 8d90918a Add Raytracing library
+- 8d90918a Add Raytracing library
 
 * Fri Sep 013 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.6-1
- - b6aff41 Update error messages for CUDA version requirements
+- b6aff41 Update error messages for CUDA version requirements
 
 * Wed Sep 04 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.5-1
- - 688495e Add Opensuse15.1 support
+- 688495e Add Opensuse15.1 support
 
 * Wed Aug 21 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.4-1
- - 61bfaf38 Update DSL to output the first element instead of the last in case of failure
- - 5ce32c6c Add initial support for Optix
- - acc38a22 Fix execveat typo
- - b5e491b1 arm64: Add support for AARCH64 architecture
+- 61bfaf38 Update DSL to output the first element instead of the last in case of failure
+- 5ce32c6c Add initial support for Optix
+- acc38a22 Fix execveat typo
+- b5e491b1 arm64: Add support for AARCH64 architecture
 
 * Thu Jul 18 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.3-1
 - b9545d7 Add support for Vulkan
