@@ -27,6 +27,7 @@ static char *mount_device(struct error *, const char *, const struct nvc_contain
 static char *mount_ipc(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_procfs(struct error *, const char *, const struct nvc_container *);
 static char *mount_procfs_gpu(struct error *, const char *, const struct nvc_container *, const char *);
+static char *mount_procfs_mig(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_app_profile(struct error *, const struct nvc_container *);
 static int  update_app_profile(struct error *, const struct nvc_container *, dev_t);
 static void unmount(const char *);
@@ -333,6 +334,56 @@ mount_procfs_gpu(struct error *err, const char *root, const struct nvc_container
         return (NULL);
 }
 
+static char *
+mount_procfs_mig(struct error *err, const char *root, const struct nvc_container *cnt, const char *caps_path)
+{
+        // Initialize local variables.
+        char src[PATH_MAX];
+        char dst[PATH_MAX] = {0};
+        char *mnt = NULL;
+        mode_t mode;
+
+        // Set the source path to "<root>/<caps_path>" where 'root' holds the
+        // path to root on the host file system, and 'path' holds the path
+        // to the MIG capability on the host filesystem.
+        if (path_join(err, src, root, caps_path) < 0)
+                goto fail;
+
+        // Set the destination path to a similarly named path, but rooted
+        // inside the container.
+        if (path_resolve_full(err, dst, cnt->cfg.rootfs, caps_path) < 0)
+                goto fail;
+
+        // Grab the file mode set on the source path.
+        if (file_mode(err, src, &mode) < 0)
+                goto fail;
+
+        // Create the destination path with the same mode as the source path.
+        if (file_create(err, dst, NULL, cnt->uid, cnt->gid, mode) < 0)
+                goto fail;
+
+        log_infof("mounting %s at %s", src, dst);
+
+        // Bind mount the source path over the destination path.
+        if (xmount(err, src, dst, NULL, MS_BIND, NULL) < 0)
+                goto fail;
+
+        // Remount the destination path to update its mountflags.
+        if (xmount(err, NULL, dst, NULL, MS_BIND|MS_REMOUNT | MS_RDONLY|MS_NODEV|MS_NOSUID|MS_NOEXEC, NULL) < 0)
+                goto fail;
+
+        // Copy the destinationpath out to a newly allocated string and return it.
+        if ((mnt = xstrdup(err, dst)) == NULL)
+                goto fail;
+
+        return (mnt);
+
+ fail:
+        // On failure unmount and filesystem that may have been mounted and return.
+        unmount(dst);
+        return (NULL);
+}
+
 static void
 unmount(const char *path)
 {
@@ -589,5 +640,192 @@ nvc_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
 
         free(proc_mnt);
         free(dev_mnt);
+        return (rv);
+}
+
+int
+nvc_mig_device_access_caps_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_mig_device *dev)
+{
+        // Initialize local variables.
+        char access[PATH_MAX];
+        char *proc_mnt = NULL;
+        int rv = -1;
+
+        // Validate incoming arguments.
+        if (validate_context(ctx) < 0)
+                return (-1);
+        if (validate_args(ctx, cnt != NULL && dev != NULL) < 0)
+                return (-1);
+
+        // Enter the mount namespace of the container.
+        if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
+                return (-1);
+
+        // Construct the path to the 'access' file in '/proc' for the GPU Instance.
+        if (path_join(&ctx->err, access, dev->gi_caps_path, NV_MIG_ACCESS_FILE) < 0)
+                goto fail;
+
+        // Mount the 'access' file for the GPU Instance into the container.
+        if ((proc_mnt = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, access)) == NULL)
+                goto fail;
+
+        // Construct the path to the 'access' file in '/proc' for the Compute Instance.
+        if (path_join(&ctx->err, access, dev->ci_caps_path, NV_MIG_ACCESS_FILE) < 0)
+                goto fail;
+
+        // Mount the 'access' file for the Compute Instance into the container.
+        if ((proc_mnt = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, access)) == NULL)
+                goto fail;
+
+        // Set the return value to indicate success.
+        rv = 0;
+
+ fail:
+        if (rv < 0) {
+                // If we failed above for any reason, unmount the 'access' file
+                // we mounted and exit the mount namespace.
+                unmount(proc_mnt);
+                assert_func(ns_enter_at(NULL, ctx->mnt_ns, CLONE_NEWNS));
+        } else {
+                // Otherwise, just exit the mount namespace.
+                rv = ns_enter_at(&ctx->err, ctx->mnt_ns, CLONE_NEWNS);
+        }
+
+        // In all cases, free the string associated with the mounted 'access'
+        // file and return.
+        free(proc_mnt);
+        return (rv);
+}
+
+int
+nvc_mig_config_global_caps_mount(struct nvc_context *ctx, const struct nvc_container *cnt)
+{
+        // Initialize local variables.
+        char config[PATH_MAX];
+        char *proc_mnt = NULL;
+        int rv = -1;
+
+        // Validate incoming arguments.
+        if (validate_context(ctx) < 0)
+                return (-1);
+        if (validate_args(ctx, cnt != NULL) < 0)
+                return (-1);
+
+        // Enter the mount namespace of the container.
+        if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
+                return (-1);
+
+        // Construct the path to the global MIG 'config' file in '/proc'.
+        if (path_join(&ctx->err, config, NV_MIG_CAPS_PATH, NV_MIG_CONFIG_FILE) < 0)
+                goto fail;
+
+        // Mount the 'config' file into the container.
+        if ((proc_mnt = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, config)) == NULL)
+                goto fail;
+
+        // Set the return value to indicate success.
+        rv = 0;
+
+ fail:
+        if (rv < 0) {
+                // If we failed above for any reason, unmount the 'access' file
+                // we mounted and exit the mount namespace.
+                unmount(proc_mnt);
+                assert_func(ns_enter_at(NULL, ctx->mnt_ns, CLONE_NEWNS));
+        } else {
+                // Otherwise, just exit the mount namespace.
+                rv = ns_enter_at(&ctx->err, ctx->mnt_ns, CLONE_NEWNS);
+        }
+
+        // In all cases, free the string associated with the mounted 'access'
+        // file and return.
+        free(proc_mnt);
+        return (rv);
+}
+
+int
+nvc_mig_monitor_global_caps_mount(struct nvc_context *ctx, const struct nvc_container *cnt)
+{
+        // Initialize local variables.
+        char monitor[PATH_MAX];
+        char *proc_mnt = NULL;
+        int rv = -1;
+
+        // Validate incoming arguments.
+        if (validate_context(ctx) < 0)
+                return (-1);
+        if (validate_args(ctx, cnt != NULL) < 0)
+                return (-1);
+
+        // Enter the mount namespace of the container.
+        if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
+                return (-1);
+
+        // Construct the path to the global MIG 'monitor' file in '/proc'.
+        if (path_join(&ctx->err, monitor, NV_MIG_CAPS_PATH, NV_MIG_MONITOR_FILE) < 0)
+                goto fail;
+
+        // Mount the 'monitor' file into the container.
+        if ((proc_mnt = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, monitor)) == NULL)
+                goto fail;
+
+        // Set the return value to indicate success.
+        rv = 0;
+
+ fail:
+        if (rv < 0) {
+                // If we failed above for any reason, unmount the 'access' file
+                // we mounted and exit the mount namespace.
+                unmount(proc_mnt);
+                assert_func(ns_enter_at(NULL, ctx->mnt_ns, CLONE_NEWNS));
+        } else {
+                // Otherwise, just exit the mount namespace.
+                rv = ns_enter_at(&ctx->err, ctx->mnt_ns, CLONE_NEWNS);
+        }
+
+        // In all cases, free the string associated with the mounted 'access'
+        // file and return.
+        free(proc_mnt);
+        return (rv);
+}
+
+int
+nvc_device_mig_caps_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_device *dev)
+{
+        // Initialize local variables.
+        char *proc_mnt = NULL;
+        int rv = -1;
+
+        // Validate incoming arguments.
+        if (validate_context(ctx) < 0)
+                return (-1);
+        if (validate_args(ctx, cnt != NULL && dev != NULL) < 0)
+                return (-1);
+
+        // Enter the mount namespace of the container.
+        if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
+                return (-1);
+
+        // Mount the path to the mig MIG capabilities directory for this device in '/proc'.
+        if ((proc_mnt = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, dev->mig_caps_path)) == NULL)
+                goto fail;
+
+        // Set the return value to indicate success.
+        rv = 0;
+
+ fail:
+        if (rv < 0) {
+                // If we failed above for any reason, unmount the 'access' file
+                // we mounted and exit the mount namespace.
+                unmount(proc_mnt);
+                assert_func(ns_enter_at(NULL, ctx->mnt_ns, CLONE_NEWNS));
+        } else {
+                // Otherwise, just exit the mount namespace.
+                rv = ns_enter_at(&ctx->err, ctx->mnt_ns, CLONE_NEWNS);
+        }
+
+        // In all cases, free the string associated with the mounted 'access'
+        // file and return.
+        free(proc_mnt);
         return (rv);
 }

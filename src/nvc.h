@@ -14,9 +14,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define NVC_MAJOR   1
-#define NVC_MINOR   0
-#define NVC_PATCH   7
-#define NVC_VERSION "1.0.7"
+#define NVC_MINOR   1
+#define NVC_PATCH   0
+#define NVC_VERSION "1.1.0"
 
 #define NVC_ARG_MAX 256
 
@@ -57,6 +57,20 @@ struct nvc_driver_info {
         size_t ndevs;
 };
 
+struct nvc_mig_device {
+        struct nvc_device *parent;
+        char *uuid;
+        unsigned int gi;
+        unsigned int ci;
+        char *gi_caps_path;
+        char *ci_caps_path;
+};
+
+struct nvc_mig_device_info {
+        struct nvc_mig_device *devices;
+        size_t ndevices;
+};
+
 struct nvc_device {
         char *model;
         char *uuid;
@@ -64,6 +78,9 @@ struct nvc_device {
         char *arch;
         char *brand;
         struct nvc_device_node node;
+        bool mig_capable;
+        char *mig_caps_path;
+        struct nvc_mig_device_info mig_devices;
 };
 
 struct nvc_device_info {
@@ -107,6 +124,14 @@ void nvc_device_info_free(struct nvc_device_info *);
 int nvc_driver_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_driver_info *);
 
 int nvc_device_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
+
+int nvc_mig_device_access_caps_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_mig_device *);
+
+int nvc_mig_config_global_caps_mount(struct nvc_context *, const struct nvc_container *);
+
+int nvc_mig_monitor_global_caps_mount(struct nvc_context *, const struct nvc_container *);
+
+int nvc_device_mig_caps_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
 
 int nvc_ldcache_update(struct nvc_context *, const struct nvc_container *);
 

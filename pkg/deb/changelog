@@ -1,3 +1,9 @@
+libnvidia-container (1.1.0-1) UNRELEASED; urgency=medium
+
+  * 1b6fe993 Add support for MIG (Milti-Instance-GPUs)
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 11 Nov 2019 13:23:58 -0700
+
 libnvidia-container (1.0.7-1) UNRELEASED; urgency=medium
 
   * 8d90918a Add Raytracing library

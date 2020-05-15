@@ -17,7 +17,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "cuda.h"
 #include "nvml.h"
 
 #pragma GCC diagnostic push
@@ -30,16 +29,20 @@
 #include "xfuncs.h"
 
 #define MAX_DEVICES     64
+#define MAX_MIG_DEVICES  8
 #define REAP_TIMEOUT_MS 10
 
-static int reset_cuda_environment(struct error *);
 static int setup_rpc_client(struct driver *);
 static noreturn void setup_rpc_service(struct driver *, const char *, uid_t, gid_t, pid_t);
 static int reap_process(struct error *, pid_t, int, bool);
 
-static struct driver_device {
+struct mig_device {
         nvmlDevice_t nvml;
-        CUdevice cuda;
+};
+
+struct driver_device {
+        nvmlDevice_t nvml;
+        struct mig_device mig[MAX_MIG_DEVICES];
 } device_handles[MAX_DEVICES];
 
 #define call_nvml(ctx, sym, ...) __extension__ ({                                                      \
@@ -52,18 +55,6 @@ static struct driver_device {
         if (r_ != NVML_SUCCESS)                                                                        \
                 error_set_nvml((ctx)->err, (ctx)->nvml_dl, r_, "nvml error");                          \
         (r_ == NVML_SUCCESS) ? 0 : -1;                                                                 \
-})
-
-#define call_cuda(ctx, sym, ...) __extension__ ({                                                      \
-        union {void *ptr; __typeof__(&sym) fn;} u_;                                                    \
-        CUresult r_;                                                                                   \
-                                                                                                       \
-        dlerror();                                                                                     \
-        u_.ptr = dlsym((ctx)->cuda_dl, #sym);                                                          \
-        r_ = (dlerror() == NULL) ? (*u_.fn)(__VA_ARGS__) : CUDA_ERROR_SHARED_OBJECT_SYMBOL_NOT_FOUND;  \
-        if (r_ != CUDA_SUCCESS)                                                                        \
-                error_set_cuda((ctx)->err, (ctx)->cuda_dl, r_, "cuda error");                          \
-        (r_ == CUDA_SUCCESS) ? 0 : -1;                                                                 \
 })
 
 #define call_rpc(ctx, res, func, ...) __extension__ ({                                                 \
@@ -79,29 +70,6 @@ static struct driver_device {
         sigaction(SIGPIPE, &osa_, NULL);                                                               \
         (r_ == RPC_SUCCESS && (res)->errcode == 0) ? 0 : -1;                                           \
 })
-
-static int
-reset_cuda_environment(struct error *err)
-{
-        const struct { const char *name, *value; } env[] = {
-                {"CUDA_DISABLE_UNIFIED_MEMORY", "1"},
-                {"CUDA_CACHE_DISABLE", "1"},
-                {"CUDA_DEVICE_ORDER", "PCI_BUS_ID"},
-                {"CUDA_VISIBLE_DEVICES", NULL},
-                {"CUDA_MPS_PIPE_DIRECTORY", "/dev/null"},
-        };
-        int ret;
-
-        for (size_t i = 0; i < nitems(env); ++i) {
-                ret = (env[i].value == NULL) ? unsetenv(env[i].name) :
-                    setenv(env[i].name, env[i].value, 1);
-                if (ret < 0) {
-                        error_set(err, "environment reset failed");
-                        return (-1);
-                }
-        }
-        return (0);
-}
 
 static int
 setup_rpc_client(struct driver *ctx)
@@ -153,7 +121,7 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         /*
          * Drop privileges and capabilities for security reasons.
          *
-         * We might be inside a user namespace with full capabilities, this should also help prevent CUDA and NVML
+         * We might be inside a user namespace with full capabilities, this should also help prevent NVML
          * from potentially adjusting the host device nodes based on the (wrong) driver registry parameters.
          *
          * If we are not changing group, then keep our supplementary groups as well.
@@ -162,8 +130,6 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         if (perm_drop_privileges(ctx->err, uid, gid, (getegid() != gid)) < 0)
                 goto fail;
         if (perm_set_capabilities(ctx->err, CAP_PERMITTED, NULL, 0) < 0)
-                goto fail;
-        if (reset_cuda_environment(ctx->err) < 0)
                 goto fail;
 
         /*
@@ -177,8 +143,6 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         if (getppid() != ppid)
                 kill(getpid(), SIGTERM);
 
-        if ((ctx->cuda_dl = xdlopen(ctx->err, SONAME_LIBCUDA, RTLD_NOW)) == NULL)
-                goto fail;
         if ((ctx->nvml_dl = xdlopen(ctx->err, SONAME_LIBNVML, RTLD_NOW)) == NULL)
                 goto fail;
 
@@ -195,7 +159,6 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
  fail:
         if (rv != EXIT_SUCCESS)
                 log_errf("could not start driver service: %s", ctx->err->msg);
-        xdlclose(NULL, ctx->cuda_dl);
         xdlclose(NULL, ctx->nvml_dl);
         if (ctx->rpc_svc != NULL)
                 svc_destroy(ctx->rpc_svc);
@@ -284,8 +247,6 @@ driver_init_1_svc(ptr_t ctxptr, driver_init_res *res, maybe_unused struct svc_re
         struct driver *ctx = (struct driver *)ctxptr;
 
         memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuInit, 0) < 0)
-                goto fail;
         if (call_nvml(ctx, nvmlInit_v2) < 0)
                 goto fail;
         return (true);
@@ -392,8 +353,9 @@ driver_get_cuda_version_1_svc(ptr_t ctxptr, driver_get_cuda_version_res *res, ma
         int version;
 
         memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuDriverGetVersion, &version) < 0)
+        if (call_nvml(ctx, nvmlSystemGetCudaDriverVersion_v2, &version) < 0)
                 goto fail;
+
         res->driver_get_cuda_version_res_u.vers.major = (unsigned int)version / 1000;
         res->driver_get_cuda_version_res_u.vers.minor = (unsigned int)version % 100 / 10;
         return (true);
@@ -456,24 +418,13 @@ bool_t
 driver_get_device_1_svc(ptr_t ctxptr, u_int idx, driver_get_device_res *res, maybe_unused struct svc_req *req)
 {
         struct driver *ctx = (struct driver *)ctxptr;
-        int domainid, deviceid, busid;
-        char buf[NVML_DEVICE_PCI_BUS_ID_BUFFER_SIZE + 1];
 
         memset(res, 0, sizeof(*res));
         if (idx >= MAX_DEVICES) {
                 error_setx(ctx->err, "too many devices");
                 goto fail;
         }
-        if (call_cuda(ctx, cuDeviceGet, &device_handles[idx].cuda, (int)idx) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &domainid, CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID, device_handles[idx].cuda) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &busid, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, device_handles[idx].cuda) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &deviceid, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, device_handles[idx].cuda) < 0)
-                goto fail;
-        snprintf(buf, sizeof(buf), "%08x:%02x:%02x.0", domainid, busid, deviceid);
-        if (call_nvml(ctx, nvmlDeviceGetHandleByPciBusId_v2, buf, &device_handles[idx].nvml) < 0)
+        if (call_nvml(ctx, nvmlDeviceGetHandleByIndex_v2, (unsigned)idx, &device_handles[idx].nvml) < 0)
                 goto fail;
 
         res->driver_get_device_res_u.dev = (ptr_t)&device_handles[idx];
@@ -540,16 +491,13 @@ driver_get_device_busid_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_busid_r
 {
         struct driver *ctx = (struct driver *)ctxptr;
         struct driver_device *handle = (struct driver_device *)dev;
-        int domainid, deviceid, busid;
+        nvmlPciInfo_t pci;
 
         memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuDeviceGetAttribute, &domainid, CU_DEVICE_ATTRIBUTE_PCI_DOMAIN_ID, handle->cuda) < 0)
+        if (call_nvml(ctx, nvmlDeviceGetPciInfo, handle->nvml, &pci) < 0)
                 goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &busid, CU_DEVICE_ATTRIBUTE_PCI_BUS_ID, handle->cuda) < 0)
-                goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &deviceid, CU_DEVICE_ATTRIBUTE_PCI_DEVICE_ID, handle->cuda) < 0)
-                goto fail;
-        if (xasprintf(ctx->err, &res->driver_get_device_busid_res_u.busid, "%08x:%02x:%02x.0", domainid, busid, deviceid) < 0)
+
+        if (xasprintf(ctx->err, &res->driver_get_device_busid_res_u.busid, "%08x:%02x:%02x.0", pci.domain, pci.bus, pci.device) < 0)
                 goto fail;
         return (true);
 
@@ -580,7 +528,7 @@ driver_get_device_uuid_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_uuid_res
 {
         struct driver *ctx = (struct driver *)ctxptr;
         struct driver_device *handle = (struct driver_device *)dev;
-        char buf[NVML_DEVICE_UUID_BUFFER_SIZE];
+        char buf[NVML_DEVICE_UUID_V2_BUFFER_SIZE];
 
         memset(res, 0, sizeof(*res));
         if (call_nvml(ctx, nvmlDeviceGetUUID, handle->nvml, buf, sizeof(buf)) < 0)
@@ -715,15 +663,339 @@ driver_get_device_arch_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_arch_res
         int major, minor;
 
         memset(res, 0, sizeof(*res));
-        if (call_cuda(ctx, cuDeviceGetAttribute, &major, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, handle->cuda) < 0)
+        if (call_nvml(ctx, nvmlDeviceGetCudaComputeCapability, handle->nvml, &major, &minor) < 0)
                 goto fail;
-        if (call_cuda(ctx, cuDeviceGetAttribute, &minor, CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, handle->cuda) < 0)
-                goto fail;
+
         res->driver_get_device_arch_res_u.arch.major = (unsigned int)major;
         res->driver_get_device_arch_res_u.arch.minor = (unsigned int)minor;
         return (true);
 
  fail:
+        error_to_xdr(ctx->err, res);
+        return (true);
+}
+
+int
+driver_get_device_mig_enabled(struct driver *ctx, struct driver_device *dev, bool *enabled)
+{
+        // Initialize local variables.
+        unsigned int current, pending;
+        struct driver_get_device_mig_mode_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *enabled = false;
+
+        // Make an RPC call to determine if MIG mode is enabled or not.
+        if (call_rpc(ctx, &res, driver_get_device_mig_mode_1, (ptr_t)dev) < 0)
+                goto fail;
+
+        switch(res.driver_get_device_mig_mode_res_u.mode.error) {
+                // to determine if MIG mode is enabled or not.
+                case NVML_SUCCESS:
+                        current = res.driver_get_device_mig_mode_res_u.mode.current;
+                        pending = res.driver_get_device_mig_mode_res_u.mode.pending;
+                        *enabled = (current == NVML_DEVICE_MIG_ENABLE) && (current == pending);
+                        break;
+                // If the error indicates that the function wasn't found, then
+                // we are on an older version of NVML that doesn't support MIG.
+                // That's OK, we just need to set enabled to false in this
+                // case. We do the same if we determine that MIG is not
+                // supported on this device.
+                case NVML_ERROR_FUNCTION_NOT_FOUND:
+                case NVML_ERROR_NOT_SUPPORTED:
+                        *enabled = false;
+                        break;
+                // In all other cases, fail this function.
+                default:
+                        goto fail;
+        }
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+ fail:
+        // Free the results of the RPC call and return.
+        xdr_free((xdrproc_t)xdr_driver_get_device_arch_res, (caddr_t)&res);
+        return (rv);
+}
+
+int
+driver_get_device_mig_capable(struct driver *ctx, struct driver_device *dev, bool *supported)
+{
+        // Initialize local variables.
+        struct driver_get_device_mig_mode_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *supported= false;
+
+        // Make an RPC call to determine if MIG mode is enabled or not.
+        if (call_rpc(ctx, &res, driver_get_device_mig_mode_1, (ptr_t)dev) < 0)
+                goto fail;
+
+        switch(res.driver_get_device_mig_mode_res_u.mode.error) {
+                case NVML_SUCCESS:
+                        *supported = true;
+                        break;
+                case NVML_ERROR_FUNCTION_NOT_FOUND:
+                case NVML_ERROR_NOT_SUPPORTED:
+                        *supported = false;
+                        break;
+                // In all other cases, fail this function.
+                default:
+                        goto fail;
+        }
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+ fail:
+        // Free the results of the RPC call and return.
+        xdr_free((xdrproc_t)xdr_driver_get_device_arch_res, (caddr_t)&res);
+        return (rv);
+}
+
+bool_t
+driver_get_device_mig_mode_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_mig_mode_res *res, maybe_unused struct svc_req *req)
+{
+        // Initialize local variables.
+        struct driver *ctx = (struct driver *)ctxptr;
+        struct driver_device *handle = (struct driver_device *)dev;
+        unsigned int current, pending;
+
+        // Clear out 'res' which will hold the result of this RPC call.
+        memset(res, 0, sizeof(*res));
+
+        // Call into NVML to get the MIG mode. We don't directly catch the
+        // error here and return a failure. Instead, we capture the error and
+        // pass it as part of the return value for the caller to interpret.
+        if(call_nvml(ctx, nvmlDeviceGetMigMode, handle->nvml, &current, &pending) < 0)
+                res->driver_get_device_mig_mode_res_u.mode.error = ctx->err->code;
+        res->driver_get_device_mig_mode_res_u.mode.current = current;
+        res->driver_get_device_mig_mode_res_u.mode.pending = pending;
+        return (true);
+}
+
+int
+driver_get_device_max_mig_device_count(struct driver *ctx, struct driver_device *dev, unsigned int *count)
+{
+        // Initialize local variables.
+        struct driver_get_device_max_mig_device_count_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *count = 0;
+
+        // Make an RPC call to get the max count of MIG devices for this device.
+        if (call_rpc(ctx, &res, driver_get_device_max_mig_device_count_1, (ptr_t)dev) < 0)
+                goto fail;
+
+        // Extract max MIG device count from the result of the RPC call and
+        // populate the 'count' return value.
+        *count = (unsigned int)res.driver_get_device_max_mig_device_count_res_u.count;
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+
+ fail:
+        // Free the results of the RPC call and return.
+        xdr_free((xdrproc_t)xdr_driver_get_device_max_mig_device_count_res, (caddr_t)&res);
+        return (rv);
+}
+
+bool_t
+driver_get_device_max_mig_device_count_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_max_mig_device_count_res *res, maybe_unused struct svc_req *req)
+{
+        // Initialize local variables.
+        struct driver *ctx = (struct driver *)ctxptr;
+        struct driver_device *handle = (struct driver_device *)dev;
+
+        // Clear out 'res' which will hold the result of this RPC call.
+        memset(res, 0, sizeof(*res));
+
+        // Grab a shorter reference to fields embedded in 'res' for the max MIG count.
+        unsigned int *count = (unsigned int *)&res->driver_get_device_max_mig_device_count_res_u.count;
+
+        // Call into NVML to get the max MIG count and assign it to '*count'.
+        if (call_nvml(ctx, nvmlDeviceGetMaxMigDeviceCount, handle->nvml, count) < 0)
+                goto fail;
+
+        return (true);
+
+ fail:
+        // Populate the error in the result of the RPC call and return.
+        error_to_xdr(ctx->err, res);
+        return (true);
+}
+
+int
+driver_get_device_mig_device(struct driver *ctx, struct driver_device *dev, unsigned int idx, struct driver_device **mig_dev)
+{
+        // Initialize local variables.
+        struct driver_get_device_mig_device_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *mig_dev = NULL;
+
+        // Make an RPC call to get the MIG device t index 'idx' for this device.
+        if (call_rpc(ctx, &res, driver_get_device_mig_device_1, (ptr_t)dev, idx) < 0)
+                goto fail;
+
+        // Extract the MIG device from the result of the RPC call and populate
+        // the 'mig_dev' return value.
+        *mig_dev = (struct driver_device *)res.driver_get_device_mig_device_res_u.dev;
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+
+ fail:
+        xdr_free((xdrproc_t)xdr_driver_get_device_mig_device_res, (caddr_t)&res);
+        return (rv);
+}
+
+bool_t
+driver_get_device_mig_device_1_svc(ptr_t ctxptr, ptr_t dev, u_int idx, driver_get_device_mig_device_res *res, maybe_unused struct svc_req *req)
+{
+        // Initialize local variables.
+        struct driver *ctx = (struct driver *)ctxptr;
+        struct driver_device *handle = (struct driver_device *)dev;
+
+        // Clear out 'res' which will hold the result of this RPC call.
+        memset(res, 0, sizeof(*res));
+
+        // Sanity check that we don't exceed MAX_MIG_DEVICES.
+        if (idx >= MAX_MIG_DEVICES) {
+                error_setx(ctx->err, "too many MIG devices");
+                goto fail;
+        }
+
+        // Grab a shorter reference to mig field embedded in the device handle
+        // for the MIG device.
+        nvmlDevice_t *mig_dev = &handle->mig[idx].nvml;
+
+        // Call into NVML to get the max MIG count and assign it to '*count'.
+        if (call_nvml(ctx, nvmlDeviceGetMigDeviceHandleByIndex, handle->nvml, idx, mig_dev) < 0) {
+                // If a device isn't found, then it's not an error, we just set
+                // the result to NULL in our return value.
+                switch (ctx->err->code) {
+                case NVML_ERROR_NOT_FOUND:
+                        res->driver_get_device_mig_device_res_u.dev = (ptr_t)NULL;
+                        return (true);
+                }
+                // In all other cases, fail if the NVML call is not successful.
+                goto fail;
+        }
+
+        // Assign the field embedded in the 'res' to point to the MIG device.
+        res->driver_get_device_mig_device_res_u.dev = (ptr_t)&handle->mig[idx];
+
+        return (true);
+
+ fail:
+        // Populate the error in the result of the RPC call and return.
+        error_to_xdr(ctx->err, res);
+        return (true);
+}
+
+int
+driver_get_device_gpu_instance_id(struct driver *ctx, struct driver_device *dev, unsigned int *id)
+{
+        // Initialize local variables.
+        struct driver_get_device_gpu_instance_id_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *id = 0;
+
+        // Make an RPC call to grab the instance ID of the GPU Instance.
+        if (call_rpc(ctx, &res, driver_get_device_gpu_instance_id_1, (ptr_t)dev) < 0)
+                goto fail;
+
+        // Extract the id from the result of the RPC call and populate the 'id'
+        // return value.
+        *id = (unsigned int)res.driver_get_device_gpu_instance_id_res_u.id;
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+
+ fail:
+        // Free the results of the RPC call and return.
+        xdr_free((xdrproc_t)xdr_driver_get_device_gpu_instance_id_res, (caddr_t)&res);
+        return (rv);
+}
+
+bool_t
+driver_get_device_gpu_instance_id_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_gpu_instance_id_res *res, maybe_unused struct svc_req *req)
+{
+        // Initialize local variables.
+        struct driver *ctx = (struct driver *)ctxptr;
+        struct driver_device *handle = (struct driver_device *)dev;
+
+        // Clear out 'res' which will hold the result of this RPC call.
+        memset(res, 0, sizeof(*res));
+
+        // Grab a shorter reference to fields embedded in 'res' for the id.
+        unsigned int *id = (unsigned int *)&res->driver_get_device_gpu_instance_id_res_u.id;
+
+        // Call into NVML to get the GPU Instance Info.
+        if (call_nvml(ctx, nvmlDeviceGetGpuInstanceId, handle->nvml, id) < 0)
+                goto fail;
+
+        return (true);
+
+ fail:
+        // Populate the error in the result of the RPC call and return.
+        error_to_xdr(ctx->err, res);
+        return (true);
+}
+
+int
+driver_get_device_compute_instance_id(struct driver *ctx, struct driver_device *dev, unsigned int *id)
+{
+        // Initialize local variables.
+        struct driver_get_device_compute_instance_id_res res = {0};
+        int rv = -1;
+
+        // Initialize return values.
+        *id = 0;
+
+        // Make an RPC call to grab the instance ID of the Compute Instance.
+        if (call_rpc(ctx, &res, driver_get_device_compute_instance_id_1, (ptr_t)dev) < 0)
+                goto fail;
+
+        // Extract the id from the result of the RPC call and populate the 'id'
+        // return value.
+        *id = (unsigned int)res.driver_get_device_compute_instance_id_res_u.id;
+
+        // Set 'rv' to 0 to indicate success.
+        rv = 0;
+
+ fail:
+        // Free the results of the RPC call and return.
+        xdr_free((xdrproc_t)xdr_driver_get_device_compute_instance_id_res, (caddr_t)&res);
+        return (rv);
+}
+
+bool_t
+driver_get_device_compute_instance_id_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_compute_instance_id_res *res, maybe_unused struct svc_req *req)
+{
+        // Initialize local variables.
+        struct driver *ctx = (struct driver *)ctxptr;
+        struct driver_device *handle = (struct driver_device *)dev;
+
+        // Clear out 'res' which will hold the result of this RPC call.
+        memset(res, 0, sizeof(*res));
+
+        // Grab a shorter reference to fields embedded in 'res' for the id.
+        unsigned int *id = (unsigned int *)&res->driver_get_device_compute_instance_id_res_u.id;
+
+        // Call into NVML to get the Compute Instance Info.
+        if (call_nvml(ctx, nvmlDeviceGetComputeInstanceId, handle->nvml, id) < 0)
+                goto fail;
+
+        return (true);
+ fail:
+        // Populate the error in the result of the RPC call and return.
         error_to_xdr(ctx->err, res);
         return (true);
 }

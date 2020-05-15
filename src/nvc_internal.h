@@ -36,6 +36,16 @@
 #define NV_UVM_PROC_DRIVER       "/proc/driver/nvidia-uvm"
 #define NV_APP_PROFILE_DIR       "/etc/nvidia/nvidia-application-profiles-rc.d"
 
+#define NV_PROC_DRIVER_CAPS    NV_PROC_DRIVER "/capabilities"
+#define NV_MIG_CAPS_PATH       NV_PROC_DRIVER_CAPS "/mig"
+#define NV_GPU_CAPS_PATH       NV_PROC_DRIVER_CAPS "/gpu%d"
+#define NV_GPU_MIG_CAPS_PATH   NV_GPU_CAPS_PATH "/mig"
+#define NV_GPU_INST_CAPS_PATH  NV_GPU_MIG_CAPS_PATH "/gi%d"
+#define NV_COMP_INST_CAPS_PATH NV_GPU_INST_CAPS_PATH "/ci%d"
+#define NV_MIG_ACCESS_FILE     "access"
+#define NV_MIG_CONFIG_FILE     "config"
+#define NV_MIG_MONITOR_FILE    "monitor"
+
 #define CUDA_RUNTIME_DIR         "/usr/local/cuda"
 
 struct nvc_context {

@@ -18,6 +18,8 @@ const struct argp list_usage = {
                 {"binaries", 'b', NULL, 0, "List driver binaries", -1},
                 {"ipcs", 'i', NULL, 0, "List driver ipcs", -1},
                 {"compat32", 0x80, NULL, 0, "Enable 32bits compatibility", -1},
+                {"mig-config", 0x81, "ID", 0, "MIG devices to list config capabilities files for", -1},
+                {"mig-monitor", 0x82, "ID", 0, "MIG devices to list monitor capabilities files for", -1},
                 {0},
         },
         list_parser,
@@ -51,9 +53,21 @@ list_parser(int key, char *arg, struct argp_state *state)
         case 0x80:
                 ctx->compat32 = true;
                 break;
+        case 0x81:
+                if (str_join(&err, &ctx->mig_config, arg, ",") < 0)
+                        goto fatal;
+                break;
+        case 0x82:
+                if (str_join(&err, &ctx->mig_monitor, arg, ",") < 0)
+                        goto fatal;
+                break;
         case ARGP_KEY_END:
                 if (state->argc == 1) {
                         if ((ctx->devices = xstrdup(&err, "all")) == NULL)
+                                goto fatal;
+                        if ((ctx->mig_config = xstrdup(&err, "all")) == NULL)
+                                goto fatal;
+                        if ((ctx->mig_monitor = xstrdup(&err, "all")) == NULL)
                                 goto fatal;
                         ctx->compat32 = true;
                         ctx->list_libs = true;
@@ -79,7 +93,9 @@ list_command(const struct context *ctx)
         struct nvc_config *nvc_cfg = NULL;
         struct nvc_driver_info *drv = NULL;
         struct nvc_device_info *dev = NULL;
-        const struct nvc_device **gpus = NULL;
+        struct devices devices = {0};
+        struct devices mig_config_devices = {0};
+        struct devices mig_monitor_devices = {0};
         struct error err = {0};
         int rv = EXIT_FAILURE;
 
@@ -124,25 +140,76 @@ list_command(const struct context *ctx)
                 goto fail;
         }
 
-        /* List the visible GPU devices. */
+        /* Allocate space for selecting GPU devices and MIG devices */
+        if (new_devices(&err, dev, &devices) < 0) {
+                warn("memory allocation failed: %s", err.msg);
+                goto fail;
+        }
+
+        /* Allocate space for selecting which devices are available for MIG config */
+        if (new_devices(&err, dev, &mig_config_devices) < 0) {
+                warn("memory allocation failed: %s", err.msg);
+                goto fail;
+        }
+
+        /* Allocate space for selecting which devices are available for MIG monitor */
+        if (new_devices(&err, dev, &mig_monitor_devices) < 0) {
+                warn("memory allocation failed: %s", err.msg);
+                goto fail;
+        }
+
+        /* Select the visible GPU devices. */
         if (dev->ngpus > 0) {
-                gpus = alloca(dev->ngpus * sizeof(*gpus));
-                memset(gpus, 0, dev->ngpus * sizeof(*gpus));
-                if (select_devices(&err, ctx->devices, gpus, dev->gpus, dev->ngpus) < 0) {
+                if (select_devices(&err, ctx->devices, dev, &devices) < 0) {
                         warnx("device error: %s", err.msg);
                         goto fail;
                 }
         }
+
+        /* Select the devices available for MIG config among the visible devices. */
+        if (select_mig_config_devices(&err, ctx->mig_config, &devices, &mig_config_devices) < 0) {
+                warnx("mig-config error: %s", err.msg);
+                goto fail;
+        }
+
+        /* Select the devices available for MIG monitor among the visible devices. */
+        if (select_mig_monitor_devices(&err, ctx->mig_monitor, &devices, &mig_monitor_devices) < 0) {
+                warnx("mig-monitor error: %s", err.msg);
+                goto fail;
+        }
+
+        /* List the visible GPU devices and MIG devices. */
         if (ctx->devices != NULL) {
-                for (size_t i = 0; i < drv->ndevs; ++i)
+                for (size_t i = 0; i < drv->ndevs; ++i) {
                         printf("%s\n", drv->devs[i].path);
-                for (size_t i = 0; i < dev->ngpus; ++i) {
-                        if (gpus[i] != NULL)
-                                printf("%s\n", gpus[i]->node.path);
+                }
+                for (size_t i = 0; i < devices.ngpus; ++i) {
+                        printf("%s\n", devices.gpus[i]->node.path);
+                }
+                if (!mig_config_devices.all && !mig_monitor_devices.all) {
+                        for (size_t i = 0; i < devices.nmigs; ++i) {
+                                printf("%s/%s\n", devices.migs[i]->gi_caps_path, NV_MIG_ACCESS_FILE);
+                                printf("%s/%s\n", devices.migs[i]->ci_caps_path, NV_MIG_ACCESS_FILE);
+                        }
                 }
         }
 
-        /* List the driver components */
+        /* List the files required for MIG configuration of the visible devices */
+        if (mig_config_devices.all) {
+                printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_CONFIG_FILE);
+                for (size_t i = 0; i < mig_config_devices.ngpus; ++i) {
+                        printf("%s\n", mig_config_devices.gpus[i]->mig_caps_path);
+                }
+		}
+        /* List the files required for MIG monitoring of the visible devices */
+        if (mig_monitor_devices.all) {
+                printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_MONITOR_FILE);
+                for (size_t i = 0; i < mig_monitor_devices.ngpus; ++i) {
+                        printf("%s\n", mig_monitor_devices.gpus[i]->mig_caps_path);
+                }
+		}
+
+        /* List the driver devices */
         if (ctx->list_bins) {
                 for (size_t i = 0; i < drv->nbins; ++i)
                         printf("%s\n", drv->bins[i]);
@@ -166,6 +233,7 @@ list_command(const struct context *ctx)
         }
         rv = EXIT_SUCCESS;
  fail:
+        free_devices(&devices);
         nvc_shutdown(nvc);
         nvc_device_info_free(dev);
         nvc_driver_info_free(drv);

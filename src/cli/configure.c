@@ -2,7 +2,6 @@
  * Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
  */
 
-#include <alloca.h>
 #include <err.h>
 #include <stdlib.h>
 
@@ -28,8 +27,10 @@ const struct argp configure_usage = {
                 {"graphics", 'g', NULL, 0, "Enable graphics capability", -1},
                 {"display", 'D', NULL, 0, "Enable display capability", -1},
                 {"compat32", 0x80, NULL, 0, "Enable 32bits compatibility", -1},
-                {"no-cgroups", 0x81, NULL, 0, "Don't use cgroup enforcement", -1},
-                {"no-devbind", 0x82, NULL, 0, "Don't bind mount devices", -1},
+                {"mig-config", 0x81, "ID", 0, "Enable configuration of MIG devices", -1},
+                {"mig-monitor", 0x82, "ID", 0, "Enable monitoring of MIG devices", -1},
+                {"no-cgroups", 0x83, NULL, 0, "Don't use cgroup enforcement", -1},
+                {"no-devbind", 0x84, NULL, 0, "Don't bind mount devices", -1},
                 {0},
         },
         configure_parser,
@@ -100,10 +101,18 @@ configure_parser(int key, char *arg, struct argp_state *state)
                         goto fatal;
                 break;
         case 0x81:
-                if (str_join(&err, &ctx->container_flags, "no-cgroups", " ") < 0)
+                if (str_join(&err, &ctx->mig_config, arg, ",") < 0)
                         goto fatal;
                 break;
         case 0x82:
+                if (str_join(&err, &ctx->mig_monitor, arg, ",") < 0)
+                        goto fatal;
+                break;
+        case 0x83:
+                if (str_join(&err, &ctx->container_flags, "no-cgroups", " ") < 0)
+                        goto fatal;
+                break;
+        case 0x84:
                 if (str_join(&err, &ctx->container_flags, "no-devbind", " ") < 0)
                         goto fatal;
                 break;
@@ -179,8 +188,10 @@ configure_command(const struct context *ctx)
         struct nvc_device_info *dev = NULL;
         struct nvc_container *cnt = NULL;
         struct nvc_container_config *cnt_cfg = NULL;
-        const struct nvc_device **gpus = NULL;
         bool eval_reqs = true;
+        struct devices devices = {0};
+        struct devices mig_config_devices = {0};
+        struct devices mig_monitor_devices = {0};
         struct error err = {0};
         int rv = EXIT_FAILURE;
 
@@ -233,25 +244,60 @@ configure_command(const struct context *ctx)
                 goto fail;
         }
 
+        /* Allocate space for selecting GPU devices and MIG devices */
+        if (new_devices(&err, dev, &devices) < 0) {
+                warn("memory allocation failed: %s", err.msg);
+                goto fail;
+        }
+
+        /* Allocate space for selecting which devices are available for MIG config */
+        if (new_devices(&err, dev, &mig_config_devices) < 0) {
+                warn("memory allocation failed: %s", err.msg);
+                goto fail;
+        }
+
+        /* Allocate space for selecting which devices are available for MIG monitor */
+        if (new_devices(&err, dev, &mig_monitor_devices) < 0) {
+                warn("memory allocation failed: %s", err.msg);
+                goto fail;
+        }
+
         /* Select the visible GPU devices. */
         if (dev->ngpus > 0) {
-                gpus = alloca(dev->ngpus * sizeof(*gpus));
-                memset(gpus, 0, dev->ngpus * sizeof(*gpus));
-                if (select_devices(&err, ctx->devices, gpus, dev->gpus, dev->ngpus) < 0) {
+                if (select_devices(&err, ctx->devices, dev, &devices) < 0) {
                         warnx("device error: %s", err.msg);
                         goto fail;
                 }
+        }
+
+        /* Select the devices available for MIG config among the visible devices. */
+        if (select_mig_config_devices(&err, ctx->mig_config, &devices, &mig_config_devices) < 0) {
+                warnx("mig-config error: %s", err.msg);
+                goto fail;
+        }
+
+        /* Select the devices available for MIG monitor among the visible . */
+        if (select_mig_monitor_devices(&err, ctx->mig_monitor, &devices, &mig_monitor_devices) < 0) {
+                warnx("mig-monitor error: %s", err.msg);
+                goto fail;
         }
 
         /*
          * Check the container requirements.
          * Try evaluating per visible device first, and globally otherwise.
          */
-        for (size_t i = 0; i < dev->ngpus; ++i) {
-                if (gpus[i] == NULL)
-                        continue;
-
-                struct dsl_data data = {drv, gpus[i]};
+        for (size_t i = 0; i < devices.ngpus; ++i) {
+                struct dsl_data data = {drv, devices.gpus[i]};
+                for (size_t j = 0; j < ctx->nreqs; ++j) {
+                        if (dsl_evaluate(&err, ctx->reqs[j], &data, rules, nitems(rules)) < 0) {
+                                warnx("requirement error: %s", err.msg);
+                                goto fail;
+                        }
+                }
+                eval_reqs = false;
+        }
+        for (size_t i = 0; i < devices.nmigs; ++i) {
+                struct dsl_data data = {drv, devices.migs[i]->parent};
                 for (size_t j = 0; j < ctx->nreqs; ++j) {
                         if (dsl_evaluate(&err, ctx->reqs[j], &data, rules, nitems(rules)) < 0) {
                                 warnx("requirement error: %s", err.msg);
@@ -270,7 +316,7 @@ configure_command(const struct context *ctx)
                 }
         }
 
-        /* Mount the driver and visible devices. */
+        /* Mount the driver, visible devices, mig-configs and mig-monitors. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_MOUNT], ecaps_size(NVC_MOUNT)) < 0) {
                 warnx("permission error: %s", err.msg);
                 goto fail;
@@ -279,12 +325,44 @@ configure_command(const struct context *ctx)
                 warnx("mount error: %s", nvc_error(nvc));
                 goto fail;
         }
-        for (size_t i = 0; i < dev->ngpus; ++i) {
-                if (gpus[i] != NULL && nvc_device_mount(nvc, cnt, gpus[i]) < 0) {
+        for (size_t i = 0; i < devices.ngpus; ++i) {
+                if (nvc_device_mount(nvc, cnt, devices.gpus[i]) < 0) {
                         warnx("mount error: %s", nvc_error(nvc));
                         goto fail;
                 }
         }
+        if (!mig_config_devices.all && !mig_monitor_devices.all) {
+                for (size_t i = 0; i < devices.nmigs; ++i) {
+                        if (nvc_mig_device_access_caps_mount(nvc, cnt, devices.migs[i]) < 0) {
+                                warnx("mount error: %s", nvc_error(nvc));
+                                goto fail;
+                        }
+                }
+        }
+        if (mig_config_devices.all) {
+                if (nvc_mig_config_global_caps_mount(nvc, cnt) < 0) {
+                        warnx("mount error: %s", nvc_error(nvc));
+                        goto fail;
+                }
+                for (size_t i = 0; i < mig_config_devices.ngpus; ++i) {
+                        if (nvc_device_mig_caps_mount(nvc, cnt, mig_config_devices.gpus[i]) < 0) {
+                                warnx("mount error: %s", nvc_error(nvc));
+                                goto fail;
+                        }
+                }
+		}
+        if (mig_monitor_devices.all) {
+                if (nvc_mig_monitor_global_caps_mount(nvc, cnt) < 0) {
+                        warnx("mount error: %s", nvc_error(nvc));
+                        goto fail;
+                }
+                for (size_t i = 0; i < mig_monitor_devices.ngpus; ++i) {
+                        if (nvc_device_mig_caps_mount(nvc, cnt, mig_monitor_devices.gpus[i]) < 0) {
+                                warnx("mount error: %s", nvc_error(nvc));
+                                goto fail;
+                        }
+                }
+		}
 
         /* Update the container ldcache. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_LDCACHE], ecaps_size(NVC_LDCACHE)) < 0) {
@@ -303,6 +381,7 @@ configure_command(const struct context *ctx)
         rv = EXIT_SUCCESS;
 
  fail:
+        free_devices(&devices);
         nvc_shutdown(nvc);
         nvc_container_free(cnt);
         nvc_device_info_free(dev);
