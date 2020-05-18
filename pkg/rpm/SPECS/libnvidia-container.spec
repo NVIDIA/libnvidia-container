@@ -86,7 +86,11 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Fri May 15 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.1.0-1
-- 1ddcdfc1 Add support for MIG (Multi-Instance-Gpus)
+- b217c6ad Update build system to support multi-arch builds
+- 1ddcdfc1 Add support for MIG (Milti-Instance-GPUs)
+- ddae363a Add libnvidia-allocator.so as a compute-lib
+- 6ed0f129 Add option to not use pivot_root
+- e18e9b7a Allow devices to be identified by PCI bus ID
 
 * Mon Nov 11 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.7-1
 - 8d90918a Add Raytracing library
