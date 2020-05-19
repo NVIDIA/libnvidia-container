@@ -353,7 +353,7 @@ driver_get_cuda_version_1_svc(ptr_t ctxptr, driver_get_cuda_version_res *res, ma
         int version;
 
         memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlSystemGetCudaDriverVersion_v2, &version) < 0)
+        if (call_nvml(ctx, nvmlSystemGetCudaDriverVersion, &version) < 0)
                 goto fail;
 
         res->driver_get_cuda_version_res_u.vers.major = (unsigned int)version / 1000;
