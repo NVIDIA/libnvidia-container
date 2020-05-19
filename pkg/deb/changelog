@@ -1,3 +1,12 @@
+libnvidia-container (1.1.1-1) UNRELEASED; urgency=medium
+
+  * deeb499 Fixup deb packaging files to remove warnings
+  * 6003504 nvmlSystemGetCudaDriverVersion_v2 to nvmlSystemGetCudaDriverVersion
+  * 1ee8b60 Update centos8/rhel8 to conditionally set appropriate CFLAGS and LDLIBS
+  * d746370 Add smoke test to verify functioning build for all OSs on amd64/x86_64
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 19 May 2020 12:05:32 -0700
+
 libnvidia-container (1.1.0-1) UNRELEASED; urgency=medium
 
   * b217c6ad Update build system to support multi-arch builds
@@ -18,7 +27,7 @@ libnvidia-container (1.0.6-1) UNRELEASED; urgency=medium
 
   * b6aff41 Update error messages for CUDA version requirements
 
- -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 013 Sep 2019 15:38:16 -0700
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 13 Sep 2019 15:38:16 -0700
 
 libnvidia-container (1.0.5-1) UNRELEASED; urgency=medium
 

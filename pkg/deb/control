@@ -33,7 +33,7 @@ Description: NVIDIA container runtime library (development files)
 
 Package: libnvidia-container@MAJOR@-dbg
 Section: @SECTION@debug
-Priority: extra
+Priority: optional
 Architecture: any
 Multi-Arch: same
 Depends: libnvidia-container@MAJOR@ (= ${binary:Version}), ${misc:Depends}
