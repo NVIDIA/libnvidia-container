@@ -18,7 +18,7 @@ libnvidia-container (1.0.6-1) UNRELEASED; urgency=medium
 
   * b6aff41 Update error messages for CUDA version requirements
 
- -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 013 Sep 2019 15:38:16 -0700
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 13 Sep 2019 15:38:16 -0700
 
 libnvidia-container (1.0.5-1) UNRELEASED; urgency=medium
 
