@@ -87,6 +87,19 @@ docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
 --%: docker-build-%
 	@
 
+# Define verify targets to run a minimal sanity check that everything has built
+# and runs correctly for a given OS on amd64/x86_64. Requires a working NVIDIA
+# driver installation on a native amd64/x86_64 machine.
+$(patsubst %, %-verify, $(AMD64_TARGETS)): ARCH := amd64
+$(patsubst %, %-verify, $(AMD64_TARGETS)): %-verify: --verify-%
+$(patsubst %, %-verify, $(X86_64_TARGETS)): ARCH := x86_64
+$(patsubst %, %-verify, $(X86_64_TARGETS)): %-verify: --verify-%
+docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
+                     $(patsubst %, %-verify, $(X86_64_TARGETS))
+
+--verify-%: docker-verify-%
+	@
+
 # private OS targets with defaults
 --ubuntu%: OS := ubuntu
 --debian%: OS := debian
@@ -107,6 +120,9 @@ docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
 --rhel%: ARTIFACTS_DIR = $(DIST_DIR)/rhel$(VERSION)/$(ARCH)
 --rhel8%: CFLAGS := -I/usr/include/tirpc
 --rhel8%: LDLIBS := -ltirpc
+
+--verify-rhel%: OS := centos
+--verify-rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 
 docker-build-%:
 	@echo "Building for $(TARGET_PLATFORM)"
@@ -130,6 +146,15 @@ docker-build-%:
 	    -e SECTION \
 	    -v $(ARTIFACTS_DIR):/dist \
 	    $(BUILDIMAGE)
+
+docker-verify-%: %
+	@echo "Verifying for $(TARGET_PLATFORM)"
+	$(DOCKER) run \
+	    --privileged \
+	    --runtime=nvidia  \
+	    -e NVIDIA_VISIBLE_DEVICES=all \
+	    --rm $(BUILDIMAGE) \
+	    bash -c "make install; LD_LIBRARY_PATH=/usr/local/lib/  nvidia-container-cli -k -d /dev/tty info"
 
 docker-clean:
 	IMAGES=$$(docker images "nvidia/$(LIB_NAME)/*" --format="{{.ID}}"); \
