@@ -85,6 +85,12 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Tue May 19 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.1.1-1
+- deeb499 Fixup deb packaging files to remove warnings
+- 6003504 nvmlSystemGetCudaDriverVersion_v2 to nvmlSystemGetCudaDriverVersion
+- 1ee8b60 Update centos8/rhel8 to conditionally set appropriate CFLAGS and LDLIBS
+- d746370 Add smoke test to verify functioning build for all OSs on amd64/x86_64
+
 * Fri May 15 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.1.0-1
 - b217c6ad Update build system to support multi-arch builds
 - 1ddcdfc1 Add support for MIG (Milti-Instance-GPUs)
