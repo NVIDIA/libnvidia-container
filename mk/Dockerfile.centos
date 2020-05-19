@@ -47,8 +47,10 @@ RUN if [ "$WITH_LIBELF" = "no" ]; then \
 WORKDIR /tmp/libnvidia-container
 COPY . .
 
-ENV CFLAGS=-I/usr/include/tirpc
-ENV LDLIBS=-ltirpc
+ARG CFLAGS
+ARG LDLIBS
+ENV CFLAGS=${CFLAGS}
+ENV LDLIBS=${LDFLAGS}
 RUN make distclean && make -j"$(nproc)"
 
 ENV DIST_DIR /dist

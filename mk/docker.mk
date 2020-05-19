@@ -76,6 +76,8 @@ docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
 
 # Default variables for all private '--' targets below.
 # One private target is defined for each OS we support.
+--%: CFLAGS :=
+--%: LDLIBS :=
 --%: TARGET_PLATFORM = $(*)
 --%: VERSION = $(patsubst $(OS)%-$(ARCH),%,$(TARGET_PLATFORM))
 --%: BASEIMAGE = $(OS):$(VERSION)
@@ -88,8 +90,12 @@ docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
 # private OS targets with defaults
 --ubuntu%: OS := ubuntu
 --debian%: OS := debian
---centos%: OS := centos
 --amazonlinux%: OS := amazonlinux
+
+# private centos target with overrides
+--centos%: OS := centos
+--centos8%: CFLAGS := -I/usr/include/tirpc
+--centos8%: LDLIBS := -ltirpc
 
 # private opensuse-leap target with overrides
 --opensuse-leap%: OS := opensuse-leap
@@ -99,6 +105,8 @@ docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
 --rhel%: OS := centos
 --rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 --rhel%: ARTIFACTS_DIR = $(DIST_DIR)/rhel$(VERSION)/$(ARCH)
+--rhel8%: CFLAGS := -I/usr/include/tirpc
+--rhel8%: LDLIBS := -ltirpc
 
 docker-build-%:
 	@echo "Building for $(TARGET_PLATFORM)"
@@ -112,6 +120,8 @@ docker-build-%:
 	    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
 	    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
 	    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
+	    --build-arg CFLAGS=$(CFLAGS) \
+	    --build-arg LDLIBS=$(LDLIBS) \
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
