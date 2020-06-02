@@ -21,6 +21,7 @@
 #include "error.h"
 #include "ldcache.h"
 #include "utils.h"
+#include "dxcore.h"
 
 #define NV_DEVICE_MAJOR          195
 #define NV_CTL_DEVICE_MINOR      255
@@ -55,6 +56,7 @@ struct nvc_context {
         int mnt_ns;
         struct driver drv;
         bool no_pivot;
+        struct dxcore_context dxcore;
 };
 
 struct nvc_container {
