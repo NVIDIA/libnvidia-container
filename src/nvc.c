@@ -21,6 +21,7 @@
 
 #include "common.h"
 #include "driver.h"
+#include "dxcore.h"
 #include "debug.h"
 #include "error.h"
 #include "options.h"
@@ -290,10 +291,21 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
         if ((ctx->mnt_ns = xopen(&ctx->err, path, O_RDONLY|O_CLOEXEC)) < 0)
                 goto fail;
 
-        if (flags & OPT_LOAD_KMODS) {
+        // Initialize dxcore first to check if we are on a platform that supports dxcore.
+        // If we are on not a platform with dxcore we will load the nvidia kernel modules and
+        // use the nvidia libraries directly. If we do have access to dxcore, we will
+        // do all the initial setup using dxcore and piggy back on the dxcore infrastructure
+        // to enumerate gpus and find the driver location
+        if (dxcore_init_context(&ctx->dxcore) < 0) {
+                log_info("dxcore initialization failed, assuming dxcore is not present");
+                ctx->dxcore.initialized = 0;
+        }
+
+        if ((flags & OPT_LOAD_KMODS) && !ctx->dxcore.initialized) {
                 if (load_kernel_modules(&ctx->err, ctx->cfg.root) < 0)
                         goto fail;
         }
+
         if (driver_init(&ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
                 goto fail;
 
@@ -324,6 +336,9 @@ nvc_shutdown(struct nvc_context *ctx)
 
         memset(&ctx->cfg, 0, sizeof(ctx->cfg));
         ctx->mnt_ns = -1;
+
+        if (ctx->dxcore.initialized)
+                dxcore_deinit_context(&ctx->dxcore);
 
         log_close();
         ctx->initialized = false;
