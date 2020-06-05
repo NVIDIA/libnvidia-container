@@ -37,7 +37,7 @@ static int find_device_node(struct error *, const char *, const char *, struct n
 static int find_ipc_path(struct error *, const char *, const char *, char **);
 static int lookup_libraries(struct error *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct nvc_driver_info *, const char *, int32_t);
-static int lookup_devices(struct error *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_devices(struct dxcore_context *, struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
 static void clear_mig_device_info(struct nvc_mig_device_info *);
@@ -336,38 +336,63 @@ lookup_binaries(struct error *err, struct nvc_driver_info *info, const char *roo
 }
 
 static int
-lookup_devices(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
+lookup_devices(struct dxcore_context *dxcore, struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
 {
-        struct nvc_device_node uvm, uvm_tools, modeset, *node;
+        struct nvc_device_node uvm, uvm_tools, modeset, nvidiactl, dxg, *node;
+        int has_dxg = 0;
+        int has_nvidiactl = 0;
         int has_uvm = 0;
         int has_uvm_tools = 0;
         int has_modeset = 0;
 
-        if (!(flags & OPT_NO_UVM)) {
-                if ((has_uvm = find_device_node(err, root, NV_UVM_DEVICE_PATH, &uvm)) < 0)
+        if (dxcore->initialized) {
+                struct stat dxgDeviceStat;
+
+                if (xstat(err, (char *)DXG_DEVICE_PATH, &dxgDeviceStat) < 0) {
+                        log_errf("failed to query device information for %s", DXG_DEVICE_PATH);
                         return (-1);
-                if ((has_uvm_tools = find_device_node(err, root, NV_UVM_TOOLS_DEVICE_PATH, &uvm_tools)) < 0)
-                        return (-1);
+                }
+
+                dxg.path = (char *)DXG_DEVICE_PATH;
+                dxg.id = dxgDeviceStat.st_rdev;
+
+                has_dxg = 1;
         }
-        if (!(flags & OPT_NO_MODESET)) {
-                modeset.path = (char *)NV_MODESET_DEVICE_PATH;
-                modeset.id = makedev(NV_DEVICE_MAJOR, NV_MODESET_DEVICE_MINOR);
-                has_modeset = 1;
+        else {
+                if (!(flags & OPT_NO_UVM)) {
+                        if ((has_uvm = find_device_node(err, root, NV_UVM_DEVICE_PATH, &uvm)) < 0)
+                                return (-1);
+                        if ((has_uvm_tools = find_device_node(err, root, NV_UVM_TOOLS_DEVICE_PATH, &uvm_tools)) < 0)
+                                return (-1);
+                }
+                if (!(flags & OPT_NO_MODESET)) {
+                        modeset.path = (char *)NV_MODESET_DEVICE_PATH;
+                        modeset.id = makedev(NV_DEVICE_MAJOR, NV_MODESET_DEVICE_MINOR);
+                        has_modeset = 1;
+                }
+                nvidiactl.path = (char *)NV_CTL_DEVICE_PATH;
+                nvidiactl.id = makedev(NV_DEVICE_MAJOR, NV_CTL_DEVICE_MINOR);
+                has_nvidiactl = 1;
         }
 
-        info->ndevs = (size_t)(1 + has_uvm + has_uvm_tools + has_modeset);
+        info->ndevs = (size_t)(has_dxg + has_nvidiactl + has_uvm + has_uvm_tools + has_modeset);
         info->devs = node = xcalloc(err, info->ndevs, sizeof(*info->devs));
         if (info->devs == NULL)
                 return (-1);
 
         node->path = (char *)NV_CTL_DEVICE_PATH;
         node->id = makedev(NV_DEVICE_MAJOR, NV_CTL_DEVICE_MINOR);
+
+        if (has_dxg)
+                *(node++) = dxg;
+        if (has_nvidiactl)
+                *(node++) = nvidiactl;
         if (has_uvm)
-                *(++node) = uvm;
+                *(node++) = uvm;
         if (has_uvm_tools)
-                *(++node) = uvm_tools;
+                *(node++) = uvm_tools;
         if (has_modeset)
-                *(++node) = modeset;
+                *(node++) = modeset;
 
         for (size_t i = 0; i < info->ndevs; ++i)
                 log_infof("listing device %s", info->devs[i].path);
@@ -561,7 +586,7 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
                 goto fail;
         if (lookup_binaries(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
-        if (lookup_devices(&ctx->err, info, ctx->cfg.root, flags) < 0)
+        if (lookup_devices(&ctx->dxcore, &ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
         if (lookup_ipcs(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
@@ -587,14 +612,81 @@ nvc_driver_info_free(struct nvc_driver_info *info)
         free(info);
 }
 
+static int
+nvc_init_dxcore_adapter_info(struct nvc_context *ctx, unsigned int index, struct nvc_device *gpu)
+{
+        // Support for NVML on WSL is not yet complete. Until then we will use dummy values
+        // for WSL GPUs.
+        gpu->model = xstrdup(&ctx->err, "UNKNOWN");
+        gpu->uuid = xstrdup(&ctx->err, "GPU-00000000-0000-0000-0000-000000000000");
+        gpu->brand = xstrdup(&ctx->err, "UNKNOWN");
+        gpu->busid = xstrdup(&ctx->err, "0");
+        gpu->arch = xstrdup(&ctx->err, "UNKNOWN");
+
+        // No Device associated to a WSL GPU. Everything uses /dev/dxg
+        gpu->node.path = NULL;
+
+        // No MIG support for WSL
+        gpu->mig_capable = 0;
+        gpu->mig_caps_path = NULL;
+        gpu->mig_devices.ndevices = 0;
+        gpu->mig_devices.devices = NULL;
+
+        log_infof("listing dxcore adapter %d (%s at %s)", index, gpu->uuid, gpu->busid);
+
+        return 0;
+}
+
+static int
+nvc_init_gpu_info(struct nvc_context *ctx, unsigned int index, struct nvc_device *gpu)
+{
+        struct driver_device *dev;
+        struct driver *drv = &ctx->drv;
+        struct error *err = &ctx->err;
+        bool mig_enabled;
+        unsigned int minor;
+
+        if (driver_get_device(drv, index, &dev) < 0)
+                goto fail;
+        if (driver_get_device_model(drv, dev, &gpu->model) < 0)
+                goto fail;
+        if (driver_get_device_uuid(drv, dev, &gpu->uuid) < 0)
+                goto fail;
+        if (driver_get_device_busid(drv, dev, &gpu->busid) < 0)
+                goto fail;
+        if (driver_get_device_arch(drv, dev, &gpu->arch) < 0)
+                goto fail;
+        if (driver_get_device_brand(drv, dev, &gpu->brand) < 0)
+                goto fail;
+        if (driver_get_device_minor(drv, dev, &minor) < 0)
+                goto fail;
+        if (xasprintf(err, &gpu->mig_caps_path, NV_GPU_CAPS_PATH, minor) < 0)
+                goto fail;
+        if (xasprintf(err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
+                goto fail;
+        if (driver_get_device_mig_capable(drv, dev, &gpu->mig_capable) < 0)
+                goto fail;
+        if (driver_get_device_mig_enabled(drv, dev, &mig_enabled) < 0)
+                goto fail;
+        gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
+
+        if (fill_mig_device_info(ctx, mig_enabled, dev, gpu) < 0)
+                goto fail;
+
+        log_infof("listing device %s (%s at %s)", gpu->node.path, gpu->uuid, gpu->busid);
+
+        return 0;
+
+ fail:
+        return (-1);
+}
+
 struct nvc_device_info *
 nvc_device_info_new(struct nvc_context *ctx, const char *opts)
 {
         struct nvc_device_info *info;
         struct nvc_device *gpu;
-        unsigned int n, minor;
-        bool mig_enabled;
-        struct driver_device *dev;
+        unsigned int n;
         /*int32_t flags;*/
 
         if (validate_context(ctx) < 0)
@@ -610,42 +702,29 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 
-        if (driver_get_device_count(&ctx->drv, &n) < 0)
-                goto fail;
+        if (ctx->dxcore.initialized) {
+                n = ctx->dxcore.adapterCount;
+        }
+        else {
+                if (driver_get_device_count(&ctx->drv, &n) < 0)
+                        goto fail;
+        }
+
         info->ngpus = n;
         info->gpus = gpu = xcalloc(&ctx->err, info->ngpus, sizeof(*info->gpus));
         if (info->gpus == NULL)
                 goto fail;
 
         for (unsigned int i = 0; i < n; ++i, ++gpu) {
-                if (driver_get_device(&ctx->drv, i, &dev) < 0)
-                        goto fail;
-                if (driver_get_device_model(&ctx->drv, dev, &gpu->model) < 0)
-                        goto fail;
-                if (driver_get_device_uuid(&ctx->drv, dev, &gpu->uuid) < 0)
-                        goto fail;
-                if (driver_get_device_busid(&ctx->drv, dev, &gpu->busid) < 0)
-                        goto fail;
-                if (driver_get_device_arch(&ctx->drv, dev, &gpu->arch) < 0)
-                        goto fail;
-                if (driver_get_device_brand(&ctx->drv, dev, &gpu->brand) < 0)
-                        goto fail;
-                if (driver_get_device_minor(&ctx->drv, dev, &minor) < 0)
-                        goto fail;
-                if (xasprintf(&ctx->err, &gpu->mig_caps_path, NV_GPU_CAPS_PATH, minor) < 0)
-                        goto fail;
-                if (xasprintf(&ctx->err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
-                        goto fail;
-                if (driver_get_device_mig_capable(&ctx->drv, dev, &gpu->mig_capable) < 0)
-                        goto fail;
-                if (driver_get_device_mig_enabled(&ctx->drv, dev, &mig_enabled) < 0)
-                        goto fail;
-                gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
+                int rv = 0;
 
-                if (fill_mig_device_info(ctx, mig_enabled, dev, gpu) < 0)
-                        goto fail;
+                if (ctx->dxcore.initialized)
+                        rv = nvc_init_dxcore_adapter_info(ctx, i, gpu);
+                else
+                        rv = nvc_init_gpu_info(ctx, i, gpu);
 
-                log_infof("listing device %s (%s at %s)", gpu->node.path, gpu->uuid, gpu->busid);
+                if (rv < 0)
+                        goto fail;
         }
         return (info);
 
