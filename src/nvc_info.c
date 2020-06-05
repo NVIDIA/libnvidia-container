@@ -23,7 +23,8 @@
 
 #define MAX_BINS (nitems(utility_bins) + \
                   nitems(compute_bins))
-#define MAX_LIBS (nitems(utility_libs) + \
+#define MAX_LIBS (nitems(dxcore_libs) + \
+                  nitems(utility_libs) + \
                   nitems(compute_libs) + \
                   nitems(video_libs) + \
                   nitems(graphics_libs) + \
@@ -31,11 +32,12 @@
                   nitems(graphics_libs_compat))
 
 static int select_libraries(struct error *, void *, const char *, const char *, const char *);
-static int find_library_paths(struct error *, struct nvc_driver_info *, const char *, const char *, const char * const [], size_t);
+static int select_wsl_libraries(struct error *, void *, const char *, const char *, const char *);
+static int find_library_paths(struct dxcore_context *, struct error *, struct nvc_driver_info *, const char *, const char *, const char * const [], size_t);
 static int find_binary_paths(struct error *, struct nvc_driver_info *, const char *, const char * const [], size_t);
 static int find_device_node(struct error *, const char *, const char *, struct nvc_device_node *);
 static int find_ipc_path(struct error *, const char *, const char *, char **);
-static int lookup_libraries(struct error *, struct nvc_driver_info *, const char *, int32_t, const char *);
+static int lookup_libraries(struct dxcore_context *, struct error *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_devices(struct dxcore_context *, struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
@@ -118,6 +120,10 @@ static const char * const graphics_libs_compat[] = {
         "libGLESv2.so",                     /* OpenGL ES v2 legacy _or_ ICD loader (GLVND) */
 };
 
+static const char * const dxcore_libs[] = {
+        "libdxcore.so",                     /* Core library for dxcore support */
+};
+
 static int
 select_libraries(struct error *err, void *ptr, const char *root, const char *orig_path, const char *alt_path)
 {
@@ -161,8 +167,32 @@ select_libraries(struct error *err, void *ptr, const char *root, const char *ori
 }
 
 static int
-find_library_paths(struct error *err, struct nvc_driver_info *info, const char *root,
-    const char *ldcache, const char * const libs[], size_t size)
+select_wsl_libraries(struct error *err, void *ptr, const char *root, const char *orig_path, const char *alt_path)
+{
+        int rv = true;
+
+        // Unused parameters
+        err = err;
+        ptr = ptr;
+        root = root;
+
+        // Always prefer the lxss libraries
+        if (orig_path && strstr(orig_path, "/wsl/lib/")) {
+                rv = false;
+                goto done;
+        }
+
+ done:
+        if (rv)
+                log_infof((orig_path == NULL) ? "%s %s" : "%s %s over %s", "selecting", alt_path, orig_path);
+        else
+                log_infof("skipping %s", alt_path);
+        return (rv);
+}
+
+static int
+find_library_paths(struct dxcore_context *dxcore, struct error *err, struct nvc_driver_info *info,
+                   const char *root, const char *ldcache, const char * const libs[], size_t size)
 {
         char path[PATH_MAX];
         struct ldcache ld;
@@ -179,7 +209,7 @@ find_library_paths(struct error *err, struct nvc_driver_info *info, const char *
         if (info->libs == NULL)
                 goto fail;
         if (ldcache_resolve(&ld, LIB_ARCH, root, libs,
-            info->libs, info->nlibs, select_libraries, info) < 0)
+                            info->libs, info->nlibs, dxcore->initialized ? select_wsl_libraries : select_libraries, info) < 0)
                 goto fail;
 
         info->nlibs32 = size;
@@ -284,7 +314,7 @@ find_ipc_path(struct error *err, const char *root, const char *ipc, char **buf)
 }
 
 static int
-lookup_libraries(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags, const char *ldcache)
+lookup_libraries(struct dxcore_context *dxcore, struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags, const char *ldcache)
 {
         const char *libs[MAX_LIBS];
         const char **ptr = libs;
@@ -298,7 +328,10 @@ lookup_libraries(struct error *err, struct nvc_driver_info *info, const char *ro
         else
                 ptr = array_append(ptr, graphics_libs_glvnd, nitems(graphics_libs_glvnd));
 
-        if (find_library_paths(err, info, root, ldcache, libs, (size_t)(ptr - libs)) < 0)
+        if (dxcore->initialized)
+                ptr = array_append(ptr, dxcore_libs, nitems(dxcore_libs));
+
+        if (find_library_paths(dxcore, err, info, root, ldcache, libs, (size_t)(ptr - libs)) < 0)
                 return (-1);
 
         for (size_t i = 0; info->libs != NULL && i < info->nlibs; ++i) {
@@ -537,6 +570,8 @@ match_binary_flags(const char *bin, int32_t flags)
 bool
 match_library_flags(const char *lib, int32_t flags)
 {
+        if (str_array_match_prefix(lib, dxcore_libs, nitems(dxcore_libs)))
+                return (true);
         if ((flags & OPT_UTILITY_LIBS) && str_array_match_prefix(lib, utility_libs, nitems(utility_libs)))
                 return (true);
         if ((flags & OPT_COMPUTE_LIBS) && str_array_match_prefix(lib, compute_libs, nitems(compute_libs)))
@@ -582,7 +617,7 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
                         goto fail;
         }
 
-        if (lookup_libraries(&ctx->err, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
+        if (lookup_libraries(&ctx->dxcore, &ctx->err, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
                 goto fail;
         if (lookup_binaries(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
