@@ -28,12 +28,14 @@
 #include "utils.h"
 #include "xfuncs.h"
 
+#include "dxcore.h"
+
 #define MAX_DEVICES     64
 #define MAX_MIG_DEVICES  8
 #define REAP_TIMEOUT_MS 10
 
 static int setup_rpc_client(struct driver *);
-static noreturn void setup_rpc_service(struct driver *, const char *, uid_t, gid_t, pid_t);
+static noreturn void setup_rpc_service(struct dxcore_context *, struct driver *, const char *, uid_t, gid_t, pid_t);
 static int reap_process(struct error *, pid_t, int, bool);
 
 struct mig_device {
@@ -48,6 +50,9 @@ struct driver_device {
 #define call_nvml(ctx, sym, ...) __extension__ ({                                                      \
         union {void *ptr; __typeof__(&sym) fn;} u_;                                                    \
         nvmlReturn_t r_;                                                                               \
+                                                                                                       \
+        if (!(ctx)->nvml_dl)                                                                           \
+                return NVML_ERROR_NOT_SUPPORTED;                                                       \
                                                                                                        \
         dlerror();                                                                                     \
         u_.ptr = dlsym((ctx)->nvml_dl, #sym);                                                          \
@@ -94,7 +99,7 @@ setup_rpc_client(struct driver *ctx)
 }
 
 static void
-setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppid)
+setup_rpc_service(struct dxcore_context *dxcore, struct driver *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppid)
 {
         int rv = EXIT_FAILURE;
 
@@ -143,7 +148,7 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         if (getppid() != ppid)
                 kill(getpid(), SIGTERM);
 
-        if ((ctx->nvml_dl = xdlopen(ctx->err, SONAME_LIBNVML, RTLD_NOW)) == NULL)
+        if ((ctx->nvml_dl = xdlopen(ctx->err, SONAME_LIBNVML, RTLD_NOW)) == NULL && !dxcore->initialized)
                 goto fail;
 
         if ((ctx->rpc_svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
@@ -205,7 +210,7 @@ driver_program_1_freeresult(maybe_unused SVCXPRT *svc, xdrproc_t xdr_result, cad
 }
 
 int
-driver_init(struct driver *ctx, struct error *err, const char *root, uid_t uid, gid_t gid)
+driver_init(struct dxcore_context *dxcore, struct driver *ctx, struct error *err, const char *root, uid_t uid, gid_t gid)
 {
         int ret;
         pid_t pid;
@@ -219,7 +224,7 @@ driver_init(struct driver *ctx, struct error *err, const char *root, uid_t uid, 
                 goto fail;
         }
         if (ctx->pid == 0)
-                setup_rpc_service(ctx, root, uid, gid, pid);
+                setup_rpc_service(dxcore, ctx, root, uid, gid, pid);
         if (setup_rpc_client(ctx) < 0)
                 goto fail;
 
@@ -245,6 +250,9 @@ bool_t
 driver_init_1_svc(ptr_t ctxptr, driver_init_res *res, maybe_unused struct svc_req *req)
 {
         struct driver *ctx = (struct driver *)ctxptr;
+
+        if (!(ctx->nvml_dl))
+                return (true);
 
         memset(res, 0, sizeof(*res));
         if (call_nvml(ctx, nvmlInit_v2) < 0)
@@ -281,6 +289,11 @@ bool_t
 driver_shutdown_1_svc(ptr_t ctxptr, driver_shutdown_res *res, maybe_unused struct svc_req *req)
 {
         struct driver *ctx = (struct driver *)ctxptr;
+
+        if (!(ctx->nvml_dl)) {
+                svc_exit();
+                return (true);
+        }
 
         memset(res, 0, sizeof(*res));
         if (call_nvml(ctx, nvmlShutdown) < 0)

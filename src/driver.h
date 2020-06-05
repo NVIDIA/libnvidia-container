@@ -24,6 +24,8 @@ SVCXPRT *svcunixfd_create(int, u_int, u_int);
 #define SOCK_CLT 0
 #define SOCK_SVC 1
 
+struct dxcore_context;
+
 struct driver_device;
 struct driver_mig_device;
 
@@ -39,7 +41,7 @@ struct driver {
 
 void driver_program_1(struct svc_req *, register SVCXPRT *);
 
-int driver_init(struct driver *, struct error *, const char *, uid_t, gid_t);
+int driver_init(struct dxcore_context *, struct driver *, struct error *, const char *, uid_t, gid_t);
 int driver_shutdown(struct driver *);
 int driver_get_rm_version(struct driver *, char **);
 int driver_get_cuda_version(struct driver *, char **);

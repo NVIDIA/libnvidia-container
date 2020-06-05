@@ -542,10 +542,21 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 
-        if (driver_get_rm_version(&ctx->drv, &info->nvrm_version) < 0)
-                goto fail;
-        if (driver_get_cuda_version(&ctx->drv, &info->cuda_version) < 0)
-                goto fail;
+        if (ctx->dxcore.initialized) {
+                // on WSL we don't have yet support for NVML query. Until we get a version
+                // with NVML support we populate the data with the minimum CUDA/RM supported
+                // version by CUDA on WSL
+                log_info("No NVML support on early WSL2 build, assuming CUDA version is 11.0 and RM version is 460");
+                info->nvrm_version = xstrdup(&ctx->err, "460.0");
+                info->cuda_version = xstrdup(&ctx->err, "11.0");
+        }
+        else {
+                if (driver_get_rm_version(&ctx->drv, &info->nvrm_version) < 0)
+                        goto fail;
+                if (driver_get_cuda_version(&ctx->drv, &info->cuda_version) < 0)
+                        goto fail;
+        }
+
         if (lookup_libraries(&ctx->err, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
                 goto fail;
         if (lookup_binaries(&ctx->err, info, ctx->cfg.root, flags) < 0)

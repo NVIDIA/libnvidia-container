@@ -306,7 +306,7 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
                         goto fail;
         }
 
-        if (driver_init(&ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
+        if (driver_init(&ctx->dxcore, &ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
                 goto fail;
 
         ctx->initialized = true;
