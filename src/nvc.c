@@ -306,7 +306,8 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
                         goto fail;
         }
 
-        if (driver_init(&ctx->dxcore, &ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
+        // NVML is not yet supported on WSL so don't use it. It will be enabled in the future.
+        if (!ctx->dxcore.initialized && driver_init(&ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
                 goto fail;
 
         ctx->initialized = true;
@@ -328,7 +329,7 @@ nvc_shutdown(struct nvc_context *ctx)
                 return (0);
 
         log_info("shutting down library context");
-        if (driver_shutdown(&ctx->drv) < 0)
+        if (!ctx->dxcore.initialized && driver_shutdown(&ctx->drv) < 0)
                 return (-1);
         free(ctx->cfg.root);
         free(ctx->cfg.ldcache);
