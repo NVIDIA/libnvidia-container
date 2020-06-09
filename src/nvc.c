@@ -296,18 +296,24 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
         // use the nvidia libraries directly. If we do have access to dxcore, we will
         // do all the initial setup using dxcore and piggy back on the dxcore infrastructure
         // to enumerate gpus and find the driver location
+        log_info("attempting to load dxcore to see if we are running under Windows Subsystem for Linux (WSL)");
         if (dxcore_init_context(&ctx->dxcore) < 0) {
-                log_info("dxcore initialization failed, assuming dxcore is not present");
+                log_info("dxcore initialization failed, continuing assuming a non-WSL environment");
                 ctx->dxcore.initialized = 0;
         }
 
-        if ((flags & OPT_LOAD_KMODS) && !ctx->dxcore.initialized) {
-                if (load_kernel_modules(&ctx->err, ctx->cfg.root) < 0)
+        if (flags & OPT_LOAD_KMODS) {
+                if (ctx->dxcore.initialized)
+                        log_warn("skipping kernel modules load on WSL");
+                else if (load_kernel_modules(&ctx->err, ctx->cfg.root) < 0)
                         goto fail;
         }
 
-        // NVML is not yet supported on WSL so don't use it. It will be enabled in the future.
-        if (!ctx->dxcore.initialized && driver_init(&ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
+        // NVML is not yet supported on WSL so we skip driver initialization.
+        // Once NVML support is added to WSL, this short-circuit will be removed.
+        if (ctx->dxcore.initialized)
+                log_warn("skipping driver initialization on WSL");
+        else if (driver_init(&ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
                 goto fail;
 
         ctx->initialized = true;
@@ -329,17 +335,21 @@ nvc_shutdown(struct nvc_context *ctx)
                 return (0);
 
         log_info("shutting down library context");
-        if (!ctx->dxcore.initialized && driver_shutdown(&ctx->drv) < 0)
+        // NVML is not yet supported on WSL so we skip driver shutdown.
+        // Once NVML support is added to WSL, this short-circuit will be removed.
+        if (ctx->dxcore.initialized)
+                log_warn("skipping driver shutdown on WSL");
+        else if (driver_shutdown(&ctx->drv) < 0)
                 return (-1);
+        if (ctx->dxcore.initialized)
+                dxcore_deinit_context(&ctx->dxcore);
+
         free(ctx->cfg.root);
         free(ctx->cfg.ldcache);
         xclose(ctx->mnt_ns);
 
         memset(&ctx->cfg, 0, sizeof(ctx->cfg));
         ctx->mnt_ns = -1;
-
-        if (ctx->dxcore.initialized)
-                dxcore_deinit_context(&ctx->dxcore);
 
         log_close();
         ctx->initialized = false;

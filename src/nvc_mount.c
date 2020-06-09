@@ -36,6 +36,8 @@ static int  setup_cgroup(struct error *, const char *, dev_t);
 static int  symlink_library(struct error *, const char *, const char *, const char *, uid_t, gid_t);
 static int  symlink_libraries(struct error *, const struct nvc_container *, const char * const [], size_t);
 static void filter_libraries(const struct nvc_driver_info *, char * [], size_t *);
+static int  device_mount_dxcore(struct nvc_context *, const struct nvc_container *);
+static int  device_mount_native(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
 
 static char **
 mount_files(struct error *err, const char *root, const struct nvc_container *cnt, const char *dir, char *paths[], size_t size)
@@ -539,6 +541,79 @@ filter_libraries(const struct nvc_driver_info *info, char * paths[], size_t *siz
         array_pack(paths, size);
 }
 
+static int
+device_mount_dxcore(struct nvc_context *ctx, const struct nvc_container *cnt)
+{
+        char **drvstore_mnt = NULL;
+        size_t drvstore_size = 0;
+
+        // under dxcore we want to mount the driver store key libraries.
+        // Devices are not directly visible under dxcore everything is done via /dev/dxg
+        // so we only need to mount the per-gpu driver driverStore there are no other per gpu
+        // device mounting that needs to be done
+        //
+        // Note that we are using adapter 0 for all the devices. This is because all
+        // the NVIDIA adapters should share the same drivers on a system. If this
+        // assumption is changed we will need to query the LUID for each nvc_device
+        // and find the matching driver store.
+        drvstore_size = (size_t)ctx->dxcore.adapterList[0].driverStoreLibraryCount;
+        if ((drvstore_mnt = mount_driverstore_files(&ctx->err,
+                                                    ctx->cfg.root,
+                                                    cnt,
+                                                    ctx->dxcore.adapterList[0].pDriverStorePath,
+                                                    ctx->dxcore.adapterList[0].pDriverStoreLibraries,
+                                                    drvstore_size)) == NULL)
+        {
+                drvstore_size = 0;
+                log_errf("failed to mount DriverStore libraries %s", ctx->dxcore.adapterList[0].pDriverStorePath);
+
+                for (size_t i = 0; i < drvstore_size; ++i)
+                        unmount(drvstore_mnt[i]);
+                array_free(drvstore_mnt, drvstore_size);
+
+                return (-1);
+        }
+
+        return 0;
+}
+
+static int
+device_mount_native(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_device *dev)
+{
+        char *dev_mnt = NULL;
+        char *proc_mnt = NULL;
+        int rv = -1;
+
+        if (!(cnt->flags & OPT_NO_DEVBIND)) {
+                if ((dev_mnt = mount_device(&ctx->err, ctx->cfg.root, cnt, &dev->node)) == NULL)
+                        goto fail;
+        }
+        if ((proc_mnt = mount_procfs_gpu(&ctx->err, ctx->cfg.root, cnt, dev->busid)) == NULL)
+                goto fail;
+        if (cnt->flags & OPT_GRAPHICS_LIBS) {
+                if (update_app_profile(&ctx->err, cnt, dev->node.id) < 0)
+                        goto fail;
+        }
+        if (!(cnt->flags & OPT_NO_CGROUPS)) {
+                if (setup_cgroup(&ctx->err, cnt->dev_cg, dev->node.id) < 0)
+                        goto fail;
+        }
+
+        rv = 0;
+
+ fail:
+        if (rv < 0) {
+                unmount(proc_mnt);
+                unmount(dev_mnt);
+        }
+
+        free(proc_mnt);
+        free(dev_mnt);
+
+        return (rv);
+}
+
+
 int
 nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_driver_info *info)
 {
@@ -559,16 +634,18 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         if (mnt == NULL)
                 goto fail;
 
-        if (!ctx->dxcore.initialized) {
-                /* Procfs mount */
-                 if ((*ptr++ = mount_procfs(&ctx->err, ctx->cfg.root, cnt)) == NULL)
-                         goto fail;
+        /* Procfs mount */
+        if (ctx->dxcore.initialized)
+                log_warn("skipping procfs mount on WSL");
+        else if ((*ptr++ = mount_procfs(&ctx->err, ctx->cfg.root, cnt)) == NULL)
+                goto fail;
 
-                /* Application profile mount */
-                if (cnt->flags & OPT_GRAPHICS_LIBS) {
-                        if ((*ptr++ = mount_app_profile(&ctx->err, cnt)) == NULL)
-                                goto fail;
-                }
+        /* Application profile mount */
+        if (cnt->flags & OPT_GRAPHICS_LIBS) {
+                if (ctx->dxcore.initialized)
+                        log_warn("skipping app profile mount on WSL");
+                else if ((*ptr++ = mount_app_profile(&ctx->err, cnt)) == NULL)
+                        goto fail;
         }
 
         /* Host binary and library mounts */
@@ -654,78 +731,6 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         return (rv);
 }
 
-static int
-nvc_device_mount_dxcore(struct nvc_context *ctx, const struct nvc_container *cnt)
-{
-        char **drvstore_mnt = NULL;
-        size_t drvstore_size = 0;
-
-        // under dxcore we want to mount the driver store key libraries.
-        // Devices are not directly visible under dxcore everything is done via /dev/dxg
-        // so we only need to mount the per-gpu driver driverStore there are no other per gpu
-        // device mounting that needs to be done
-        //
-        // Note that we are using adapter 0 for all the devices. This is because all
-        // the NVIDIA adapters should share the same drivers on a system. If this
-        // assumption is changed we will need to query the LUID for each nvc_device
-        // and find the matching driver store.
-        drvstore_size = (size_t)ctx->dxcore.adapterList[0].driverStoreLibraryCount;
-        if ((drvstore_mnt = mount_driverstore_files(&ctx->err,
-                                                    ctx->cfg.root,
-                                                    cnt,
-                                                    ctx->dxcore.adapterList[0].pDriverStorePath,
-                                                    ctx->dxcore.adapterList[0].pDriverStoreLibraries,
-                                                    drvstore_size)) == NULL)
-        {
-                drvstore_size = 0;
-                log_errf("failed to mount DriverStore libraries %s", ctx->dxcore.adapterList[0].pDriverStorePath);
-
-                for (size_t i = 0; i < drvstore_size; ++i)
-                        unmount(drvstore_mnt[i]);
-                array_free(drvstore_mnt, drvstore_size);
-
-                return (-1);
-        }
-
-        return 0;
-}
-
-static int
-nvc_device_mount_native(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_device *dev)
-{
-        char *dev_mnt = NULL;
-        char *proc_mnt = NULL;
-        int rv = -1;
-
-        if (!(cnt->flags & OPT_NO_DEVBIND)) {
-                if ((dev_mnt = mount_device(&ctx->err, ctx->cfg.root, cnt, &dev->node)) == NULL)
-                        goto fail;
-        }
-        if ((proc_mnt = mount_procfs_gpu(&ctx->err, ctx->cfg.root, cnt, dev->busid)) == NULL)
-                goto fail;
-        if (cnt->flags & OPT_GRAPHICS_LIBS) {
-                if (update_app_profile(&ctx->err, cnt, dev->node.id) < 0)
-                        goto fail;
-        }
-        if (!(cnt->flags & OPT_NO_CGROUPS)) {
-                if (setup_cgroup(&ctx->err, cnt->dev_cg, dev->node.id) < 0)
-                        goto fail;
-        }
-
-        rv = 0;
-
- fail:
-        if (rv < 0) {
-                unmount(proc_mnt);
-                unmount(dev_mnt);
-        }
-
-        free(proc_mnt);
-        free(dev_mnt);
-
-        return (rv);
-}
-
 int
 nvc_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_device *dev)
 {
@@ -739,18 +744,13 @@ nvc_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
                 return (-1);
 
-        if (ctx->dxcore.initialized) {
-                rv = nvc_device_mount_dxcore(ctx, cnt);
-        }
-        else {
-                rv = nvc_device_mount_native(ctx, cnt, dev);
-        }
+        if (ctx->dxcore.initialized)
+                rv = device_mount_dxcore(ctx, cnt);
+        else rv = device_mount_native(ctx, cnt, dev);
 
-        if (rv < 0) {
+        if (rv < 0)
                 assert_func(ns_enter_at(NULL, ctx->mnt_ns, CLONE_NEWNS));
-        } else {
-                rv = ns_enter_at(&ctx->err, ctx->mnt_ns, CLONE_NEWNS);
-        }
+        else rv = ns_enter_at(&ctx->err, ctx->mnt_ns, CLONE_NEWNS);
 
         return (rv);
 }
