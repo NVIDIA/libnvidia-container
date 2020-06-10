@@ -49,6 +49,8 @@
 
 #define CUDA_RUNTIME_DIR         "/usr/local/cuda"
 
+#define MSFT_DXG_DEVICE_PATH     _PATH_DEV "dxg"
+
 struct nvc_context {
         bool initialized;
         struct error err;
