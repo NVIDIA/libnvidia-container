@@ -1,0 +1,26 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: amd64
+Codename: experimental
+Components: main
+Date: Fri, 17 Nov 2017 03:05:40 +0000
+Description: NVIDIA container runtime library repository
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container/experimental
+Suite: stretch
+Version: 1.0
+SHA512:
+ 1395adb2e3210e4e51db8fdc325f00a204e874f497da9ee3cd1d92d418d2efa2ffb318dbc18833a859c31798f4c0146d67fd840bc2f0e8ffe0ed1a75c3fa28d6             4327 Packages
+ 27b8f8503b81fa2960d92e15b0961bf00093f5ef859963349531069ea541417563d40e278ea46b7559272431a2caeaf2e4c3689cfd427c237d4127f5fd81d3c3             1460 Packages.xz
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCgAdFiEEIEFim/U1L6wXipsfbtkco6wRYM0FAl7ioUEACgkQbtkco6wR
+YM0lSggAsbKzNCHnOBz8oIZXs+lIb5tqCO+R2v+/uIk/QdbFBtJBx24VNHzqgJ1/
+ke+/nxJAz+c5NDk/quDE70qDFnKATUK4ieHFhcBP4WRRHIHFUxfYvoLsypJ5QVvW
+TGvT7WwZ6OY06f2owdFFqerKTj7cHKwcog/EsHQ5LMBw2Evnigoj8GXLedjdn/Tn
+6u2F07aLRRDUzCdS/jzgQ+l6rM/Aa6aLUP9zfHYasyhqXpv4G4MN4toQg/EsHu50
+4Mz+MuYwzaPzs4KzXX2Y4KPRTIRORC72xmbZJUB8+lHO+fR6fZb9oJHVhhQAiJiT
+IYqisnZUAgI7paDZ9Y0GSe+iX43l8g==
+=92pi
+-----END PGP SIGNATURE-----
