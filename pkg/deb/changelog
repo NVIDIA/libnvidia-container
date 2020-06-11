@@ -1,3 +1,11 @@
+libnvidia-container (1.2.0~rc.2-1) experimental; urgency=medium
+
+  * 4ea9b59f Update debian based dockerfiles to set distribution in changelog
+  * a57fcea5 Add 'ngx' as a new capability for a container
+  * 6f16ccd3 Allow --mig-monitor and --mig-config on machines without MIG capable GPUs
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Thu, 18 Jun 2020 21:09:59 -0700
+
 libnvidia-container (1.2.0~rc.1-1) experimental; urgency=medium
 
   * 4263e684 Add support for Windows Subsystem for Linux (WSL2)

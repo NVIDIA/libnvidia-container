@@ -87,6 +87,11 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Thu Jun 18 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-0.1.rc.2
+- 4ea9b59f Update debian based dockerfiles to set distribution in changelog
+- a57fcea5 Add 'ngx' as a new capability for a container
+- 6f16ccd3 Allow --mig-monitor and --mig-config on machines without MIG capable GPUs
+
 * Thu Jun 11 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-0.1.rc.1
 - 4263e684 Add support for Windows Subsystem for Linux (WSL2)
 - e768f8bc Fix ability to build RC packages via TAG=rc.<num>
