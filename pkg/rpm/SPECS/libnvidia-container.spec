@@ -5,7 +5,9 @@ Packager: NVIDIA CORPORATION <cudatools@nvidia.com>
 URL: https://github.com/NVIDIA/libnvidia-container
 BuildRequires: make
 Version: %{_version}
-Release: 1
+%{!?_tag: %define _release 1}
+%{?_tag:  %define _release 0.1.%{_tag}}
+Release: %{_release}
 Summary: NVIDIA container runtime library
 %description
 The nvidia-container library provides an interface to configure GNU/Linux
@@ -72,7 +74,7 @@ This package contains the debugging symbols for the library.
 %{_prefix}/lib/debug%{_libdir}/lib*.so.*
 
 %package tools
-Requires: %{name}%{_major}%{?_isa} >= %{version}-1, %{name}%{_major}%{?_isa} >= %{version}-%{release}
+Requires: %{name}%{_major}%{?_isa} >= %{version}-%{release}
 Summary: NVIDIA container runtime library (command-line tools)
 %description tools
 The nvidia-container library provides an interface to configure GNU/Linux
@@ -85,6 +87,10 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Thu Jun 11 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-0.1.rc.1
+- 4263e684 Add support for Windows Subsystem for Linux (WSL2)
+- 2b75a55e Fix ability to build RC packages via TAG=rc.<num>
+
 * Tue May 19 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.1.1-1
 - deeb499 Fixup deb packaging files to remove warnings
 - 6003504 nvmlSystemGetCudaDriverVersion_v2 to nvmlSystemGetCudaDriverVersion
