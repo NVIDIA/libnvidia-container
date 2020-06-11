@@ -14,9 +14,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define NVC_MAJOR   1
-#define NVC_MINOR   1
-#define NVC_PATCH   1
-#define NVC_VERSION "1.1.1"
+#define NVC_MINOR   2
+#define NVC_PATCH   0
+#define NVC_VERSION "1.2.0"
 
 #define NVC_ARG_MAX 256
 
