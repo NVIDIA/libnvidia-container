@@ -299,5 +299,5 @@ rpm: all
 	$(CP) -T $(PKG_DIR)/rpm $(DESTDIR)
 	$(LN) -nsf $(CURDIR) $(DESTDIR)/BUILD
 	$(MKDIR) -p $(DESTDIR)/RPMS && $(LN) -nsf $(DIST_DIR) $(DESTDIR)/RPMS/$(ARCH)
-	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" -D"_major $(MAJOR)" SPECS/*
+	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" $(and $(TAG),-D"_tag $(TAG)") -D"_major $(MAJOR)" SPECS/*
 	-cd $(DESTDIR) && rpmlint RPMS/*
