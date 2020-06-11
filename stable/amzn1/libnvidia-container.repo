@@ -1,0 +1,9 @@
+[libnvidia-container]
+name=libnvidia-container
+baseurl=https://nvidia.github.io/libnvidia-container/stable/amzn1/$basearch
+repo_gpgcheck=1
+gpgcheck=0
+enabled=1
+gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
