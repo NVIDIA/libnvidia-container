@@ -355,7 +355,7 @@ configure_command(const struct context *ctx)
                                 goto fail;
                         }
                 }
-		}
+        }
         if (mig_monitor_devices.all) {
                 if (nvc_mig_monitor_global_caps_mount(nvc, cnt) < 0) {
                         warnx("mount error: %s", nvc_error(nvc));
@@ -367,7 +367,7 @@ configure_command(const struct context *ctx)
                                 goto fail;
                         }
                 }
-		}
+        }
 
         /* Update the container ldcache. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_LDCACHE], ecaps_size(NVC_LDCACHE)) < 0) {

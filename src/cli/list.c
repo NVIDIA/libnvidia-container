@@ -200,14 +200,14 @@ list_command(const struct context *ctx)
                 for (size_t i = 0; i < mig_config_devices.ngpus; ++i) {
                         printf("%s\n", mig_config_devices.gpus[i]->mig_caps_path);
                 }
-		}
+        }
         /* List the files required for MIG monitoring of the visible devices */
         if (mig_monitor_devices.all) {
                 printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_MONITOR_FILE);
                 for (size_t i = 0; i < mig_monitor_devices.ngpus; ++i) {
                         printf("%s\n", mig_monitor_devices.gpus[i]->mig_caps_path);
                 }
-		}
+        }
 
         /* List the driver devices */
         if (ctx->list_bins) {
