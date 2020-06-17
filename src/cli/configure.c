@@ -344,7 +344,7 @@ configure_command(const struct context *ctx)
                         }
                 }
         }
-        if (mig_config_devices.all) {
+        if (mig_config_devices.all && mig_config_devices.ngpus) {
                 if (nvc_mig_config_global_caps_mount(nvc, cnt) < 0) {
                         warnx("mount error: %s", nvc_error(nvc));
                         goto fail;
@@ -355,8 +355,8 @@ configure_command(const struct context *ctx)
                                 goto fail;
                         }
                 }
-		}
-        if (mig_monitor_devices.all) {
+        }
+        if (mig_monitor_devices.all && mig_monitor_devices.ngpus) {
                 if (nvc_mig_monitor_global_caps_mount(nvc, cnt) < 0) {
                         warnx("mount error: %s", nvc_error(nvc));
                         goto fail;
@@ -367,7 +367,7 @@ configure_command(const struct context *ctx)
                                 goto fail;
                         }
                 }
-		}
+        }
 
         /* Update the container ldcache. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_LDCACHE], ecaps_size(NVC_LDCACHE)) < 0) {

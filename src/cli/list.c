@@ -195,19 +195,19 @@ list_command(const struct context *ctx)
         }
 
         /* List the files required for MIG configuration of the visible devices */
-        if (mig_config_devices.all) {
+        if (mig_config_devices.all && mig_config_devices.ngpus) {
                 printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_CONFIG_FILE);
                 for (size_t i = 0; i < mig_config_devices.ngpus; ++i) {
                         printf("%s\n", mig_config_devices.gpus[i]->mig_caps_path);
                 }
-		}
+        }
         /* List the files required for MIG monitoring of the visible devices */
-        if (mig_monitor_devices.all) {
+        if (mig_monitor_devices.all && mig_monitor_devices.ngpus) {
                 printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_MONITOR_FILE);
                 for (size_t i = 0; i < mig_monitor_devices.ngpus; ++i) {
                         printf("%s\n", mig_monitor_devices.gpus[i]->mig_caps_path);
                 }
-		}
+        }
 
         /* List the driver devices */
         if (ctx->list_bins) {
