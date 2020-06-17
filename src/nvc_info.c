@@ -22,8 +22,10 @@
 #include "xfuncs.h"
 
 #define MAX_BINS (nitems(utility_bins) + \
-                  nitems(compute_bins))
+                  nitems(compute_bins) + \
+                  nitems(ngx_bins))
 #define MAX_LIBS (nitems(dxcore_libs) + \
+                  nitems(ngx_libs) + \
                   nitems(utility_libs) + \
                   nitems(compute_libs) + \
                   nitems(video_libs) + \
@@ -70,8 +72,13 @@ static const char * const compute_bins[] = {
         "nvidia-cuda-mps-server",           /* Multi process service server */
 };
 
+static const char * const ngx_bins[] = {
+        "ngx-updater",                      /* Update service for new NGX features */
+};
+
 static const char * const utility_libs[] = {
         "libnvidia-ml.so",                  /* Management library */
+        "libnvidia-ngx.so",                 /* NGX library */
         "libnvidia-cfg.so",                 /* GPU configuration */
 };
 
@@ -120,6 +127,10 @@ static const char * const graphics_libs_compat[] = {
         "libEGL.so",                        /* EGL legacy _or_ ICD loader (GLVND) */
         "libGLESv1_CM.so",                  /* OpenGL ES v1 common profile legacy _or_ ICD loader (GLVND) */
         "libGLESv2.so",                     /* OpenGL ES v2 legacy _or_ ICD loader (GLVND) */
+};
+
+static const char * const ngx_libs[] = {
+        "libnvidia-ngx.so",                 /* NGX library */
 };
 
 static const char * const dxcore_libs[] = {
@@ -325,6 +336,7 @@ lookup_libraries(struct error *err, struct dxcore_context *dxcore, struct nvc_dr
 
         ptr = array_append(ptr, utility_libs, nitems(utility_libs));
         ptr = array_append(ptr, compute_libs, nitems(compute_libs));
+        ptr = array_append(ptr, ngx_libs, nitems(ngx_libs));
         ptr = array_append(ptr, video_libs, nitems(video_libs));
         ptr = array_append(ptr, graphics_libs, nitems(graphics_libs));
         if (flags & OPT_NO_GLVND)
@@ -360,6 +372,7 @@ lookup_binaries(struct error *err, struct nvc_driver_info *info, const char *roo
         ptr = array_append(ptr, utility_bins, nitems(utility_bins));
         if (!(flags & OPT_NO_MPS))
                 ptr = array_append(ptr, compute_bins, nitems(compute_bins));
+        ptr = array_append(ptr, ngx_bins, nitems(ngx_bins));
 
         if (find_binary_paths(err, info, root, bins, (size_t)(ptr - bins)) < 0)
                 return (-1);
@@ -634,6 +647,8 @@ match_binary_flags(const char *bin, int32_t flags)
                 return (true);
         if ((flags & OPT_COMPUTE_BINS) && str_array_match_prefix(bin, compute_bins, nitems(compute_bins)))
                 return (true);
+        if ((flags & OPT_NGX_BINS) && str_array_match_prefix(bin, ngx_bins, nitems(ngx_bins)))
+                return (true);
         return (false);
 }
 
@@ -651,6 +666,8 @@ match_library_flags(const char *lib, int32_t flags)
         if ((flags & OPT_GRAPHICS_LIBS) && (str_array_match_prefix(lib, graphics_libs, nitems(graphics_libs)) ||
             str_array_match_prefix(lib, graphics_libs_glvnd, nitems(graphics_libs_glvnd)) ||
             str_array_match_prefix(lib, graphics_libs_compat, nitems(graphics_libs_compat))))
+                return (true);
+        if ((flags & OPT_NGX_LIBS) && str_array_match_prefix(lib, ngx_libs, nitems(ngx_libs)))
                 return (true);
         return (false);
 }

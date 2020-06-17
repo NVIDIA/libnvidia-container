@@ -26,6 +26,7 @@ const struct argp configure_usage = {
                 {"video", 'v', NULL, 0, "Enable video capability", -1},
                 {"graphics", 'g', NULL, 0, "Enable graphics capability", -1},
                 {"display", 'D', NULL, 0, "Enable display capability", -1},
+                {"ngx", 'n', NULL, 0, "Enable ngx capability", -1},
                 {"compat32", 0x80, NULL, 0, "Enable 32bits compatibility", -1},
                 {"mig-config", 0x81, "ID", 0, "Enable configuration of MIG devices", -1},
                 {"mig-monitor", 0x82, "ID", 0, "Enable monitoring of MIG devices", -1},
@@ -94,6 +95,10 @@ configure_parser(int key, char *arg, struct argp_state *state)
                 break;
         case 'D':
                 if (str_join(&err, &ctx->container_flags, "display", " ") < 0)
+                        goto fatal;
+                break;
+        case 'n':
+                if (str_join(&err, &ctx->container_flags, "ngx", " ") < 0)
                         goto fatal;
                 break;
         case 0x80:
