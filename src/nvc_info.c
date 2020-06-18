@@ -78,7 +78,6 @@ static const char * const ngx_bins[] = {
 
 static const char * const utility_libs[] = {
         "libnvidia-ml.so",                  /* Management library */
-        "libnvidia-ngx.so",                 /* NGX library */
         "libnvidia-cfg.so",                 /* GPU configuration */
 };
 
