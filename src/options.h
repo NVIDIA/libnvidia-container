@@ -64,11 +64,10 @@ enum {
         OPT_DISPLAY       = 1 << 10,
         OPT_UTILITY_BINS  = 1 << 11,
         OPT_COMPUTE_BINS  = 1 << 12,
-        OPT_NGX_BINS      = 1 << 13,
 #if defined(__powerpc64__) /* ppc64le doesn't support compat32. */
         OPT_COMPAT32      = 1 << 0,
 #else
-        OPT_COMPAT32      = 1 << 14,
+        OPT_COMPAT32      = 1 << 13,
 #endif /* defined(__powerpc64__) */
 };
 
@@ -83,7 +82,7 @@ static const struct option container_opts[] = {
         {"video", OPT_VIDEO_LIBS|OPT_COMPUTE_LIBS},
         {"graphics", OPT_GRAPHICS_LIBS},
         {"display", OPT_DISPLAY|OPT_GRAPHICS_LIBS},
-        {"ngx", OPT_NGX_BINS|OPT_NGX_LIBS},
+        {"ngx", OPT_NGX_LIBS},
         {"compat32", OPT_COMPAT32},
 };
 
