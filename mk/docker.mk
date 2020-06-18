@@ -142,8 +142,6 @@ docker-build-%:
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
 	$(DOCKER) run \
-	    -e DISTRIB \
-	    -e SECTION \
 	    -e TAG \
 	    -v $(ARTIFACTS_DIR):/dist \
 	    $(BUILDIMAGE)
