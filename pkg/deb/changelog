@@ -1,7 +1,7 @@
-libnvidia-container (1.2.0~rc.1-1) UNRELEASED; urgency=medium
+libnvidia-container (1.2.0~rc.1-1) experimental; urgency=medium
 
   * 4263e684 Add support for Windows Subsystem for Linux (WSL2)
-  * 2b75a55e Fix ability to build RC packages via TAG=rc.<num>
+  * e768f8bc Fix ability to build RC packages via TAG=rc.<num>
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Thu, 11 Jun 2020 15:12:59 -0700
 

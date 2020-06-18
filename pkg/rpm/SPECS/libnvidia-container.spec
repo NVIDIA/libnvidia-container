@@ -89,7 +89,7 @@ This package contains command-line tools that facilitate using the library.
 %changelog
 * Thu Jun 11 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-0.1.rc.1
 - 4263e684 Add support for Windows Subsystem for Linux (WSL2)
-- 2b75a55e Fix ability to build RC packages via TAG=rc.<num>
+- e768f8bc Fix ability to build RC packages via TAG=rc.<num>
 
 * Tue May 19 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.1.1-1
 - deeb499 Fixup deb packaging files to remove warnings
