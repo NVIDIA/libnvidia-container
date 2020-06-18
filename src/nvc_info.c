@@ -22,8 +22,7 @@
 #include "xfuncs.h"
 
 #define MAX_BINS (nitems(utility_bins) + \
-                  nitems(compute_bins) + \
-                  nitems(ngx_bins))
+                  nitems(compute_bins))
 #define MAX_LIBS (nitems(dxcore_libs) + \
                   nitems(ngx_libs) + \
                   nitems(utility_libs) + \
@@ -70,10 +69,6 @@ static const char * const utility_bins[] = {
 static const char * const compute_bins[] = {
         "nvidia-cuda-mps-control",          /* Multi process service CLI */
         "nvidia-cuda-mps-server",           /* Multi process service server */
-};
-
-static const char * const ngx_bins[] = {
-        "ngx-updater",                      /* Update service for new NGX features */
 };
 
 static const char * const utility_libs[] = {
@@ -371,7 +366,6 @@ lookup_binaries(struct error *err, struct nvc_driver_info *info, const char *roo
         ptr = array_append(ptr, utility_bins, nitems(utility_bins));
         if (!(flags & OPT_NO_MPS))
                 ptr = array_append(ptr, compute_bins, nitems(compute_bins));
-        ptr = array_append(ptr, ngx_bins, nitems(ngx_bins));
 
         if (find_binary_paths(err, info, root, bins, (size_t)(ptr - bins)) < 0)
                 return (-1);
@@ -645,8 +639,6 @@ match_binary_flags(const char *bin, int32_t flags)
         if ((flags & OPT_UTILITY_BINS) && str_array_match_prefix(bin, utility_bins, nitems(utility_bins)))
                 return (true);
         if ((flags & OPT_COMPUTE_BINS) && str_array_match_prefix(bin, compute_bins, nitems(compute_bins)))
-                return (true);
-        if ((flags & OPT_NGX_BINS) && str_array_match_prefix(bin, ngx_bins, nitems(ngx_bins)))
                 return (true);
         return (false);
 }
