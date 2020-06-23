@@ -1,5 +1,5 @@
 os: linux
-dist: trusty
+dist: bionic
 sudo: required
 language: c
 
@@ -19,10 +19,11 @@ addons:
             - m4
             - libcap-dev
             - libseccomp-dev
+            - gnupg2
     coverity_scan:
         project:
             name: "NVIDIA/libnvidia-container"
-            version: "1.0.0"
+            version: "1.2.0"
             description: "NVIDIA container runtime library"
         notification_email: fabecassis@nvidia.com
         build_command_prepend: "make clean"
@@ -30,16 +31,12 @@ addons:
         branch_pattern: master
 
 install:
-    - NVIDIA_GPGKEY_SUM=d1be581509378368edeec8c1eb2958702feedf3bc3d17011adbf24efacce4ab5
-    - NVIDIA_GPGKEY_FPR=ae09fe4bbd223a84b2ccfce3f60f4b3d7fa2af80
-    - sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/7fa2af80.pub
-    - apt-key adv --export --no-emit-version -a $NVIDIA_GPGKEY_FPR | tail -n +5 > cudasign.pub
-    - echo "$NVIDIA_GPGKEY_SUM  cudasign.pub" | sha256sum -c --strict - && rm cudasign.pub
-    - echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
-    - sudo apt-key adv --fetch-keys http://apt.llvm.org/llvm-snapshot.gpg.key
-    - echo "deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-4.0 main" | sudo tee /etc/apt/sources.list.d/clang.list
+    - sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
+    - echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
+    - sudo apt-key adv --fetch-keys https://apt.llvm.org/llvm-snapshot.gpg.key
+    - echo "deb https://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main" | sudo tee /etc/apt/sources.list.d/clang.list
     - sudo apt-get update
-    - sudo apt-get install -y --no-install-recommends cuda-misc-headers-8-0 cuda-nvml-dev-8-0 clang-4.0 llvm-4.0-dev
+    - sudo apt-get install -y --no-install-recommends cuda-misc-headers-10-0 cuda-nvml-dev-10-0 clang-10 clang-tools-10 llvm-10-dev
 
 jobs:
     include:
@@ -48,8 +45,7 @@ jobs:
               - CC=gcc make
         - stage: build
           script:
-              # clang-4.0 + -flto is broken on trusty, even when using the gold linker
-              - CC=clang-4.0 CFLAGS=-fno-lto make
+              - CC=clang-10 make
         - stage: scan
           before_script:
               - sudo apt-get install -y --no-install-recommends cppcheck
@@ -57,4 +53,4 @@ jobs:
               - cppcheck --std=posix --inconclusive --enable=all src/*.c src/*.h
         - stage: scan
           script:
-              - scan-build-4.0 make
+              - scan-build-10 make
