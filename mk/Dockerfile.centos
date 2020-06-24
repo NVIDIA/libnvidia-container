@@ -50,7 +50,7 @@ COPY . .
 ARG CFLAGS
 ARG LDLIBS
 ENV CFLAGS=${CFLAGS}
-ENV LDLIBS=${LDFLAGS}
+ENV LDLIBS=${LDLIBS}
 RUN make distclean && make -j"$(nproc)"
 
 ENV DIST_DIR /dist
