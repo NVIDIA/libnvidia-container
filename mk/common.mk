@@ -21,7 +21,11 @@ PATCH    ?= patch
 
 UID      := $(shell id -u)
 GID      := $(shell id -g)
-DATE     := $(shell date -u --iso-8601=minutes)
+ifdef SOURCE_DATE_EPOCH
+    DATE := $(shell date -u -d "@$(SOURCE_DATE_EPOCH)" --iso-8601=minutes)
+else
+    DATE := $(shell date -u --iso-8601=minutes)
+endif
 REVISION ?= $(shell git rev-parse HEAD)
 COMPILER := $(realpath $(shell which $(CC)))
 PLATFORM ?= $(shell uname -m)
