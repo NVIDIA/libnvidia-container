@@ -25,7 +25,7 @@ addons:
             name: "NVIDIA/libnvidia-container"
             version: "1.2.0"
             description: "NVIDIA container runtime library"
-        notification_email: fabecassis@nvidia.com
+        notification_email: kklues@nvidia.com
         build_command_prepend: "make clean"
         build_command: "make"
         branch_pattern: master
