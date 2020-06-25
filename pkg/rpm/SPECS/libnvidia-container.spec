@@ -4,7 +4,7 @@ License:        BSD-3-Clause AND Apache-2.0 AND GPL-3.0-or-later AND LGPL-3.0-or
 #  https://github.com/elftoolchain/elftoolchain#copyright-and-license
 # libnvidia-container is licensed under apache-2.0
 #  https://github.com/NVIDIA/libnvidia-container/blob/master/LICENSE
-# libnvidia-container includes the GLPv3 license
+# libnvidia-container includes the GPLv3 license
 #  https://github.com/NVIDIA/libnvidia-container/blob/master/COPYING
 # libnvidia-container includes the LGPLv3 license
 #  https://github.com/NVIDIA/libnvidia-container/blob/master/COPYING.LESSER
