@@ -43,12 +43,34 @@ curl -s -L https://nvidia.github.io/libnvidia-container/$DIST/libnvidia-containe
 sudo apt-get update
 ```
 
+For pre-releases, you need to enable the experimental repos:
+```bash
+sudo sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/libnvidia-container.list
+sudo apt-get update
+```
+
+To later disable the experimental repos, you can run:
+```bash
+sudo sed -i -e '/experimental/ s/^/#/g' /etc/apt/sources.list.d/libnvidia-container.list
+sudo apt-get update
+```
+
 ## RHEL-based distributions
 
 ```bash
 DIST=$(. /etc/os-release; echo $ID$VERSION_ID)
 curl -s -L https://nvidia.github.io/libnvidia-container/$DIST/libnvidia-container.repo | \
   sudo tee /etc/yum.repos.d/libnvidia-container.repo
+```
+
+For pre-releases, you need to enable the experimental repos:
+```bash
+sudo yum-config-manager --enable libnvidia-container-experimental
+```
+
+To later disable the experimental repos, you can run:
+```bash
+sudo yum-config-manager --disable libnvidia-container-experimental
 ```
 
 ## Other distributions
