@@ -564,12 +564,13 @@ device_mount_dxcore(struct nvc_context *ctx, const struct nvc_container *cnt)
                                                     ctx->dxcore.adapterList[0].pDriverStoreLibraries,
                                                     drvstore_size)) == NULL)
         {
-                drvstore_size = 0;
                 log_errf("failed to mount DriverStore libraries %s", ctx->dxcore.adapterList[0].pDriverStorePath);
 
                 for (size_t i = 0; i < drvstore_size; ++i)
                         unmount(drvstore_mnt[i]);
                 array_free(drvstore_mnt, drvstore_size);
+
+                drvstore_size = 0;
 
                 return (-1);
         }
