@@ -168,7 +168,7 @@ static int dxcore_query_adapter_driverstore(struct dxcore_lib* pLib, unsigned in
 
         // Convert the output into a regular c string
         *ppDriverStorePath = (char*)calloc(outputSize + 1, sizeof(char));
-        if (!ppDriverStorePath) {
+        if (!*ppDriverStorePath) {
                 log_err("Out of memory while allocating the buffer for the driver store path");
                 free(pValue);
                 return (-1);
