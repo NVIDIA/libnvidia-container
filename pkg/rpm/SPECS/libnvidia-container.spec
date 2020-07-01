@@ -100,12 +100,13 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Wed Jul 01 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-0.1.rc.3
-- 53739009d6 WSL2 Support - Fix error path when mounting the driver
-- 38198a81cb WSL2 Support - Fix error path in dxcore
-- 31f5ea3578 Changed email for travis.ci to kklues@nvidia.com
-- abdd51754b Update license and copyright in packages
-- 65827fe7bc Update license clause to reflect actual licensing
-- 77499d8884 Transition Travis CI build to Ubuntu 18.04
+- 7deea6b8 WSL2 Support - Remove unnecessary umount and free
+- 53739009 WSL2 Support - Fix error path when mounting the driver
+- 38198a81 WSL2 Support - Fix error path in dxcore
+- 31f5ea35 Changed email for travis.ci to kklues@nvidia.com
+- abdd5175 Update license and copyright in packages
+- 65827fe7 Update license clause to reflect actual licensing
+- 77499d88 Transition Travis CI build to Ubuntu 18.04
 
 * Thu Jun 18 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-0.1.rc.2
 - 4ea9b59f Update debian based dockerfiles to set distribution in changelog
