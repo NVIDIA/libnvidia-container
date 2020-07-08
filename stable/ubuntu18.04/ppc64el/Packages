@@ -118,6 +118,30 @@ Description: NVIDIA container runtime library (development files)
  .
  This package contains the files required to compile programs with the library.
 
+Package: libnvidia-container-dev
+Architecture: ppc64el
+Version: 1.2.0-1
+Multi-Arch: same
+Priority: optional
+Section: libdevel
+Source: libnvidia-container
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 315
+Depends: libnvidia-container1 (= 1.2.0-1)
+Filename: ./libnvidia-container-dev_1.2.0-1_ppc64el.deb
+Size: 54528
+MD5sum: 36547dfbe75677e6103a3b9360b313ff
+SHA1: 8ac7c0e81002a342e6202d3e1a4763962977bbae
+SHA256: 37d3be0e65e4d6c0787387f34add9c0033cc231dd70fe6409594f18a9a19871e
+SHA512: fa1c09625373261120e612597e2905b0b097ea379be3ab82f75025ea9e46cc792fbccf2dc9da6e20b0c1de12cfd422532c7af54d679c84721a44c7899cf2a08e
+Homepage: https://github.com/NVIDIA/libnvidia-container
+Description: NVIDIA container runtime library (development files)
+ The nvidia-container library provides an interface to configure GNU/Linux
+ containers leveraging NVIDIA hardware. The implementation relies on several
+ kernel subsystems and is designed to be agnostic of the container runtime.
+ .
+ This package contains the files required to compile programs with the library.
+
 Package: libnvidia-container-tools
 Architecture: ppc64el
 Version: 1.0.0-1
@@ -225,6 +249,29 @@ MD5sum: 0f5fd8f9f29254efa100fa86ba031f7f
 SHA1: bcf881352719cf197c7ff51f6a6291c5fdbf2a46
 SHA256: e5a0bd9b869da9a9c075d4e769e95a1d13289f18c4d0e085660d397914640120
 SHA512: 54def53300cd3e12b74b29ec836b83e5d3d960828df41342540fe668cf4262aa6cd03461b650c5cc3efbf8a6164cc8a87161195c1eab3074693707f97d5ca9fb
+Homepage: https://github.com/NVIDIA/libnvidia-container
+Description: NVIDIA container runtime library (command-line tools)
+ The nvidia-container library provides an interface to configure GNU/Linux
+ containers leveraging NVIDIA hardware. The implementation relies on several
+ kernel subsystems and is designed to be agnostic of the container runtime.
+ .
+ This package contains command-line tools that facilitate using the library.
+
+Package: libnvidia-container-tools
+Architecture: ppc64el
+Version: 1.2.0-1
+Priority: optional
+Section: utils
+Source: libnvidia-container
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 84
+Depends: libc6 (>= 2.17), libcap2 (>= 1:2.10), libnvidia-container1 (>= 1.2.0~rc.3)
+Filename: ./libnvidia-container-tools_1.2.0-1_ppc64el.deb
+Size: 19448
+MD5sum: 57f8694db5a626774fd41b9d69003214
+SHA1: e970797d6bbfdbdbbb6a9aa5a9b9a8dbe5e22088
+SHA256: ef594ba12486c18e632c4a4237926be90946f26f3596a379379a72ff537bf439
+SHA512: 816d0bda07dcbdee1846e017b8703e945310c0d6baed958f865c6158d16905c1eeebf1018af73ea5d8144611814c39c0454f109fc72e5e4f98718720a2dcce59
 Homepage: https://github.com/NVIDIA/libnvidia-container
 Description: NVIDIA container runtime library (command-line tools)
  The nvidia-container library provides an interface to configure GNU/Linux
@@ -353,6 +400,30 @@ Description: NVIDIA container runtime library (debugging symbols)
  .
  This package contains the debugging symbols for the library.
 
+Package: libnvidia-container1-dbg
+Architecture: ppc64el
+Version: 1.2.0-1
+Multi-Arch: same
+Priority: optional
+Section: debug
+Source: libnvidia-container
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 625
+Depends: libnvidia-container1 (= 1.2.0-1)
+Filename: ./libnvidia-container1-dbg_1.2.0-1_ppc64el.deb
+Size: 144388
+MD5sum: 98010ca5a07578e50f4527dc5eef3fab
+SHA1: bfa88bcc2c8d365bc1910a9318e86870aff9f545
+SHA256: 6542aa579c05448554619dee6d5fad87730b7511972cf321c6c0e3ff2bd91806
+SHA512: 1396251389014bc3c0a0213e289ed855f838282aebbee377f54fecf1f8f425dab8285e4d067f6e3ce6044c183b4954653c9c6e2a9c1ce6a473816d5df7650c6d
+Homepage: https://github.com/NVIDIA/libnvidia-container
+Description: NVIDIA container runtime library (debugging symbols)
+ The nvidia-container library provides an interface to configure GNU/Linux
+ containers leveraging NVIDIA hardware. The implementation relies on several
+ kernel subsystems and is designed to be agnostic of the container runtime.
+ .
+ This package contains the debugging symbols for the library.
+
 Package: libnvidia-container1
 Architecture: ppc64el
 Version: 1.0.0-1
@@ -465,6 +536,30 @@ MD5sum: d6cc61910f4b045debb11ade1655cd46
 SHA1: 7796610bf3061ebefa1d89ee248770d60bbe70b4
 SHA256: cc025b7ec3c8185c61ef511c4c2722a905e049f18b26e13c3f5f3cc488f90b20
 SHA512: eada39505c68ee8092ee625ace202a845b55ef7e4b2827961988acfec8d2fd12de466724e2a561046f5f98fd6a432d49631fb964ecd8267d7115f421b01b48c1
+Homepage: https://github.com/NVIDIA/libnvidia-container
+Description: NVIDIA container runtime library
+ The nvidia-container library provides an interface to configure GNU/Linux
+ containers leveraging NVIDIA hardware. The implementation relies on several
+ kernel subsystems and is designed to be agnostic of the container runtime.
+ .
+ This package requires the NVIDIA driver (>= 340.29) to be installed separately.
+
+Package: libnvidia-container1
+Architecture: ppc64el
+Version: 1.2.0-1
+Multi-Arch: same
+Priority: optional
+Section: libs
+Source: libnvidia-container
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 158
+Depends: libc6 (>= 2.27), libcap2 (>= 1:2.10), libelf1 (>= 0.142), libseccomp2 (>= 0.0.0~20120605)
+Filename: ./libnvidia-container1_1.2.0-1_ppc64el.deb
+Size: 44280
+MD5sum: b868d8a9509a13b9829be911b1076322
+SHA1: f15ba9d053c5278ca658a68d635013204c975ef7
+SHA256: 1bb34e7f20bf1fd108e62167a8932dc0b008975b23a76ad31f6d0221a2717f2a
+SHA512: acb838d03eb448a5d017b60c3c265b15cfd905bca2d141e9df967d8a5ca027cb6a595ae27e041c8562590353165339882ff3f1a5fb2a361c7137cacab3f2a9dd
 Homepage: https://github.com/NVIDIA/libnvidia-container
 Description: NVIDIA container runtime library
  The nvidia-container library provides an interface to configure GNU/Linux
