@@ -7,20 +7,20 @@ Components: main
 Date: Fri, 17 Nov 2017 03:05:40 +0000
 Description: NVIDIA container runtime library repository
 Label: NVIDIA CORPORATION <cudatools@nvidia.com>
-Origin: https://nvidia.github.io/libnvidia-container
+Origin: https://nvidia.github.io/libnvidia-container/stable
 Suite: stretch
 Version: 1.0
 SHA512:
- be4800bc7fb2fcc4db1cd8d5c355b474c6462def6977349cb030a65207e3f89030cfb509c87f7f055b7ab3b3b4a8a6c871a1c71967f17f69cd17d5e7feb9f238            60127 Packages
- 220ae1fd76b14e8a1a0da246cafdd92f9b5df3a0edcd80c375339a204f649eb122eb39d84d2c450c88f963bd302f272bd0c7d38b652fb7bc3519e5796e84c7cb             9852 Packages.xz
+ 93f7928541f2db745f21cfc95972e1f222f33fd1f93654066163b424e660535ca4e0bc03ebf1d2fc2b2e60ec25e241199faef39c47896c21bff9e350f47966f8            64404 Packages
+ 6b9dc620c4a9d3ceacdbd34d13a967550a5c8a145e189f56a9678869a298727a6deceb99164c076cf493b62939e736e00b158710e30f8eb69af3d6373d07f88f            10492 Packages.xz
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCgAdFiEEIEFim/U1L6wXipsfbtkco6wRYM0FAl7EJb8ACgkQbtkco6wR
-YM1+ugf/TXMD+PXEORnQgWSg2VorDfAEW9kIZVnikpqzKpEPA7AyYAjiEfsI1QdD
-9WF23jPQtUDvKi6wZu7EGx++jsNPnY9mGc8sQAjkMCHT9CqEnoWIzkIDHMIU1UmS
-jme/tdg8PBIaaZU7udCJHsF0dlngoRYBgm188Fu3ddyvxselFSd5jr5xEankNS+L
-5PMzqS/s2ebmUmGQHhLjTeRWUfqIhfq1TRc3k48IRdDHHpFELHebpLlO4TybY5VR
-pOAg0Rjp9Vl83JaW9Q5hKey1l3Wvw76xS4XKIIRqfYyJRAtnraNBKeQu+ChUvImP
-Pu+65QcuWSpyynv27uD5KM8xC4L/FA==
-=EBVx
+iQEzBAEBCgAdFiEEIEFim/U1L6wXipsfbtkco6wRYM0FAl8GK/8ACgkQbtkco6wR
+YM3enQf/bgAZegFl9XTxd1GdC2KvH44g3K8N7wJ9P6RrlKHlucLcG4iqfPQTg5JB
+c7nbBfwISxUiamjy5n2SbIjXpzqJsGuBGbeAFKvaV/Sb57xlJQuY5gwBRx8nu5c1
+vK/Bg0/RfBLS/NKsl2DloCciukqYehYVUBANJR9BD0lPz+1tDNNCJh7Oy/Sanlb3
+5Fjq/vnAqYys780CDaX1rGgKGlNa2KObSNE7dBDvA5UQTHjAw8o6geCPmnzrdKFj
+7G4eoPN3nLRFW2cb+CNn/4YJxP/CK/sAjZzmRrCwf/d3vWDIbXZIbiLDJdvmyTez
+JC3EQqAIjG/uv+grQZuzL4Gxyw1nQg==
+=brX8
 -----END PGP SIGNATURE-----
