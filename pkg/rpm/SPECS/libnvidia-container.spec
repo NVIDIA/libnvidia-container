@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Wed Jul 08 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-1
+- Promote 1.2.0~rc.3-1 to 1.2.0-1
+
 * Wed Jul 01 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-0.1.rc.3
 - 7deea6b8 WSL2 Support - Remove unnecessary umount and free
 - 53739009 WSL2 Support - Fix error path when mounting the driver

@@ -1,3 +1,9 @@
+libnvidia-container (1.2.0-1) UNRELEASED; urgency=medium
+
+  * Promote 1.2.0~rc.3-1 to 1.2.0-1
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Wed, 08 Jul 2020 20:44:10 -0700
+
 libnvidia-container (1.2.0~rc.3-1) experimental; urgency=medium
 
   * 7deea6b8 WSL2 Support - Remove unnecessary umount and free
