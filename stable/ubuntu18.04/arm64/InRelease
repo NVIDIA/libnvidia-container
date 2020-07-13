@@ -7,7 +7,7 @@ Components: main
 Date: Fri, 27 Apr 2018 21:29:25 +0000
 Description: NVIDIA container runtime library repository
 Label: NVIDIA CORPORATION <cudatools@nvidia.com>
-Origin: https://nvidia.github.io/libnvidia-container/stable
+Origin: https://nvidia.github.io/libnvidia-container
 Suite: bionic
 Version: 1.0
 SHA512:
@@ -15,12 +15,12 @@ SHA512:
  a9688ca0d6bf084218833395c5b41ba7a7d767ceef57cc3cc2e33dacce91c304e79a37ddb0cc7af1a8ed152ca63713bb9ed48a4762a61d4b534c171647d47160             2776 Packages.xz
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCgAdFiEEIEFim/U1L6wXipsfbtkco6wRYM0FAl8GLAQACgkQbtkco6wR
-YM1W5Af/VYIH7T2WrO2I7/JInu4Bs7qdkTJrvZRg32OncKv858VGc8z3u1ALx6us
-9D+czi2mFcIXjn/+41pAn5wC1uyRLCPjNH/HaUww/87LhR9R0OuBE/6zM6ixQCT5
-5CZz4iKvX+DWBbJboJHTBgRsTBF21NkVmdX6TTFMjbgDyw7L27wRvOgb8HfvuxLt
-n767cDTcxt0AOOXNsKqlIBgn5kiHI7fkxdl5CEL+toEjkmPH4teIM+DLHJ6gc2m/
-gjmZI5/YQcgVVFcwU79KQZbspQYHCOGDtr4gTVj6xaSsOhnljrFy4otbit/lbnD7
-N39HWNptH4wZ7xuU1gD+ywPfqAdljA==
-=Dmqo
+iQEzBAEBCgAdFiEEIEFim/U1L6wXipsfbtkco6wRYM0FAl8MrGYACgkQbtkco6wR
+YM2TkAgAoOwmFxg7/cO53dbf7b01V4hoXnVeE/+o0MIJ473Q3Mu0QOJVWOSuDP9B
+v23f/oe11l3E+QppCl3pbQAIjz/0ioSULCYZc8B/o2DdvSiZzxsTKX7MdaUdyEWt
+Pd8QDEnZNgAUxIWtjWx07nrYKvpq13ZuB5cnU+oGUT1NKgWM/5B0ujiDPjQwg/yt
+06YvMKffWthTplI2S1fMWlXTYOpJDK7DM4moj5ikzjg/qQ/dQRLz6CbbcOoJWYdp
+BYoZVLO9852oeTrneEQWYTOo0uoz8QhYoYtrlS3UiX2QYeaF3ZSJlyYPDEidfOUw
+F7CVLC++bby1nGZQ25Jq2c3WZ1BteQ==
+=Q5wb
 -----END PGP SIGNATURE-----

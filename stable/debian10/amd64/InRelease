@@ -7,7 +7,7 @@ Components: main
 Date: Fri, 23 Aug 2019 14:50:00 +0000
 Description: NVIDIA container runtime library repository
 Label: NVIDIA CORPORATION <cudatools@nvidia.com>
-Origin: https://nvidia.github.io/libnvidia-container/stable
+Origin: https://nvidia.github.io/libnvidia-container
 Suite: buster
 Version: 1.0
 SHA512:
@@ -15,12 +15,12 @@ SHA512:
  158a42727677b8c8aa57e7b2e4182e9d64cb9b48a2356c71385b17f70ee510aafe587fa8e0020e97a0cc155d57385e6701bb04cca11d9f0b76aaae128e833808             4660 Packages.xz
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCgAdFiEEIEFim/U1L6wXipsfbtkco6wRYM0FAl8GLAEACgkQbtkco6wR
-YM06gAf/Q0gaBQJpLAzVNcw3wcvWtJVDQq6ZWf1zkQ1XoGXx5RQXDeBfkp5XVMjp
-oPZffedgg/Cfw4BSUpni0RHn7ch33b3Nq/LjY7bKd0AbBXgksydcskdx/DYs7YGE
-3DyKijEK6b1h4DVXFKJ0MRChDOY4f1W4oaJA8e3ybe8Qsjc1bVBn+dqbbj1d+uZ2
-CjrfUusST+i3anmawgll/2RbnTayq3vx5J6eOsrItCJcnqMqMy9pNV26F7werzHu
-NuWNb5yE13EQykk7zsFfTdx5cP1atMLULjTUE3ASXdlng7ntajUxoJR2WmbSsPnT
-Bw5ResEqoM+NEv4Q+/NPOsqzvobkCg==
-=nJGF
+iQEzBAEBCgAdFiEEIEFim/U1L6wXipsfbtkco6wRYM0FAl8MrGMACgkQbtkco6wR
+YM2VxAf/evKy0FBaOnpBzHS5tuEf6xDHgAMG20zYwxc3rcJo7vO1BJJwH/GmicoO
+VgqDJHdxk3mYQMLV30ER7XTzPhdDkL82YoPwZp26nvu1B2x2+1Gnw/CDY7zf/tN8
+y5H9DXsvRHbrdIjInK/5TOikq2Jm/DbVNVCYSjCdinl9PT55E9ZoffXjfkquQmPp
+faUdCNgUGHHcPx7/A+lR48gVNaNpc6su1mfRx85O4Goulz865KCT2UVVrOt8CfQJ
+Hpj/W2TMjF9ZicmIbygCNOpesbeAm95SZaeWYywZdv4tBZKn/5rv04r8t20fTFZ3
+zNiP12f4voEGfg+epKyVID5PCY2JkA==
+=ZcI8
 -----END PGP SIGNATURE-----
