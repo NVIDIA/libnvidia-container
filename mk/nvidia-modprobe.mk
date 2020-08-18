@@ -19,6 +19,8 @@ LIB_INCS       := $(MODPROBE_UTILS)/nvidia-modprobe-utils.h \
 LIB_SRCS       := $(MODPROBE_UTILS)/nvidia-modprobe-utils.c \
                   $(MODPROBE_UTILS)/pci-sysfs.c
 
+PATCH_FILE     := $(MAKE_DIR)/nvidia-modprobe.patch
+
 ##### Flags definitions #####
 
 ARFLAGS  := -rU
@@ -33,6 +35,7 @@ $(SRCS_DIR)/.download_stamp:
 	$(MKDIR) -p $(SRCS_DIR)
 	$(CURL) --progress-bar -fSL $(URL) | \
 	$(TAR) -C $(SRCS_DIR) --strip-components=1 -xz $(PREFIX)/modprobe-utils
+	$(PATCH) -d $(SRCS_DIR) -p1 < $(PATCH_FILE)
 	@touch $@
 
 $(LIB_SRCS): $(SRCS_DIR)/.download_stamp
