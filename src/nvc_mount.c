@@ -42,6 +42,7 @@ static int  device_mount_dxcore(struct nvc_context *, const struct nvc_container
 static int  device_mount_native(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
 static int  cap_device_from_path(struct nvc_context *, const char *, struct nvc_device_node *);
 static int  cap_device_mount(struct nvc_context *, const struct nvc_container *, const char *);
+static int  setup_mig_minor_cgroups(struct error *, const struct nvc_container *, int, const struct nvc_device_node *);
 
 static char *
 mount_directory(struct error *err, const char *root, const struct nvc_container *cnt, const char *dir)
@@ -696,6 +697,38 @@ cap_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         free(node.path);
         free(dev_mnt);
 
+        return (rv);
+}
+
+static int
+setup_mig_minor_cgroups(struct error *err, const struct nvc_container *cnt, int mig_major, const struct nvc_device_node *node)
+{
+        unsigned int gpu_minor = 0;
+        unsigned int mig_minor = 0;
+        char line[PATH_MAX];
+        char dummy[PATH_MAX];
+        FILE *fp;
+        int rv = -1;
+
+        if ((fp = fopen(NV_CAPS_MIG_MINORS_PATH, "r")) == NULL) {
+            error_set(err, "unable to open file for reading: %s", NV_CAPS_MIG_MINORS_PATH);
+            goto fail;
+        }
+
+        line[PATH_MAX - 1] = '\0';
+        while (fgets(line, PATH_MAX - 1, fp)) {
+                if (sscanf(line, "gpu%u%s %u", &gpu_minor, dummy, &mig_minor) != 3)
+                        continue;
+                if (gpu_minor != minor(node->id))
+                        continue;
+                if (setup_cgroup(err, cnt->dev_cg, makedev((unsigned int)mig_major, mig_minor)) < 0)
+                        goto fail;
+        }
+
+        rv = 0;
+
+fail:
+        fclose(fp);
         return (rv);
 }
 
