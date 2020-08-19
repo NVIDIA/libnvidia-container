@@ -65,10 +65,8 @@ list_parser(int key, char *arg, struct argp_state *state)
                 if (state->argc == 1) {
                         if ((ctx->devices = xstrdup(&err, "all")) == NULL)
                                 goto fatal;
-                        if ((ctx->mig_config = xstrdup(&err, "all")) == NULL)
-                                goto fatal;
-                        if ((ctx->mig_monitor = xstrdup(&err, "all")) == NULL)
-                                goto fatal;
+                        ctx->mig_config = NULL;
+                        ctx->mig_monitor = NULL;
                         ctx->compat32 = true;
                         ctx->list_libs = true;
                         ctx->list_bins = true;
