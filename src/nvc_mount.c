@@ -1075,6 +1075,7 @@ nvc_device_mig_caps_mount(struct nvc_context *ctx, const struct nvc_container *c
 {
         // Initialize local variables.
         char *proc_mnt = NULL;
+        int nvcaps_major = -1;
         int rv = -1;
 
         // Validate incoming arguments.
@@ -1090,6 +1091,13 @@ nvc_device_mig_caps_mount(struct nvc_context *ctx, const struct nvc_container *c
         // Mount the path to the mig MIG capabilities directory for this device in '/proc'.
         if ((proc_mnt = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, dev->mig_caps_path)) == NULL)
                 goto fail;
+
+        // Check if NV_CAPS_MODULE_NAME exists as a major device, and if so,
+        // mount in the appropriate /dev based capabilities as devices.
+        if ((nvcaps_major = nvidia_get_chardev_major(NV_CAPS_MODULE_NAME)) != -1) {
+            if (setup_mig_minor_cgroups(&ctx->err, cnt, nvcaps_major, &dev->node) < 0)
+                goto fail;
+        }
 
         // Set the return value to indicate success.
         rv = 0;
