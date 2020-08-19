@@ -916,7 +916,9 @@ nvc_mig_config_global_caps_mount(struct nvc_context *ctx, const struct nvc_conta
 {
         // Initialize local variables.
         char config[PATH_MAX];
+        char *dev_mnt = NULL;
         char *proc_mnt = NULL;
+        struct nvc_device_node node = {0};
         int rv = -1;
 
         // Validate incoming arguments.
@@ -940,8 +942,15 @@ nvc_mig_config_global_caps_mount(struct nvc_context *ctx, const struct nvc_conta
         // Check if NV_CAPS_MODULE_NAME exists as a major device,
         // and if so, mount in the /dev based capability as a device.
         if (nvidia_get_chardev_major(NV_CAPS_MODULE_NAME) != -1) {
-            if (cap_device_mount(ctx, cnt, config) < 0)
-                goto fail;
+                if ((dev_mnt = mount_directory(&ctx->err, ctx->cfg.root, cnt, NV_CAPS_DEVICE_DIR)) == NULL)
+                    goto fail;
+
+                if (cap_device_from_path(ctx, config, &node) < 0)
+                        goto fail;
+
+                if (!(cnt->flags & OPT_NO_CGROUPS))
+                        if (setup_cgroup(&ctx->err, cnt->dev_cg, node.id) < 0)
+                                goto fail;
         }
 
         // Set the return value to indicate success.
@@ -960,6 +969,7 @@ nvc_mig_config_global_caps_mount(struct nvc_context *ctx, const struct nvc_conta
 
         // In all cases, free the string associated with the mounted 'access'
         // file and return.
+        free(dev_mnt);
         free(proc_mnt);
         return (rv);
 }
@@ -969,7 +979,9 @@ nvc_mig_monitor_global_caps_mount(struct nvc_context *ctx, const struct nvc_cont
 {
         // Initialize local variables.
         char monitor[PATH_MAX];
+        char *dev_mnt = NULL;
         char *proc_mnt = NULL;
+        struct nvc_device_node node = {0};
         int rv = -1;
 
         // Validate incoming arguments.
@@ -993,8 +1005,15 @@ nvc_mig_monitor_global_caps_mount(struct nvc_context *ctx, const struct nvc_cont
         // Check if NV_CAPS_MODULE_NAME exists as a major device,
         // and if so, mount in the /dev based capability as a device.
         if (nvidia_get_chardev_major(NV_CAPS_MODULE_NAME) != -1) {
-            if (cap_device_mount(ctx, cnt, monitor) < 0)
-                goto fail;
+                if ((dev_mnt = mount_directory(&ctx->err, ctx->cfg.root, cnt, NV_CAPS_DEVICE_DIR)) == NULL)
+                        goto fail;
+
+                if (cap_device_from_path(ctx, monitor, &node) < 0)
+                        goto fail;
+
+                if (!(cnt->flags & OPT_NO_CGROUPS))
+                        if (setup_cgroup(&ctx->err, cnt->dev_cg, node.id) < 0)
+                                goto fail;
         }
 
         // Set the return value to indicate success.
@@ -1013,6 +1032,7 @@ nvc_mig_monitor_global_caps_mount(struct nvc_context *ctx, const struct nvc_cont
 
         // In all cases, free the string associated with the mounted 'access'
         // file and return.
+        free(dev_mnt);
         free(proc_mnt);
         return (rv);
 }
