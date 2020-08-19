@@ -25,6 +25,7 @@
 
 static char **mount_files(struct error *, const char *, const struct nvc_container *, const char *, char *[], size_t);
 static char **mount_driverstore_files(struct error *, const char *, const struct nvc_container *, const char *, const char *[], size_t);
+static char *mount_directory(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_device(struct error *, const char *, const struct nvc_container *, const struct nvc_device_node *);
 static char *mount_ipc(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_procfs(struct error *, const char *, const struct nvc_container *);
@@ -41,6 +42,37 @@ static int  device_mount_dxcore(struct nvc_context *, const struct nvc_container
 static int  device_mount_native(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
 static int  cap_device_from_path(struct nvc_context *, const char *, struct nvc_device_node *);
 static int  cap_device_mount(struct nvc_context *, const struct nvc_container *, const char *);
+
+static char *
+mount_directory(struct error *err, const char *root, const struct nvc_container *cnt, const char *dir)
+{
+        char src[PATH_MAX];
+        char dst[PATH_MAX];
+        mode_t mode;
+        char *mnt;
+
+        if (path_join(err, src, root, dir) < 0)
+                return (NULL);
+        if (path_resolve_full(err, dst, cnt->cfg.rootfs, dir) < 0)
+                return (NULL);
+        if (file_mode(err, src, &mode) < 0)
+                goto fail;
+        if (file_create(err, dst, NULL, cnt->uid, cnt->gid, mode) < 0)
+                goto fail;
+
+        log_infof("mounting %s at %s", src, dst);
+        if (xmount(err, src, dst, NULL, MS_BIND, NULL) < 0)
+                goto fail;
+        if (xmount(err, NULL, dst, NULL, MS_BIND|MS_REMOUNT | MS_NOSUID|MS_NOEXEC, NULL) < 0)
+                goto fail;
+        if ((mnt = xstrdup(err, dst)) == NULL)
+                goto fail;
+        return (mnt);
+
+ fail:
+        unmount(mnt);
+        return (NULL);
+}
 
 static char **
 mount_files(struct error *err, const char *root, const struct nvc_container *cnt, const char *dir, char *paths[], size_t size)
