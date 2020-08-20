@@ -791,6 +791,16 @@ nvc_device_info_free(struct nvc_device_info *info)
 }
 
 int
+nvc_nvcaps_style(void)
+{
+        if (nvidia_get_chardev_major(NV_CAPS_MODULE_NAME) >= 0)
+                return NVC_NVCAPS_STYLE_DEV;
+        if (file_exists(NULL, NV_PROC_DRIVER_CAPS) >= 0)
+                return NVC_NVCAPS_STYLE_PROC;
+        return NVC_NVCAPS_STYLE_NONE;
+}
+
+int
 nvc_nvcaps_device_from_proc_path(struct nvc_context *ctx, const char *cap_path, struct nvc_device_node *node)
 {
         char abs_cap_path[PATH_MAX];
