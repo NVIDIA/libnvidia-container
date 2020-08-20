@@ -69,6 +69,9 @@ struct devices {
 int new_devices(struct error *err, const struct nvc_device_info *dev, struct devices *d);
 void free_devices(struct devices *d);
 
+int print_nvcaps_device_from_proc_file(struct nvc_context *, const char*, const char*);
+int print_all_mig_minor_devices(const struct nvc_device_node *);
+
 int select_devices(
     struct error *err,
     char *devs,

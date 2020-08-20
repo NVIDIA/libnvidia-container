@@ -188,6 +188,10 @@ list_command(const struct context *ctx)
                         for (size_t i = 0; i < devices.nmigs; ++i) {
                                 printf("%s/%s\n", devices.migs[i]->gi_caps_path, NV_MIG_ACCESS_FILE);
                                 printf("%s/%s\n", devices.migs[i]->ci_caps_path, NV_MIG_ACCESS_FILE);
+                                if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
+                                        print_nvcaps_device_from_proc_file(nvc, devices.migs[i]->gi_caps_path, NV_MIG_ACCESS_FILE);
+                                        print_nvcaps_device_from_proc_file(nvc, devices.migs[i]->ci_caps_path, NV_MIG_ACCESS_FILE);
+                                }
                         }
                 }
         }
@@ -195,15 +199,27 @@ list_command(const struct context *ctx)
         /* List the files required for MIG configuration of the visible devices */
         if (mig_config_devices.all && mig_config_devices.ngpus) {
                 printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_CONFIG_FILE);
+                if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV)
+                        print_nvcaps_device_from_proc_file(nvc, NV_MIG_CAPS_PATH, NV_MIG_CONFIG_FILE);
                 for (size_t i = 0; i < mig_config_devices.ngpus; ++i) {
                         printf("%s\n", mig_config_devices.gpus[i]->mig_caps_path);
+                        if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
+                                printf("%s\n", NV_CAPS_DEVICE_DIR);
+                                print_all_mig_minor_devices(&mig_config_devices.gpus[i]->node);
+                        }
                 }
         }
         /* List the files required for MIG monitoring of the visible devices */
         if (mig_monitor_devices.all && mig_monitor_devices.ngpus) {
                 printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_MONITOR_FILE);
+                if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV)
+                        print_nvcaps_device_from_proc_file(nvc, NV_MIG_CAPS_PATH, NV_MIG_MONITOR_FILE);
                 for (size_t i = 0; i < mig_monitor_devices.ngpus; ++i) {
                         printf("%s\n", mig_monitor_devices.gpus[i]->mig_caps_path);
+                        if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
+                                printf("%s\n", NV_CAPS_DEVICE_DIR);
+                                print_all_mig_minor_devices(&mig_monitor_devices.gpus[i]->node);
+                        }
                 }
         }
 

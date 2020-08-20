@@ -2,6 +2,8 @@
  * Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
  */
 
+#include <sys/sysmacros.h>
+
 #include <inttypes.h>
 #include <string.h>
 
@@ -463,4 +465,51 @@ free_devices(struct devices *d)
         free(d->gpus);
         free(d->migs);
         memset(d, 0, sizeof(*d));
+}
+
+int
+print_nvcaps_device_from_proc_file(struct nvc_context *ctx, const char* cap_dir, const char* cap_file)
+{
+        char cap_path[PATH_MAX];
+        struct nvc_device_node node;
+
+        if (path_join(NULL, cap_path, cap_dir, cap_file) < 0)
+                return (-1);
+        if (nvc_nvcaps_device_from_proc_path(ctx, cap_path, &node) < 0)
+                return (-1);
+
+        printf("%s\n", node.path);
+        free(node.path);
+
+        return (0);
+}
+
+int
+print_all_mig_minor_devices(const struct nvc_device_node *node)
+{
+        unsigned int gpu_minor = 0;
+        unsigned int mig_minor = 0;
+        char line[PATH_MAX];
+        char dummy[PATH_MAX];
+        FILE *fp;
+        int rv = -1;
+
+        if ((fp = fopen(NV_CAPS_MIG_MINORS_PATH, "r")) == NULL) {
+            goto fail;
+        }
+
+        line[PATH_MAX - 1] = '\0';
+        while (fgets(line, PATH_MAX - 1, fp)) {
+                if (sscanf(line, "gpu%u%s %u", &gpu_minor, dummy, &mig_minor) != 3)
+                        continue;
+                if (gpu_minor != minor(node->id))
+                        continue;
+                printf(NV_CAPS_DEVICE_PATH "\n", mig_minor);
+        }
+
+        rv = 0;
+
+fail:
+        fclose(fp);
+        return (rv);
 }
