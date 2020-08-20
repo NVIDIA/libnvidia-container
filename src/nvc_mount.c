@@ -754,7 +754,8 @@ nvc_mig_device_access_caps_mount(struct nvc_context *ctx, const struct nvc_conta
 {
         // Initialize local variables.
         char access[PATH_MAX];
-        char *proc_mnt = NULL;
+        char *proc_mnt_gi = NULL;
+        char *proc_mnt_ci = NULL;
         int rv = -1;
 
         // Validate incoming arguments.
@@ -772,7 +773,7 @@ nvc_mig_device_access_caps_mount(struct nvc_context *ctx, const struct nvc_conta
                 goto fail;
 
         // Mount the 'access' file for the GPU Instance into the container.
-        if ((proc_mnt = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, access)) == NULL)
+        if ((proc_mnt_gi = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, access)) == NULL)
                 goto fail;
 
         // Construct the path to the 'access' file in '/proc' for the Compute Instance.
@@ -780,7 +781,7 @@ nvc_mig_device_access_caps_mount(struct nvc_context *ctx, const struct nvc_conta
                 goto fail;
 
         // Mount the 'access' file for the Compute Instance into the container.
-        if ((proc_mnt = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, access)) == NULL)
+        if ((proc_mnt_ci = mount_procfs_mig(&ctx->err, ctx->cfg.root, cnt, access)) == NULL)
                 goto fail;
 
         // Set the return value to indicate success.
@@ -790,7 +791,8 @@ nvc_mig_device_access_caps_mount(struct nvc_context *ctx, const struct nvc_conta
         if (rv < 0) {
                 // If we failed above for any reason, unmount the 'access' file
                 // we mounted and exit the mount namespace.
-                unmount(proc_mnt);
+                unmount(proc_mnt_gi);
+                unmount(proc_mnt_ci);
                 assert_func(ns_enter_at(NULL, ctx->mnt_ns, CLONE_NEWNS));
         } else {
                 // Otherwise, just exit the mount namespace.
@@ -799,7 +801,8 @@ nvc_mig_device_access_caps_mount(struct nvc_context *ctx, const struct nvc_conta
 
         // In all cases, free the string associated with the mounted 'access'
         // file and return.
-        free(proc_mnt);
+        free(proc_mnt_gi);
+        free(proc_mnt_ci);
         return (rv);
 }
 
