@@ -17,6 +17,7 @@ OBJCPY   ?= objcopy
 RPCGEN   ?= rpcgen
 BMAKE    ?= MAKEFLAGS= bmake
 DOCKER   ?= docker
+PATCH    ?= patch
 
 UID      := $(shell id -u)
 GID      := $(shell id -g)
