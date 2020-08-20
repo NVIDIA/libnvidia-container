@@ -10,6 +10,7 @@ libnvidia-container.so.1 libnvidia-container1 #MINVER#
  nvc_context_new@NVC_1.0 1.2.0~rc.3
  nvc_device_info_free@NVC_1.0 1.2.0~rc.3
  nvc_device_info_new@NVC_1.0 1.2.0~rc.3
+ nvc_nvcaps_device_from_proc_path@NVC_1.0 1.2.0~rc.3
  nvc_device_mount@NVC_1.0 1.2.0~rc.3
  nvc_mig_device_access_caps_mount@NVC_1.0 1.2.0~rc.3
  nvc_mig_config_global_caps_mount@NVC_1.0 1.2.0~rc.3

@@ -40,7 +40,6 @@ static int  symlink_libraries(struct error *, const struct nvc_container *, cons
 static void filter_libraries(const struct nvc_driver_info *, char * [], size_t *);
 static int  device_mount_dxcore(struct nvc_context *, const struct nvc_container *);
 static int  device_mount_native(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
-static int  cap_device_from_path(struct nvc_context *, const char *, struct nvc_device_node *);
 static int  cap_device_mount(struct nvc_context *, const struct nvc_container *, const char *);
 static int  setup_mig_minor_cgroups(struct error *, const struct nvc_container *, int, const struct nvc_device_node *);
 
@@ -644,39 +643,13 @@ device_mount_native(struct nvc_context *ctx, const struct nvc_container *cnt, co
 }
 
 static int
-cap_device_from_path(struct nvc_context *ctx, const char *cap_path, struct nvc_device_node *node)
-{
-        char abs_cap_path[PATH_MAX];
-        char dev_name[PATH_MAX];
-        int major, minor;
-        int rv = -1;
-
-        if (path_join(&ctx->err, abs_cap_path, ctx->cfg.root, cap_path) < 0)
-                goto fail;
-
-        if (nvidia_cap_get_device_file_attrs(abs_cap_path, &major, &minor, dev_name) == 0) {
-                error_set(&ctx->err, "unable to get cap device attributes: %s", cap_path);
-                goto fail;
-        }
-
-        if ((node->path = xstrdup(&ctx->err, dev_name)) == NULL)
-                goto fail;
-        node->id = makedev((unsigned int)major, (unsigned int)minor);
-
-        rv = 0;
-
-fail:
-        return (rv);
-}
-
-static int
 cap_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const char *cap_path)
 {
         char *dev_mnt = NULL;
         struct nvc_device_node node = {0};
         int rv = -1;
 
-        if (cap_device_from_path(ctx, cap_path, &node) < 0)
+        if (nvc_nvcaps_device_from_proc_path(ctx, cap_path, &node) < 0)
                 goto fail;
 
         if (!(cnt->flags & OPT_NO_DEVBIND)) {
@@ -978,7 +951,7 @@ nvc_mig_config_global_caps_mount(struct nvc_context *ctx, const struct nvc_conta
                 if ((dev_mnt = mount_directory(&ctx->err, ctx->cfg.root, cnt, NV_CAPS_DEVICE_DIR)) == NULL)
                     goto fail;
 
-                if (cap_device_from_path(ctx, config, &node) < 0)
+                if (nvc_nvcaps_device_from_proc_path(ctx, config, &node) < 0)
                         goto fail;
 
                 if (!(cnt->flags & OPT_NO_CGROUPS))
@@ -1041,7 +1014,7 @@ nvc_mig_monitor_global_caps_mount(struct nvc_context *ctx, const struct nvc_cont
                 if ((dev_mnt = mount_directory(&ctx->err, ctx->cfg.root, cnt, NV_CAPS_DEVICE_DIR)) == NULL)
                         goto fail;
 
-                if (cap_device_from_path(ctx, monitor, &node) < 0)
+                if (nvc_nvcaps_device_from_proc_path(ctx, monitor, &node) < 0)
                         goto fail;
 
                 if (!(cnt->flags & OPT_NO_CGROUPS))

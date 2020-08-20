@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <nvidia-modprobe-utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -787,4 +788,30 @@ nvc_device_info_free(struct nvc_device_info *info)
         }
         free(info->gpus);
         free(info);
+}
+
+int
+nvc_nvcaps_device_from_proc_path(struct nvc_context *ctx, const char *cap_path, struct nvc_device_node *node)
+{
+        char abs_cap_path[PATH_MAX];
+        char dev_name[PATH_MAX];
+        int major, minor;
+        int rv = -1;
+
+        if (path_join(&ctx->err, abs_cap_path, ctx->cfg.root, cap_path) < 0)
+                goto fail;
+
+        if (nvidia_cap_get_device_file_attrs(abs_cap_path, &major, &minor, dev_name) == 0) {
+                error_set(&ctx->err, "unable to get cap device attributes: %s", cap_path);
+                goto fail;
+        }
+
+        if ((node->path = xstrdup(&ctx->err, dev_name)) == NULL)
+                goto fail;
+        node->id = makedev((unsigned int)major, (unsigned int)minor);
+
+        rv = 0;
+
+fail:
+        return (rv);
 }
