@@ -99,6 +99,13 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Fri Aug 21 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.0-0.1.rc.1
+- 2bda067f Add support to "list" command to print /dev based capabilities
+- 3c2ad6aa Add logic to conditionally mount /dev based nvidia-capabilities
+- 4d432175 Change default "list" command to set mig-config / mig-monitor = NULL
+- 3ec7f3ba Fix minor bug that would not unmount paths on failure
+- b5c0a394 Update nvidia-modprobe dependency to 450.57
+
 * Wed Jul 08 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-1
 - Promote 1.2.0~rc.3-1 to 1.2.0-1
 
