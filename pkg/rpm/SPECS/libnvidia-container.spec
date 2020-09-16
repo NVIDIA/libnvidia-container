@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Wed Sep 16 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.0-1
+- Promote 1.3.0-0.1.rc.1 to 1.3.0-1
+
 * Fri Aug 21 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.0-0.1.rc.1
 - 2bda067f Add support to "list" command to print /dev based capabilities
 - 3c2ad6aa Add logic to conditionally mount /dev based nvidia-capabilities
@@ -107,7 +110,7 @@ This package contains command-line tools that facilitate using the library.
 - b5c0a394 Update nvidia-modprobe dependency to 450.57
 
 * Wed Jul 08 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-1
-- Promote 1.2.0~rc.3-1 to 1.2.0-1
+- Promote 1.2.0-0.1.rc.3 to 1.2.0-1
 
 * Wed Jul 01 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.2.0-0.1.rc.3
 - 7deea6b8 WSL2 Support - Remove unnecessary umount and free
