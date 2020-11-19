@@ -52,7 +52,7 @@ cd $(mktemp -d) && mkdir rootfs
 sudo unshare --mount --pid --fork
 
 # Setup a rootfs based on Ubuntu 16.04 inside the new namespaces
-curl http://cdimage.ubuntu.com/ubuntu-base/releases/16.04/release/ubuntu-base-16.04-core-amd64.tar.gz | tar -C rootfs -xz
+curl http://cdimage.ubuntu.com/ubuntu-base/releases/16.04/release/ubuntu-base-16.04.6-base-amd64.tar.gz | tar -C rootfs -xz
 useradd -R $(realpath rootfs) -U -u 1000 -s /bin/bash nvidia
 mount --bind rootfs rootfs
 mount --make-private rootfs
