@@ -99,6 +99,10 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Mon Dec 07 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.1-1
+- Honor OPT_NO_CGROUPS in nvc_device_mig_caps_mount
+- Fix bug in resolving absolute symlinks in find_library_paths()
+
 * Wed Sep 16 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.0-1
 - Promote 1.3.0-0.1.rc.1 to 1.3.0-1
 
