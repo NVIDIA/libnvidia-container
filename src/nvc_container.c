@@ -192,7 +192,7 @@ find_library_paths(struct error *err, struct nvc_container *cnt)
         if (!(cnt->flags & OPT_COMPUTE_LIBS))
                 return (0);
 
-        if (path_join(err, path, cnt->cfg.rootfs, cnt->cfg.cudart_dir) < 0)
+        if (path_resolve_full(err, path, cnt->cfg.rootfs, cnt->cfg.cudart_dir) < 0)
                 return (-1);
         if (path_append(err, path, "compat/lib*.so.*") < 0)
                 return (-1);
