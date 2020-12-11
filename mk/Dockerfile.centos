@@ -3,7 +3,7 @@ FROM ${BASEIMAGE}
 
 ARG OS_VERSION
 RUN if [ "${OS_VERSION}" = "8" ]; then \
-        yum --enablerepo=PowerTools install -y \
+        yum --enablerepo=powertools install -y \
             rpcgen \
             libseccomp-devel; \
     else \
