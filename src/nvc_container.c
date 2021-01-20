@@ -83,24 +83,48 @@ cgroup_mount(char *line, char *prefix, const char *subsys)
 static char *
 cgroup_root(char *line, char *prefix, const char *subsys)
 {
-        char *root, *substr;
+        char *heirarchy_id, *controller_list, *cgroup_path;
 
-        for (int i = 0; i < 2; ++i)
-                substr = strsep(&line, ":");
-        root = strsep(&line, ":");
+        // From: https://man7.org/linux/man-pages/man7/cgroups.7.html
+        // The lines of the /proc/{pid}/cgroup file have the following format:
+        //     hierarchy-ID:controller-list:cgroup-path
+        // Here we attempt to parse the separate sections. If this is not
+        // possible, we return NULL
+        heirarchy_id = strsep(&line, ":");
+        if (heirarchy_id == NULL) {
+                // line contained no colons
+                return (NULL);
+        }
+        controller_list = strsep(&line, ":");
+        if (controller_list == NULL) {
+                // line contains only a single colon
+                return (NULL);
+        }
+        // Since strsep modifies the pointer *line,
+        // the remaining string is the cgroup path
+        cgroup_path = line;
+        if (cgroup_path == NULL) {
+                return (NULL);
+        }
+        if (*cgroup_path == '\0' || *controller_list == '\0') {
+                // The controller list or cgroup_path are empty strings
+                return (NULL);
+        }
+        if (strstr(controller_list, subsys) == NULL) {
+                // The desired subsystem name is not in the controller list
+                return (NULL);
+        }
+        if (strlen(cgroup_path) >= PATH_MAX || str_has_prefix(cgroup_path, "/..")) {
+                // The cgroup path is malformed: It is too long or is a relative path
+                return (NULL);
+        }
+        if (!str_equal(prefix, "/") && str_has_prefix(cgroup_path, prefix)) {
+                // Strip the supplied prefix from the cgroup path unless
+                // it is a "/"
+                cgroup_path += strlen(prefix);
+        }
 
-        if (root == NULL || substr == NULL)
-                return (NULL);
-        if (*root == '\0' || *substr == '\0')
-                return (NULL);
-        if (strstr(substr, subsys) == NULL)
-                return (NULL);
-        if (strlen(root) >= PATH_MAX || str_has_prefix(root, "/.."))
-                return (NULL);
-        if (!str_equal(prefix, "/") && str_has_prefix(root, prefix))
-                root += strlen(prefix);
-
-        return (root);
+        return (cgroup_path);
 }
 
 static char *
