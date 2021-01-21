@@ -275,6 +275,7 @@ limit_syscalls(struct error *err)
                 SCMP_SYS(newfstatat),
                 SCMP_SYS(open),
                 SCMP_SYS(openat),
+                SCMP_SYS(pread64),
                 SCMP_SYS(read),
                 SCMP_SYS(readlink),
                 SCMP_SYS(readv),
