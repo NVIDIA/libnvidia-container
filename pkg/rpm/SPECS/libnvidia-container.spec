@@ -99,6 +99,10 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Mon Jan 25 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.2-1
+- Fix handling of /proc/PID/cgroups entries with colons in paths
+- Add pread64 as allowed syscall for ldconfig
+
 * Mon Dec 07 2020 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.1-1
 - Honor OPT_NO_CGROUPS in nvc_device_mig_caps_mount
 - Fix bug in resolving absolute symlinks in find_library_paths()

@@ -15,8 +15,8 @@ extern "C" {
 
 #define NVC_MAJOR   1
 #define NVC_MINOR   3
-#define NVC_PATCH   1
-#define NVC_VERSION "1.3.1"
+#define NVC_PATCH   2
+#define NVC_VERSION "1.3.2"
 
 #define NVC_ARG_MAX 256
 
