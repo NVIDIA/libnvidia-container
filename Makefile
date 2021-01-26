@@ -13,14 +13,14 @@ WITH_SECCOMP ?= yes
 
 ##### Global definitions #####
 
-export prefix      = /usr/local
-export exec_prefix = $(prefix)
-export bindir      = $(exec_prefix)/bin
-export libdir      = $(exec_prefix)/lib
-export docdir      = $(prefix)/share/doc
-export libdbgdir   = $(prefix)/lib/debug$(libdir)
-export includedir  = $(prefix)/include
-export pkgconfdir  = $(libdir)/pkgconfig
+export prefix      ?= /usr/local
+export exec_prefix ?= $(prefix)
+export bindir      ?= $(exec_prefix)/bin
+export libdir      ?= $(exec_prefix)/lib
+export docdir      ?= $(prefix)/share/doc
+export libdbgdir   ?= $(prefix)/lib/debug$(libdir)
+export includedir  ?= $(prefix)/include
+export pkgconfdir  ?= $(libdir)/pkgconfig
 
 export PKG_DIR     ?= $(CURDIR)/pkg
 export SRCS_DIR    ?= $(CURDIR)/src
