@@ -17,6 +17,7 @@ SVCXPRT *svcunixfd_create(int, u_int, u_int);
 #include <stdbool.h>
 
 #include "error.h"
+#include "dxcore.h"
 
 #define SONAME_LIBCUDA "libcuda.so.1"
 #define SONAME_LIBNVML "libnvidia-ml.so.1"
@@ -39,7 +40,7 @@ struct driver {
 
 void driver_program_1(struct svc_req *, register SVCXPRT *);
 
-int driver_init(struct driver *, struct error *, const char *, uid_t, gid_t);
+int driver_init(struct driver *, struct error *, struct dxcore_context *, const char *, uid_t, gid_t);
 int driver_shutdown(struct driver *);
 int driver_get_rm_version(struct driver *, char **);
 int driver_get_cuda_version(struct driver *, char **);

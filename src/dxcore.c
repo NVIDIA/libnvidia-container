@@ -13,9 +13,10 @@
  */
 static const char * const dxcore_nvidia_libs[] = {
         "libcuda.so.1.1",                   /* Core library for cuda support */
-        "libcuda_loader.so",                /* Core library for cuda support */
+        "libcuda_loader.so",                /* Core library for cuda support on WSL */
         "libnvidia-ptxjitcompiler.so.1",    /* Core library for PTX Jit support */
         "libnvidia-ml.so.1",                /* Core library for nvml */
+        "libnvidia-ml_loader.so",           /* Core library for nvml on WSL */
 };
 
 

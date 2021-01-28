@@ -45,8 +45,6 @@ static int lookup_devices(struct error *, struct dxcore_context *, struct nvc_dr
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
 static void clear_mig_device_info(struct nvc_mig_device_info *);
-static int init_nvc_device_dxcore(struct nvc_context *ctx, unsigned int index, struct nvc_device *gpu);
-static int init_nvc_device_native(struct nvc_context *ctx, unsigned int index, struct nvc_device *gpu);
 
 /*
  * Display libraries are not needed.
@@ -565,32 +563,7 @@ clear_mig_device_info(struct nvc_mig_device_info *info)
 }
 
 static int
-init_nvc_device_dxcore(struct nvc_context *ctx, unsigned int index, struct nvc_device *gpu)
-{
-        // Support for NVML on WSL is not yet complete. Until then we will use dummy values
-        // for WSL GPUs.
-        gpu->model = xstrdup(&ctx->err, "UNKNOWN");
-        gpu->uuid = xstrdup(&ctx->err, "GPU-00000000-0000-0000-0000-000000000000");
-        gpu->brand = xstrdup(&ctx->err, "UNKNOWN");
-        gpu->busid = xstrdup(&ctx->err, "0");
-        gpu->arch = xstrdup(&ctx->err, "UNKNOWN");
-
-        // No Device associated to a WSL GPU. Everything uses /dev/dxg
-        gpu->node.path = NULL;
-
-        // No MIG support for WSL
-        gpu->mig_capable = 0;
-        gpu->mig_caps_path = NULL;
-        gpu->mig_devices.ndevices = 0;
-        gpu->mig_devices.devices = NULL;
-
-        log_infof("listing dxcore adapter %d (%s at %s)", index, gpu->uuid, gpu->busid);
-
-        return 0;
-}
-
-static int
-init_nvc_device_native(struct nvc_context *ctx, unsigned int index, struct nvc_device *gpu)
+init_nvc_device(struct nvc_context *ctx, unsigned int index, struct nvc_device *gpu)
 {
         struct driver_device *dev;
         struct driver *drv = &ctx->drv;
@@ -610,22 +583,39 @@ init_nvc_device_native(struct nvc_context *ctx, unsigned int index, struct nvc_d
                 goto fail;
         if (driver_get_device_brand(drv, dev, &gpu->brand) < 0)
                 goto fail;
-        if (driver_get_device_minor(drv, dev, &minor) < 0)
-                goto fail;
-        if (xasprintf(err, &gpu->mig_caps_path, NV_GPU_CAPS_PATH, minor) < 0)
-                goto fail;
-        if (xasprintf(err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
-                goto fail;
-        if (driver_get_device_mig_capable(drv, dev, &gpu->mig_capable) < 0)
-                goto fail;
-        if (driver_get_device_mig_enabled(drv, dev, &mig_enabled) < 0)
-                goto fail;
-        gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
+        if (ctx->dxcore.initialized)
+        {
+                // No Device associated to a WSL GPU. Everything uses /dev/dxg
+                gpu->node.path = NULL;
+                minor = 0;
 
-        if (fill_mig_device_info(ctx, mig_enabled, dev, gpu) < 0)
-                goto fail;
+                // No MIG support for WSL
+                gpu->mig_capable = 0;
+                gpu->mig_caps_path = NULL;
+                gpu->mig_devices.ndevices = 0;
+                gpu->mig_devices.devices = NULL;
 
-        log_infof("listing device %s (%s at %s)", gpu->node.path, gpu->uuid, gpu->busid);
+                log_infof("listing dxcore adapter %d (%s at %s)", index, gpu->uuid, gpu->busid);
+        }
+        else
+        {
+                if (driver_get_device_minor(drv, dev, &minor) < 0)
+                        goto fail;
+                if (xasprintf(err, &gpu->mig_caps_path, NV_GPU_CAPS_PATH, minor) < 0)
+                        goto fail;
+                if (xasprintf(err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
+                        goto fail;
+                if (driver_get_device_mig_capable(drv, dev, &gpu->mig_capable) < 0)
+                        goto fail;
+                if (driver_get_device_mig_enabled(drv, dev, &mig_enabled) < 0)
+                        goto fail;
+                gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
+
+                if (fill_mig_device_info(ctx, mig_enabled, dev, gpu) < 0)
+                    goto fail;
+
+                log_infof("listing device %s (%s at %s)", gpu->node.path, gpu->uuid, gpu->busid);
+        }
 
         return 0;
 
@@ -681,17 +671,9 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 
-        if (ctx->dxcore.initialized) {
-                log_info("no NVML support on early WSL2 build, assuming RM version is 460");
-                info->nvrm_version = xstrdup(&ctx->err, "460.0");
-        }
-        else if (driver_get_rm_version(&ctx->drv, &info->nvrm_version) < 0)
+        if (driver_get_rm_version(&ctx->drv, &info->nvrm_version) < 0)
                 goto fail;
-        if (ctx->dxcore.initialized) {
-                log_info("no NVML support on early WSL2 build, assuming CUDA version is 11.0");
-                info->cuda_version = xstrdup(&ctx->err, "11.0");
-        }
-        else if (driver_get_cuda_version(&ctx->drv, &info->cuda_version) < 0)
+        if (driver_get_cuda_version(&ctx->drv, &info->cuda_version) < 0)
                 goto fail;
         if (lookup_libraries(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
                 goto fail;
@@ -746,10 +728,8 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 
-        if (ctx->dxcore.initialized)
-                n = ctx->dxcore.adapterCount;
-        else if (driver_get_device_count(&ctx->drv, &n) < 0)
-                goto fail;
+        if (driver_get_device_count(&ctx->drv, &n) < 0)
+            goto fail;
 
         info->ngpus = n;
         info->gpus = gpu = xcalloc(&ctx->err, info->ngpus, sizeof(*info->gpus));
@@ -757,10 +737,7 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
                 goto fail;
 
         for (unsigned int i = 0; i < n; ++i, ++gpu) {
-                if (ctx->dxcore.initialized)
-                        rv = init_nvc_device_dxcore(ctx, i, gpu);
-                else rv = init_nvc_device_native(ctx, i, gpu);
-
+                rv = init_nvc_device(ctx, i, gpu);
                 if (rv < 0) goto fail;
         }
 

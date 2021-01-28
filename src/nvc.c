@@ -309,11 +309,7 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
                         goto fail;
         }
 
-        // NVML is not yet supported on WSL so we skip driver initialization.
-        // Once NVML support is added to WSL, this short-circuit will be removed.
-        if (ctx->dxcore.initialized)
-                log_warn("skipping driver initialization on WSL");
-        else if (driver_init(&ctx->drv, &ctx->err, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
+        if (driver_init(&ctx->drv, &ctx->err, &ctx->dxcore, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
                 goto fail;
 
         ctx->initialized = true;
@@ -335,11 +331,7 @@ nvc_shutdown(struct nvc_context *ctx)
                 return (0);
 
         log_info("shutting down library context");
-        // NVML is not yet supported on WSL so we skip driver shutdown.
-        // Once NVML support is added to WSL, this short-circuit will be removed.
-        if (ctx->dxcore.initialized)
-                log_warn("skipping driver shutdown on WSL");
-        else if (driver_shutdown(&ctx->drv) < 0)
+        if (driver_shutdown(&ctx->drv) < 0)
                 return (-1);
         if (ctx->dxcore.initialized)
                 dxcore_deinit_context(&ctx->dxcore);
