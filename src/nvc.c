@@ -143,6 +143,96 @@ init_within_userns(struct error *err)
 }
 
 static int
+mig_nvcaps_mknodes(struct error *err, const char *root, int num_gpus) {
+        FILE *fp;
+        char line[PATH_MAX];
+        char rel_path[PATH_MAX];
+        char abs_path[PATH_MAX];
+        int gpu = -1, gi = -1, ci = -1, mig_minor = -1;
+        int rv = -1;
+
+        // If the NV_CAPS_MIG_MINORS_PATH does not exist, then we are not on a
+        // MIG capable machine, so there is nothing to do.
+        if (!file_exists(NULL, NV_CAPS_MIG_MINORS_PATH))
+                return (0);
+
+        // Open NV_CAPS_MIG_MINORS_PATH for walking.
+        // The format of this file is discussed in:
+        //     https://docs.nvidia.com/datacenter/tesla/mig-user-guide/index.html#unique_1576522674
+        if ((fp = fopen(NV_CAPS_MIG_MINORS_PATH, "r")) == NULL) {
+                error_setx(err, "unable to open: %s", NV_CAPS_MIG_MINORS_PATH);
+                return (-1);
+        }
+
+        // Walk through each line of NV_CAPS_MIG_MINORS_PATH
+        memset(line, 0, PATH_MAX);
+        memset(rel_path, 0, PATH_MAX);
+        memset(abs_path, 0, PATH_MAX);
+        while (fgets(line, PATH_MAX - 1, fp)) {
+                // Look for a ci access entry and construct a path into /proc from it
+                if (sscanf(line, "gpu%d/gi%d/ci%d/access %d", &gpu, &gi, &ci, &mig_minor) == 4) {
+                        if (gpu >= num_gpus)
+                                continue;
+                        if (sprintf(rel_path, NV_COMP_INST_CAPS_PATH "/" NV_MIG_ACCESS_FILE, gpu, gi, ci) < 0) {
+                                error_setx(err, "error constructing path for ci access file");
+                                goto fail;
+                        }
+                // Look for a gi access entry and construct a path into /proc from it
+                } else if (sscanf(line, "gpu%d/gi%d/access %d", &gpu, &gi, &mig_minor) == 3) {
+                        if (gpu >= num_gpus)
+                                continue;
+                        if (sprintf(rel_path, NV_GPU_INST_CAPS_PATH "/" NV_MIG_ACCESS_FILE, gpu, gi) < 0) {
+                                error_setx(err, "error constructing path for gi access file");
+                                goto fail;
+                        }
+                // Look for a mig config entry and construct a path into /proc from it
+                } else if (sscanf(line, "config %d", &mig_minor) == 1) {
+                        if (sprintf(rel_path, NV_MIG_CAPS_PATH "/" NV_MIG_CONFIG_FILE) < 0) {
+                                error_setx(err, "error constructing path for mig config file");
+                                goto fail;
+                        }
+                // Look for a mig monitor entry and construct a path into /proc from it
+                } else if (sscanf(line, "monitor %d", &mig_minor) == 1) {
+                        if (sprintf(rel_path, NV_MIG_CAPS_PATH "/" NV_MIG_MONITOR_FILE) < 0) {
+                                error_setx(err, "error constructing path for mig monitor file");
+                                goto fail;
+                        }
+                // We encountered an unexpected pattern, so error out
+                } else {
+                        error_setx(err, "unexpected line in mig-monitors file: %s", line);
+                        goto fail;
+                }
+
+                // Join the constructed /proc path with the root of the driver installation
+                if (path_join(NULL, abs_path, root, rel_path) < 0) {
+                        error_setx(err, "error joining nvcaps path with driver root path");
+                        goto fail;
+                }
+
+                // This file contains entries for all possible MIG nvcaps on up
+                // to 32 GPUs. If the newly constructed path does not exist,
+                // then just move on because there are many entries in this
+                // file that will not be present on the machine.
+                if (!file_exists(NULL, abs_path))
+                        continue;
+
+                // Call into nvidia-modprobe code to perform the mknod() on
+                // /dev/nvidia-caps/nvidia-cap<mig_minor> from the canonial
+                // /proc path we constructed.
+                log_infof("running mknod for " NV_CAPS_DEVICE_PATH " from %s", mig_minor, abs_path);
+                if (nvidia_cap_mknod(abs_path, &mig_minor) == 0) {
+                        error_setx(err, "error running mknod for nvcap: %s", abs_path);
+                        goto fail;
+                }
+        }
+        rv = 0;
+
+fail:
+        fclose(fp);
+        return (rv);
+}
+
+static int
 load_kernel_modules(struct error *err, const char *root)
 {
         int userns;
@@ -201,6 +291,10 @@ load_kernel_modules(struct error *err, const char *root)
                                 if (nvidia_mknod(i) == 0)
                                         log_err("could not create kernel module device node");
                         }
+                        log_info("running mknod for all nvcaps in " NV_CAPS_DEVICE_DIR);
+                        if (mig_nvcaps_mknodes(err, root, devs.num_matches) < 0)
+                                log_errf("could not create kernel module device nodes: %s", err->msg);
+                        error_reset(err);
                 }
 
                 log_info("loading kernel module nvidia_uvm");
