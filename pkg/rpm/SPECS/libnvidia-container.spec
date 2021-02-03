@@ -99,6 +99,10 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Wed Feb 03 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.3-0.1.rc.1
+- Pre-create MIG related nvcaps at startup
+- Add more logging around device node creation with --load-kmods
+
 * Mon Jan 25 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.2-1
 - Fix handling of /proc/PID/cgroups entries with colons in paths
 - Add pread64 as allowed syscall for ldconfig
