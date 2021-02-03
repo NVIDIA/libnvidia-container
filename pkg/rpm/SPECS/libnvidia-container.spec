@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Wed Feb 03 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.3-0.1.rc.2
+- Remove path_join() with already chrooted directory
+
 * Wed Feb 03 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.3-0.1.rc.1
 - Pre-create MIG related nvcaps at startup
 - Add more logging around device node creation with --load-kmods
