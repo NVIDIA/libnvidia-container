@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Fri Feb 05 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.3-1
+- Promote 1.3.3-0.1.rc.2 to 1.3.3-1
+
 * Wed Feb 03 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.3-0.1.rc.2
 - Remove path_join() with already chrooted directory
 
