@@ -33,7 +33,7 @@
 #define REAP_TIMEOUT_MS 10
 
 static int setup_rpc_client(struct driver *);
-static noreturn void setup_rpc_service(struct driver *, const char *, uid_t, gid_t, pid_t);
+static noreturn void setup_rpc_service(struct driver *, struct dxcore_context* dxcore, const char *, uid_t, gid_t, pid_t);
 static int reap_process(struct error *, pid_t, int, bool);
 
 struct mig_device {
@@ -94,7 +94,7 @@ setup_rpc_client(struct driver *ctx)
 }
 
 static void
-setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppid)
+setup_rpc_service(struct driver *ctx, struct dxcore_context* dxcore, const char *root, uid_t uid, gid_t gid, pid_t ppid)
 {
         int rv = EXIT_FAILURE;
 
@@ -143,7 +143,14 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         if (getppid() != ppid)
                 kill(getpid(), SIGTERM);
 
-        if ((ctx->nvml_dl = xdlopen(ctx->err, SONAME_LIBNVML, RTLD_NOW)) == NULL)
+
+        if (dxcore->initialized) {
+                char nvml_path[PATH_MAX];
+                if (path_join(ctx->err, nvml_path, dxcore->adapterList[0].pDriverStorePath, SONAME_LIBNVML) < 0)
+                        goto fail;
+                if ((ctx->nvml_dl = xdlopen(ctx->err, nvml_path, RTLD_NOW)) == NULL)
+                        goto fail;
+        } else if ((ctx->nvml_dl = xdlopen(ctx->err, SONAME_LIBNVML, RTLD_NOW)) == NULL)
                 goto fail;
 
         if ((ctx->rpc_svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
@@ -205,7 +212,7 @@ driver_program_1_freeresult(maybe_unused SVCXPRT *svc, xdrproc_t xdr_result, cad
 }
 
 int
-driver_init(struct driver *ctx, struct error *err, const char *root, uid_t uid, gid_t gid)
+driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore, const char *root, uid_t uid, gid_t gid)
 {
         int ret;
         pid_t pid;
@@ -219,7 +226,7 @@ driver_init(struct driver *ctx, struct error *err, const char *root, uid_t uid, 
                 goto fail;
         }
         if (ctx->pid == 0)
-                setup_rpc_service(ctx, root, uid, gid, pid);
+                setup_rpc_service(ctx, dxcore, root, uid, gid, pid);
         if (setup_rpc_client(ctx) < 0)
                 goto fail;
 
