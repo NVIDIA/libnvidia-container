@@ -64,41 +64,41 @@ stages:
 build-one-amd64:
   <<: *build-one-setup
   script:
-    - make ubuntu18.04-amd64
+    - make -f mk/docker.mk ubuntu18.04-amd64
 
 build-one-ppc64le:
   <<: *build-one-setup
   script:
-    - make ubuntu18.04-ppc64le
+    - make -f mk/docker.mk ubuntu18.04-ppc64le
 
 build-one-arm64:
   <<: *build-one-setup
   script:
-    - make ubuntu18.04-arm64
+    - make -f mk/docker.mk ubuntu18.04-arm64
 
 # The full set of build-all jobs organized to
 # have builds for each ARCH run in parallel.
 build-all-amd64:
   <<: *build-all-setup
   script:
-    - make docker-amd64
+    - make -f mk/docker.mk docker-amd64
 
 build-all-x86_64:
   <<: *build-all-setup
   script:
-    - make docker-x86_64
+    - make -f mk/docker.mk docker-x86_64
 
 build-all-ppc64le:
   <<: *build-all-setup
   script:
-    - make docker-ppc64le
+    - make -f mk/docker.mk docker-ppc64le
 
 build-all-arm64:
   <<: *build-all-setup
   script:
-    - make docker-arm64
+    - make -f mk/docker.mk docker-arm64
 
 build-all-aarch64:
   <<: *build-all-setup
   script:
-    - make docker-aarch64
+    - make -f mk/docker.mk docker-aarch64
