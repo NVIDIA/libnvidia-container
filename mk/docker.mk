@@ -1,4 +1,4 @@
-# Copyright (c) 2017, NVIDIA CORPORATION.  All rights reserved.
+# Copyright (c) 2017-2021, NVIDIA CORPORATION.  All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# Global definitions. These are defined here to allow the docker targets to be
+# invoked directly without the root makefile.
+WITH_LIBELF  ?= no
+WITH_TIRPC   ?= no
+WITH_SECCOMP ?= yes
+
+DOCKER       ?= docker
+LIB_NAME     ?= libnvidia-container
+PLATFORM     ?= $(shell uname -m)
+
+DIST_DIR     ?= $(CURDIR)/dist
+MAKE_DIR     ?= $(CURDIR)/mk
 
 # Supported OSs by architecture
 AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
@@ -126,18 +139,18 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 
 docker-build-%:
 	@echo "Building for $(TARGET_PLATFORM)"
-	docker pull --platform=linux/$(ARCH) $(BASEIMAGE)
+	$(DOCKER) pull --platform=linux/$(ARCH) $(BASEIMAGE)
 	DOCKER_BUILDKIT=1 \
 	$(DOCKER) build \
 	    --progress=plain \
-	    --build-arg BASEIMAGE=$(BASEIMAGE) \
-	    --build-arg OS_VERSION=$(VERSION) \
-	    --build-arg OS_ARCH=$(ARCH) \
-	    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-	    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-	    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-	    --build-arg CFLAGS=$(CFLAGS) \
-	    --build-arg LDLIBS=$(LDLIBS) \
+	    --build-arg BASEIMAGE="$(BASEIMAGE)" \
+	    --build-arg OS_VERSION="$(VERSION)" \
+	    --build-arg OS_ARCH="$(ARCH)" \
+	    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
+	    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
+	    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
+	    --build-arg CFLAGS="$(CFLAGS)" \
+	    --build-arg LDLIBS="$(LDLIBS)" \
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
