@@ -780,8 +780,8 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
 
         /* IPC mounts */
         for (size_t i = 0; i < info->nipcs; ++i) {
-                /* XXX Only utility libraries require persistenced IPC, everything else is compute only. */
-                if (str_has_suffix(NV_PERSISTENCED_SOCKET, info->ipcs[i])) {
+                /* XXX Only utility libraries require persistenced or fabricmanager IPC, everything else is compute only. */
+                if (str_has_suffix(NV_PERSISTENCED_SOCKET, info->ipcs[i]) || str_has_suffix(NV_FABRICMANAGER_SOCKET, info->ipcs[i])) {
                         if (!(cnt->flags & OPT_UTILITY_LIBS))
                                 continue;
                 } else if (!(cnt->flags & OPT_COMPUTE_LIBS))
