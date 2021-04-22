@@ -60,6 +60,7 @@ static const char * const utility_bins[] = {
         "nvidia-smi",                       /* System management interface */
         "nvidia-debugdump",                 /* GPU coredump utility */
         "nvidia-persistenced",              /* Persistence mode utility */
+        "nv-fabricmanager",                 /* NVSwitch fabrimanager utility */
         //"nvidia-modprobe",                /* Kernel module loader */
         //"nvidia-settings",                /* X server settings */
         //"nvidia-xconfig",                 /* X xorg.conf editor */
@@ -443,13 +444,17 @@ lookup_ipcs(struct error *err, struct nvc_driver_info *info, const char *root, i
         char **ptr;
         const char *mps;
 
-        info->nipcs = 2;
+        info->nipcs = 3;
         info->ipcs = ptr = array_new(err, info->nipcs);
         if (info->ipcs == NULL)
                 return (-1);
 
         if (!(flags & OPT_NO_PERSISTENCED)) {
                 if (find_ipc_path(err, root, NV_PERSISTENCED_SOCKET, ptr++) < 0)
+                        return (-1);
+        }
+        if (!(flags & OPT_NO_FABRICMANAGER)) {
+                if (find_ipc_path(err, root, NV_FABRICMANAGER_SOCKET, ptr++) < 0)
                         return (-1);
         }
         if (!(flags & OPT_NO_MPS)) {

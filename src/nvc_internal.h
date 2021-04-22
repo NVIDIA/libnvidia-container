@@ -34,6 +34,7 @@
 #define NV_CAPS_DEVICE_DIR       _PATH_DEV "nvidia-caps"
 #define NV_CAPS_DEVICE_PATH      NV_CAPS_DEVICE_DIR "/nvidia-cap%d"
 #define NV_PERSISTENCED_SOCKET   _PATH_VARRUN "nvidia-persistenced/socket"
+#define NV_FABRICMANAGER_SOCKET  _PATH_VARRUN "nvidia-fabricmanager/socket"
 #define NV_MPS_PIPE_DIR          _PATH_TMP "nvidia-mps"
 #define NV_PROC_DRIVER           "/proc/driver/nvidia"
 #define NV_CAPS_PROC_DRIVER      "/proc/driver/nvidia-caps"

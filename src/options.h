@@ -27,11 +27,12 @@ static const char * const default_library_opts = "";
 
 /* Driver options */
 enum {
-        OPT_NO_GLVND        = 1 << 0,
-        OPT_NO_UVM          = 1 << 1,
-        OPT_NO_MODESET      = 1 << 2,
-        OPT_NO_MPS          = 1 << 3,
-        OPT_NO_PERSISTENCED = 1 << 4,
+        OPT_NO_GLVND         = 1 << 0,
+        OPT_NO_UVM           = 1 << 1,
+        OPT_NO_MODESET       = 1 << 2,
+        OPT_NO_MPS           = 1 << 3,
+        OPT_NO_PERSISTENCED  = 1 << 4,
+        OPT_NO_FABRICMANAGER = 1 << 5,
 };
 
 static const struct option driver_opts[] = {
@@ -40,6 +41,7 @@ static const struct option driver_opts[] = {
         {"no-modeset", OPT_NO_MODESET},
         {"no-mps", OPT_NO_MPS},
         {"no-persistenced", OPT_NO_PERSISTENCED},
+        {"no-fabricmanager", OPT_NO_FABRICMANAGER},
 };
 
 static const char * const default_driver_opts = "";
