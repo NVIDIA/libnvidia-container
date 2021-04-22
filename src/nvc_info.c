@@ -73,6 +73,7 @@ static const char * const compute_bins[] = {
 static const char * const utility_libs[] = {
         "libnvidia-ml.so",                  /* Management library */
         "libnvidia-cfg.so",                 /* GPU configuration */
+        "libnvidia-nscq.so",                /* Topology info for NVSwitches and GPUs */
 };
 
 static const char * const compute_libs[] = {
