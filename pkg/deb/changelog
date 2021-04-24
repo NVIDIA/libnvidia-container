@@ -1,3 +1,14 @@
+libnvidia-container (1.4.0-1) UNRELEASED; urgency=medium
+
+  * Mount all of /proc/.../nvidia/capabilities with --mig-{config, monitor}
+  * Add fabricmanager as a valid IPC to inject into a container
+  * Added libnvidia-nscq.so as an optional injected utility lib
+  * Add Jenkinsfile for internal CI
+  * Invoke docker make file separately
+  * WSL - Add full NVML support for WSL in the container library
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Sat, 24 Apr 2021 04:34:26 -0700
+
 libnvidia-container (1.3.3-1) UNRELEASED; urgency=medium
 
   * Promote 1.3.3~rc.2 to 1.3.3-1
