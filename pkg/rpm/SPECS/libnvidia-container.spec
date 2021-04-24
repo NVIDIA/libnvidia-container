@@ -99,6 +99,14 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Sat Apr 24 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.4.0-1
+- Mount all of /proc/.../nvidia/capabilities with --mig-{config, monitor}
+- Add fabricmanager as a valid IPC to inject into a container
+- Added libnvidia-nscq.so as an optional injected utility lib
+- Add Jenkinsfile for internal CI
+- Invoke docker make file separately
+- WSL - Add full NVML support for WSL in the container library
+
 * Fri Feb 05 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.3.3-1
 - Promote 1.3.3-0.1.rc.2 to 1.3.3-1
 
