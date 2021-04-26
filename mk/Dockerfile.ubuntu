@@ -1,7 +1,7 @@
-ARG IMAGESPEC=ubuntu:16.04
-FROM ${IMAGESPEC}
-ARG IMAGESPEC=ubuntu:16.04
+ARG BASEIMAGE
+FROM ${BASEIMAGE}
 
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
         apt-utils \
         bmake \
@@ -19,17 +19,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         lintian \
         lsb-release \
         m4 \
+        pkg-config \
         xz-utils && \
     rm -rf /var/lib/apt/lists/*
 
 ENV GPG_TTY /dev/console
 
-ARG USERSPEC=0:0
-
 WORKDIR /tmp/libnvidia-container
 COPY . .
-RUN chown -R $USERSPEC $PWD
-USER $USERSPEC
 
 ARG WITH_LIBELF=no
 ARG WITH_TIRPC=no
@@ -40,6 +37,11 @@ ENV WITH_SECCOMP=${WITH_SECCOMP}
 
 RUN make distclean && make -j"$(nproc)"
 
-ENV DIST_DIR /mnt
+ENV DIST_DIR /dist
 VOLUME $DIST_DIR
-CMD make dist && make deb
+CMD bash -c " \
+        export DISTRIB=$(lsb_release -c -s); \
+        export SECTION="" \
+        make dist; \
+        make deb; \
+     "
