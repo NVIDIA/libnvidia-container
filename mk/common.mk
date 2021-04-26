@@ -24,7 +24,7 @@ DATE     := $(shell date -u --iso-8601=minutes)
 REVISION := $(shell git rev-parse HEAD)
 COMPILER := $(realpath $(shell which $(CC)))
 PLATFORM ?= $(shell uname -m)
-JETSON   := $(shell test -f /etc/nv_tegra_release && echo "TRUE")
+JETSON   := TRUE
 
 ifeq ($(DATE),)
 $(error Invalid date format)
