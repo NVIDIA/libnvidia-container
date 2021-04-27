@@ -46,6 +46,7 @@ static int parse_file(struct error *, const char *, const char *, struct nvc_jet
 static int lookup_jetson_devices(struct error *, struct nvc_jetson_info *, const char *);
 static int lookup_jetson_dirs(struct error *, struct nvc_jetson_info *, const char *);
 static int lookup_jetson_libs(struct error *, struct nvc_jetson_info *, const char *);
+static int lookup_jetson_symlinks(struct error *, struct nvc_jetson_info *, const char *);
 
 /*
  * Display libraries are not needed.
