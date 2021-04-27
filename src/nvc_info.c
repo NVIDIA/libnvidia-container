@@ -588,12 +588,6 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
 
         if (driver_get_cuda_version(&ctx->drv, &info->cuda_version) < 0)
                 goto fail;
-        if (lookup_libraries(&ctx->err, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
-                goto fail;
-        if (lookup_binaries(&ctx->err, info, ctx->cfg.root, flags) < 0)
-                goto fail;
-        if (lookup_ipcs(&ctx->err, info, ctx->cfg.root, flags) < 0)
-                goto fail;
         if (lookup_jetson(&ctx->err, info, ctx->cfg.root) < 0)
                 goto fail;
 
