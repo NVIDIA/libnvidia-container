@@ -14,35 +14,6 @@
 # limitations under the License.
 */
 
-def getBuildClosure(def architecture, def makeCommand, def makeTarget) {
-    return {
-        container('docker') {
-            stage(architecture) {
-                sh "${makeCommand} -f mk/docker.mk ${makeTarget}"
-            }
-        }
-    }
-}
-
-def getBuildStagesForArchitectures(def architectures, def makeCommand, def makeTargetPrefix) {
-    stages = [:]
-
-    for (a in architectures) {
-        stages[a] = getBuildClosure(a, makeCommand, "${makeTargetPrefix}-${a}")
-    }
-
-    return stages
-}
-
-def getSingleBuildForArchitectures(def architectures) {
-    return getBuildStagesForArchitectures(architectures, "make", "ubuntu18.04")
-}
-
-def getAllBuildForArchitectures(def architectures) {
-    // TODO: For the time being we only echo the command for the "all" stages
-    return getBuildStagesForArchitectures(architectures, "echo make", "docker")
-}
-
 podTemplate (cloud:'sw-gpu-cloudnative',
     containers: [
     containerTemplate(name: 'docker', image: 'docker:dind', ttyEnabled: true, privileged: true)
@@ -57,14 +28,13 @@ podTemplate (cloud:'sw-gpu-cloudnative',
             }
         }
         stage('build-one') {
-            parallel (
-                getSingleBuildForArchitectures(["amd64", "ppc64le", "arm64"])
-            )
-        }
-        stage('build-all') {
-            parallel (
-                getAllBuildForArchitectures(["amd64", "ppc64le", "arm64", "x86_64", "aarch64"])
-            )
+            container('docker') {
+                def dist = 'ubuntu18.04'
+                def arch = 'arm64'
+                stage("${dist}-${arch}") {
+                    sh "make -f mk/docker.mk ${dist}-${arch}"
+                }
+            }
         }
     }
 }
