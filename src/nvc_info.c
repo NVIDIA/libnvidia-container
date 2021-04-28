@@ -118,6 +118,44 @@ static const char * const graphics_libs_compat[] = {
         "libGLESv2.so",                     /* OpenGL ES v2 legacy _or_ ICD loader (GLVND) */
 };
 
+/*
+ * On Jetson, the libs, dirs, devs, and symlinks are all stored in CSV files at
+ * a well defined location on the file system, instead of statically as above.
+ *
+ * There are a set of "base" CSV files, whose paths should *always* be
+ * injected into a container. The paths in all other CSV files should only be
+ * optionally injected based on the setting of the OPT_JETPACK_BASE_ONLY flag.
+ */
+static const char * const jetson_base_csv_files[] = {
+        "l4t.csv",
+        "devices.csv",
+        "drivers.csv",
+};
+
+/*
+ * Ths struct holds the info about the various libs, dirs, devs, and syms for
+ * an individual CSV file on the jetson platform.
+ */
+struct jetson_csv_file_info {
+        char *path;
+        struct nvc_jetson_info info;
+};
+
+/*
+ * This struct holds a list of info structs for all CSV files on the jetson
+ * platform. It is stored as a global variable, but it's lifetime is managed as
+ * part of driver_info creation / deletion.
+ *
+ * TODO: Move the management of this variables lifecycle to
+ * nvc_init/nvc_shutdown. As it stands now, it will only work so long as only
+ * *one* driver_info struct is ever created / deleted. This is true when using
+ * the bundled CLI, so it should not cause issues in any practical setting.
+ */
+static struct {
+        struct jetson_csv_file_info *files;
+        size_t nfiles;
+} jetson_csv_file_info_list = {NULL, 0};
+
 static int
 select_libraries(struct error *err, void *ptr, const char *root, const char *orig_path, const char *alt_path)
 {
@@ -511,28 +549,35 @@ static int
 lookup_jetson(struct error *err, struct nvc_driver_info *info, const char *root)
 {
         const char *base = "/etc/nvidia-container-runtime/host-files-for-container.d";
-        struct nvc_jetson_info jetson = {0};
-        struct nvc_jetson_info *dst, *tmp;
-        char **files;
+        struct jetson_csv_file_info *file_info = NULL;
+        struct nvc_jetson_info *dst = NULL, *tmp = NULL;
+        char **files = NULL;
         size_t nfiles = 0;
 
         if ((dst = xcalloc(err, 1, sizeof(struct nvc_jetson_info))) == NULL)
-                return (-1);
+                goto fail;
 
         if ((files = jetson_info_lookup_nvidia_dir(err, base, &nfiles)) == NULL) {
                 info->jetson = dst;
                 return 0;
         }
 
+        if ((jetson_csv_file_info_list.files = xcalloc(err, nfiles, sizeof(struct jetson_csv_file_info))) == NULL)
+                goto fail;
+        jetson_csv_file_info_list.nfiles = nfiles;
 
         for (size_t i = 0; i < nfiles; ++i) {
-                if (parse_file(err, files[i], root, &jetson) < 0)
-                        return (-1);
+                file_info = &jetson_csv_file_info_list.files[i];
 
-                if ((tmp = jetson_info_append(err, &jetson, dst)) == NULL)
-                        return (-1);
+                if ((file_info->path = xstrdup(err, files[i])) == NULL)
+                        goto fail;
 
-                jetson_info_free(&jetson);
+                if (parse_file(err, files[i], root, &file_info->info) < 0)
+                        goto fail;
+
+                if ((tmp = jetson_info_append(err, &file_info->info, dst)) == NULL)
+                        goto fail;
+
                 jetson_info_free(dst);
                 free(dst);
 
@@ -542,6 +587,103 @@ lookup_jetson(struct error *err, struct nvc_driver_info *info, const char *root)
         info->jetson = dst;
 
         return (0);
+
+fail:
+        free(dst);
+        array_free(files, nfiles);
+        return (-1);
+}
+
+static bool
+in_jetson_base_csv_file(const char *path, const char *csv_type)
+{
+        for (size_t i = 0; i < jetson_csv_file_info_list.nfiles; i++) {
+                char *csv_file_name = basename(jetson_csv_file_info_list.files[i].path);
+                char **files = NULL;
+                size_t nfiles = 0;
+
+                if (strcmp(csv_type, CSV_TOKEN_LIB) == 0) {
+                        files = jetson_csv_file_info_list.files[i].info.libs;
+                        nfiles = jetson_csv_file_info_list.files[i].info.nlibs;
+                }
+
+                else if (strcmp(csv_type, CSV_TOKEN_DIR) == 0) {
+                        files = jetson_csv_file_info_list.files[i].info.dirs;
+                        nfiles = jetson_csv_file_info_list.files[i].info.ndirs;
+                }
+
+                else if (strcmp(csv_type, CSV_TOKEN_DEV) == 0) {
+                        files = jetson_csv_file_info_list.files[i].info.devs;
+                        nfiles = jetson_csv_file_info_list.files[i].info.ndevs;
+                }
+
+                else if (strcmp(csv_type, CSV_TOKEN_SYM) == 0) {
+                        files = jetson_csv_file_info_list.files[i].info.syms;
+                        nfiles = jetson_csv_file_info_list.files[i].info.nsyms;
+                }
+
+                if (files == NULL)
+                        return (false);
+
+                for (size_t j = 0; j < nfiles; j++) {
+                        if (!str_has_suffix(path, files[j]))
+                                continue;
+
+                        for (size_t k = 0; k < nitems(jetson_base_csv_files); k++)
+                                if (strcmp(csv_file_name, jetson_base_csv_files[k]) == 0)
+                                        return (true);
+                }
+        }
+
+        return (false);
+}
+
+bool
+match_jetson_library_flags(const char *path, int32_t flags)
+{
+        if (!(flags & OPT_JETPACK_BASE_ONLY))
+                return (true);
+
+        if (in_jetson_base_csv_file(path, CSV_TOKEN_LIB))
+                return (true);
+
+        return (false);
+}
+
+bool
+match_jetson_directory_flags(const char *path, int32_t flags)
+{
+        if (!(flags & OPT_JETPACK_BASE_ONLY))
+                return (true);
+
+        if (in_jetson_base_csv_file(path, CSV_TOKEN_DIR))
+                return (true);
+
+        return (false);
+}
+
+bool
+match_jetson_device_flags(const char *path, int32_t flags)
+{
+        if (!(flags & OPT_JETPACK_BASE_ONLY))
+                return (true);
+
+        if (in_jetson_base_csv_file(path, CSV_TOKEN_DEV))
+                return (true);
+
+        return (false);
+}
+
+bool
+match_jetson_symlink_flags(const char *path, int32_t flags)
+{
+        if (!(flags & OPT_JETPACK_BASE_ONLY))
+                return (true);
+
+        if (in_jetson_base_csv_file(path, CSV_TOKEN_SYM))
+                return (true);
+
+        return (false);
 }
 
 bool
@@ -615,6 +757,12 @@ nvc_driver_info_free(struct nvc_driver_info *info)
         free(info->jetson);
 
         free(info);
+
+        for (size_t i = 0; i < jetson_csv_file_info_list.nfiles; i++) {
+                free(jetson_csv_file_info_list.files[i].path);
+                jetson_info_free(&jetson_csv_file_info_list.files[i].info);
+        }
+        free(jetson_csv_file_info_list.files);
 }
 
 struct nvc_device_info *

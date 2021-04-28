@@ -542,6 +542,9 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         for (size_t i = 0; i < info->jetson->ndevs; ++i) {
                 dev = info->jetson->devs[i];
 
+                if (!match_jetson_device_flags(dev, cnt->flags))
+                        continue;
+
                 if (!(cnt->flags & OPT_NO_DEVBIND)) {
                         if ((*ptr++ = mount_device(&ctx->err, ctx->cfg.root, cnt, dev)) == NULL)
                                 goto fail;

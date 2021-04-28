@@ -146,5 +146,9 @@ void nvc_entrypoint(void);
 /* Prototypes from nvc_info.c */
 bool match_binary_flags(const char *, int32_t);
 bool match_library_flags(const char *, int32_t);
+bool match_jetson_library_flags(const char *, int32_t);
+bool match_jetson_directory_flags(const char *, int32_t);
+bool match_jetson_device_flags(const char *, int32_t);
+bool match_jetson_symlink_flags(const char *, int32_t);
 
 #endif /* HEADER_NVC_INTERNAL_H */
