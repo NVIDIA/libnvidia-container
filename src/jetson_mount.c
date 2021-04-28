@@ -19,6 +19,20 @@
 #include "xfuncs.h"
 #include "jetson_mount.h"
 
+static int
+resolve_symlink(struct error *err, const char *src, char *dst)
+{
+        ssize_t n;
+
+        n = readlink(src, dst, PATH_MAX);
+        if (n < 0 || n >= PATH_MAX)
+                return -1;
+
+        dst[n] = '\0';
+
+        return (0);
+}
+
 char **
 mount_jetson_files(struct error *err, const char *root, const struct nvc_container *cnt, char *paths[], size_t size)
 {
@@ -94,18 +108,6 @@ create_jetson_symlinks(struct error *err, const char *root, const struct nvc_con
                 if (file_create(err, dst, src_lnk, cnt->uid, cnt->gid, MODE_LNK(0777)) < 0)
                         return (-1);
         }
-
-        return (0);
-}
-
-int resolve_symlink(struct error *err, const char *src, char *dst) {
-        ssize_t n;
-
-        n = readlink(src, dst, PATH_MAX);
-        if (n < 0 || n >= PATH_MAX)
-                return -1;
-
-        dst[n] = '\0';
 
         return (0);
 }
