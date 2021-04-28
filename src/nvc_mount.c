@@ -329,15 +329,6 @@ mount_procfs_gpu(struct error *err, const char *root, const struct nvc_container
         return (NULL);
 }
 
-void
-unmount(const char *path)
-{
-        if (path == NULL || str_empty(path))
-                return;
-        umount2(path, MNT_DETACH);
-        file_remove(NULL, path);
-}
-
 static int
 setup_cgroup(struct error *err, const char *cgroup, const char *dev)
 {
