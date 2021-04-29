@@ -1,0 +1,47 @@
+# Build packages for all supported OS / ARCH combinations
+
+stages:
+  - build-one
+  - build-all
+
+.build-setup: &build-setup
+  image: docker:19.03.8
+
+  services:
+    - name: docker:19.03.8-dind
+      command: ["--experimental"]
+
+  before_script:
+  - apk update
+  - apk upgrade
+  - apk add coreutils build-base sed git bash make
+  - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes -c yes
+
+# build-one jobs build packages for a single OS / ARCH combination.
+#
+# They are run during the first stage of the pipeline as a smoke test to ensure
+# that we can successfully build packages on all of our architectures for a
+# single OS. They are triggered on any change to an MR. No artifacts are
+# produced as part of build-one jobs.
+.build-one-setup: &build-one-setup
+  <<: *build-setup
+  stage: build-one
+  only:
+    - merge_requests
+
+# The full set of build-one jobs organizes to build
+# ubuntu18.04 in parallel on each of our supported ARCHs.
+build-one-arm64:
+  <<: *build-one-setup
+  script:
+    - make -f mk/docker.mk ubuntu18.04-arm64
+
+  variables:
+    ARTIFACTS_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}-${CI_JOB_NAME}-artifacts-${CI_PIPELINE_ID}"
+    ARTIFACTS_DIR: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}-artifacts-${CI_PIPELINE_ID}"
+    DIST_DIR: "${CI_PROJECT_DIR}/${ARTIFACTS_DIR}"
+
+  artifacts:
+    name: ${ARTIFACTS_NAME}
+    paths:
+      - ${ARTIFACTS_DIR}
