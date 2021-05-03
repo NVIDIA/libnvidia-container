@@ -56,7 +56,7 @@ podTemplate (cloud:'sw-gpu-cloudnative',
                 stage (stageLabel) {
 
                     def component = 'jetpack'
-                    def repository = 'sw-gpu-cloudnative-debian-local/pool/jetpack'
+                    def repository = 'sw-gpu-cloudnative-debian-local/pool/jetpack/'
 
                     def uploadSpec = """{
                                         "files":
@@ -84,20 +84,12 @@ podTemplate (cloud:'sw-gpu-cloudnative',
 
 // getVersionInfo returns a hash of version info
 def getVersionInfo(def scmInfo) {
-    def version = shOuptut('git describe --tags')
-    def isTag = false
+    def isMaster = scmInfo.GIT_BRANCH == "master"
+    def isJetson = scmInfo.GIT_BRANCH == "jetson"
 
-    def isMaster = scmInfo.GIT_BRANCH == "origin/master"
-    def isJetson = scmInfo.GIT_BRANCH == "origin/jetson"
-
-    if (version == getLastTag()) {
-        isTag = true
-        isMaster = false
-        isJetson = false
-    }
+    def isTag = !isMaster && !isJetson
 
     def versionInfo = [
-        version: sanitizeVersion(version),
         isMaster: isMaster,
         isJetson: isJetson,
         isTag: isTag
