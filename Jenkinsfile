@@ -99,7 +99,7 @@ def getVersionInfo(def scmInfo) {
     def versionInfo = [
         version: sanitizeVersion(version),
         isMaster: isMaster,
-        isJetson: isJetson
+        isJetson: isJetson,
         isTag: isTag
     ]
 
