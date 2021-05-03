@@ -1,3 +1,16 @@
+libnvidia-container (0.10.0+jetpack) UNRELEASED; urgency=medium
+
+  * Add logic to get 'jetpack-base-only' option set through reqs flag
+  * Add logic for detecting if path in CSV file is part of the jetpack base
+  * Add a new OPT_JETPACK_BASE_ONLY option as a cnt flag
+  * Move 'unmount()' function to utils.c for reuse between files.
+  * Make jetson 'resolve_symlink()' function static
+  * Fix bug in condition for when to mount jetson dirs
+  * Add missing function declaration for lookup_jetson_symlinks()
+  * Don't search for libs/bins/ipcs from those listed in the source
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 03 May 2021 04:01:15 +0000
+
 libnvidia-container (0.9.0~beta.1) UNRELEASED; urgency=medium
 
   * Initial Release
