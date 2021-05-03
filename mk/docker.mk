@@ -137,11 +137,15 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --verify-rhel%: OS := centos
 --verify-rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 
+ifneq ($(strip $(ADD_DOCKER_PLATFORM_ARGS)),)
+DOCKER_PLATFORM_ARGS = --platform=linux/$(ARCH)
+endif
+
 docker-build-%:
 	@echo "Building for $(TARGET_PLATFORM)"
 	$(DOCKER) pull --platform=linux/$(ARCH) $(BASEIMAGE)
 	DOCKER_BUILDKIT=1 \
-	$(DOCKER) build \
+	$(DOCKER) build $(DOCKER_PLATFORM_ARGS) \
 	    --progress=plain \
 	    --build-arg BASEIMAGE="$(BASEIMAGE)" \
 	    --build-arg OS_VERSION="$(VERSION)" \
@@ -154,7 +158,7 @@ docker-build-%:
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
-	$(DOCKER) run \
+	$(DOCKER) run $(DOCKER_PLATFORM_ARGS) \
 	    -e TAG \
 	    -v $(ARTIFACTS_DIR):/dist \
 	    $(BUILDIMAGE)
