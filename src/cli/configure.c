@@ -67,6 +67,11 @@ configure_parser(int key, char *arg, struct argp_state *state)
                         goto fatal;
                 break;
         case 'r':
+                if (strncmp(arg, "base-only", 9) == 0) {
+                        if (str_join(&err, &ctx->container_flags, "jetpack-base-only", " ") < 0)
+                                goto fatal;
+                        break;
+                }
                 if (ctx->nreqs >= nitems(ctx->reqs)) {
                         error_setx(&err, "too many requirements");
                         goto fatal;

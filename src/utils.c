@@ -1048,3 +1048,12 @@ perm_set_capabilities(struct error *err, cap_flag_t type, const cap_value_t caps
         cap_free(tmp);
         return (rv);
 }
+
+void
+unmount(const char *path)
+{
+        if (path == NULL || str_empty(path))
+                return;
+        umount2(path, MNT_DETACH);
+        file_remove(NULL, path);
+}

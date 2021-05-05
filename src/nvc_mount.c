@@ -329,15 +329,6 @@ mount_procfs_gpu(struct error *err, const char *root, const struct nvc_container
         return (NULL);
 }
 
-void
-unmount(const char *path)
-{
-        if (path == NULL || str_empty(path))
-                return;
-        umount2(path, MNT_DETACH);
-        file_remove(NULL, path);
-}
-
 static int
 setup_cgroup(struct error *err, const char *cgroup, const char *dev)
 {
@@ -493,7 +484,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         }
 
         log_info("mount jetson dirs");
-        if (info->jetson->libs != NULL && info->jetson->nlibs > 0) {
+        if (info->jetson->dirs != NULL && info->jetson->ndirs > 0) {
                 if ((tmp = (const char **)mount_jetson_files(&ctx->err, ctx->cfg.root, cnt, info->jetson->dirs, info->jetson->ndirs)) == NULL)
                         goto fail;
                 ptr = array_append(ptr, tmp, array_size(tmp));
@@ -550,6 +541,9 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         /* Device mounts */
         for (size_t i = 0; i < info->jetson->ndevs; ++i) {
                 dev = info->jetson->devs[i];
+
+                if (!match_jetson_device_flags(dev, cnt->flags))
+                        continue;
 
                 if (!(cnt->flags & OPT_NO_DEVBIND)) {
                         if ((*ptr++ = mount_device(&ctx->err, ctx->cfg.root, cnt, dev)) == NULL)
