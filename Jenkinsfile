@@ -87,14 +87,25 @@ def getVersionInfo(def scmInfo) {
     def isMaster = scmInfo.GIT_BRANCH == "master"
     def isJetson = scmInfo.GIT_BRANCH == "jetson"
 
-    def isTag = !isMaster && !isJetson
-
     def versionInfo = [
         isMaster: isMaster,
         isJetson: isJetson,
-        isTag: isTag
+        isTag: isTag(scmInfo.GIT_BRANCH)
     ]
 
     scmInfo.each { k, v -> versionInfo[k] = v }
     return versionInfo
+}
+
+def isTag(def branch) {
+    if (!branch.startsWith('v')) {
+        return false
+    }
+
+    def version = shOutput('git describe --all --exact-match --always')
+    return version == "tags/${branch}"
+}
+
+def shOuptut(def script) {
+    return sh(script: script, returnStdout: true).trim()
 }
