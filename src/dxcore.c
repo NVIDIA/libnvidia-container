@@ -17,6 +17,7 @@ static const char * const dxcore_nvidia_libs[] = {
         "libnvidia-ptxjitcompiler.so.1",    /* Core library for PTX Jit support */
         "libnvidia-ml.so.1",                /* Core library for nvml */
         "libnvidia-ml_loader.so",           /* Core library for nvml on WSL */
+        "nvidia-smi",                       /* nvidia-smi binary*/
 };
 
 
@@ -230,8 +231,8 @@ static void dxcore_add_adapter(struct dxcore_context* pCtx, struct dxcore_lib* p
                 return;
         }
 
-        if (wddmVersion < 2800) {
-                log_err("Found a WDDM adapter running a driver with pre-WDDM 2.8 . Skipping it.");
+        if (wddmVersion < 2700) {
+                log_err("Found a WDDM adapter running a driver with pre-WDDM 2.7 . Skipping it.");
                 return;
         }
 
