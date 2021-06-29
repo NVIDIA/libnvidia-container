@@ -17,6 +17,7 @@ static const char * const dxcore_nvidia_libs[] = {
         "libnvidia-ptxjitcompiler.so.1",    /* Core library for PTX Jit support */
         "libnvidia-ml.so.1",                /* Core library for nvml */
         "libnvidia-ml_loader.so",           /* Core library for nvml on WSL */
+        "nvidia-smi",                       /* nvidia-smi binary*/
 };
 
 

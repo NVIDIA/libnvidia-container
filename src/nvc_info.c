@@ -36,11 +36,11 @@
 static int select_libraries(struct error *, void *, const char *, const char *, const char *);
 static int select_wsl_libraries(struct error *, void *, const char *, const char *, const char *);
 static int find_library_paths(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, const char *, const char * const [], size_t);
-static int find_binary_paths(struct error *, struct nvc_driver_info *, const char *, const char * const [], size_t);
+static int find_binary_paths(struct error *, struct dxcore_context*, struct nvc_driver_info *, const char *, const char * const [], size_t);
 static int find_device_node(struct error *, const char *, const char *, struct nvc_device_node *);
 static int find_ipc_path(struct error *, const char *, const char *, char **);
 static int lookup_libraries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
-static int lookup_binaries(struct error *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_binaries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_devices(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
@@ -238,8 +238,8 @@ find_library_paths(struct error *err, struct dxcore_context *dxcore, struct nvc_
 }
 
 static int
-find_binary_paths(struct error *err, struct nvc_driver_info *info, const char *root,
-    const char * const bins[], size_t size)
+find_binary_paths(struct error *err, struct dxcore_context* dxcore, struct nvc_driver_info* info,
+                  const char *root, const char * const bins[], size_t size)
 {
         char *env, *ptr;
         const char *dir;
@@ -258,6 +258,25 @@ find_binary_paths(struct error *err, struct nvc_driver_info *info, const char *r
         info->bins = array_new(err, size);
         if (info->bins == NULL)
                 goto fail;
+
+        // If we are on WSL we want to check if we have a copy of this
+        // binary in our driver store first
+        if (dxcore->initialized) {
+                for (size_t i = 0; i < size; ++i) {
+                        for (unsigned int adapterIndex = 0; adapterIndex < dxcore->adapterCount; adapterIndex++) {
+                                if (path_join(NULL, tmp, dxcore->adapterList[adapterIndex].pDriverStorePath, bins[i]) < 0)
+                                        continue;
+                                if (path_resolve(NULL, path, root, tmp) < 0)
+                                        continue;
+                                if (file_exists_at(NULL, root, path) == true) {
+                                        info->bins[i] = xstrdup(err, path);
+                                        if (info->bins[i] == NULL)
+                                                goto fail;
+                                        log_infof("selecting %s", path);
+                                }
+                        }
+                }
+        }
 
         while ((dir = strsep(&ptr, ":")) != NULL) {
                 if (*dir == '\0')
@@ -359,7 +378,7 @@ lookup_libraries(struct error *err, struct dxcore_context *dxcore, struct nvc_dr
 }
 
 static int
-lookup_binaries(struct error *err, struct nvc_driver_info *info, const char *root, int32_t flags)
+lookup_binaries(struct error *err, struct dxcore_context* dxcore, struct nvc_driver_info *info, const char *root, int32_t flags)
 {
         const char *bins[MAX_BINS];
         const char **ptr = bins;
@@ -368,7 +387,7 @@ lookup_binaries(struct error *err, struct nvc_driver_info *info, const char *roo
         if (!(flags & OPT_NO_MPS))
                 ptr = array_append(ptr, compute_bins, nitems(compute_bins));
 
-        if (find_binary_paths(err, info, root, bins, (size_t)(ptr - bins)) < 0)
+        if (find_binary_paths(err, dxcore, info, root, bins, (size_t)(ptr - bins)) < 0)
                 return (-1);
 
         for (size_t i = 0; info->bins != NULL && i < info->nbins; ++i) {
@@ -683,7 +702,7 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
                 goto fail;
         if (lookup_libraries(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
                 goto fail;
-        if (lookup_binaries(&ctx->err, info, ctx->cfg.root, flags) < 0)
+        if (lookup_binaries(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags) < 0)
                 goto fail;
         if (lookup_devices(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags) < 0)
                 goto fail;
