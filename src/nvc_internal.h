@@ -73,6 +73,8 @@ struct nvc_context {
         int mnt_ns;
         struct driver drv;
         bool no_pivot;
+        bool with_nvlink;
+        bool with_nvswitch;
         struct dxcore_context dxcore;
 };
 

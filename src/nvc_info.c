@@ -49,7 +49,7 @@ static int find_device_node(struct error *, const char *, const char *, struct n
 static int find_ipc_path(struct error *, const char *, const char *, char **);
 static int lookup_libraries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
-static int lookup_devices(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_devices(struct error *, const struct nvc_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
 static void clear_mig_device_info(struct nvc_mig_device_info *);
@@ -407,7 +407,7 @@ lookup_binaries(struct error *err, struct dxcore_context* dxcore, struct nvc_dri
 }
 
 static int
-lookup_devices(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags)
+lookup_devices(struct error *err, const struct nvc_context *ctx, struct nvc_driver_info *info, const char *root, int32_t flags)
 {
         struct nvc_device_node uvm, uvm_tools, modeset, nvidiactl, dxg, *node;
         struct nvc_device_node nvlink;
@@ -425,7 +425,7 @@ lookup_devices(struct error *err, struct dxcore_context *dxcore, struct nvc_driv
         int has_nvswitchctl = 0;
         int nnvswitch = 0;
 
-        if (dxcore->initialized) {
+        if (ctx->dxcore.initialized) {
                 struct stat dxgDeviceStat;
 
                 if (xstat(err, (char *)MSFT_DXG_DEVICE_PATH, &dxgDeviceStat) < 0) {
@@ -453,37 +453,41 @@ lookup_devices(struct error *err, struct dxcore_context *dxcore, struct nvc_driv
                 nvidiactl.id = makedev(NV_DEVICE_MAJOR, NV_CTL_DEVICE_MINOR);
                 has_nvidiactl = 1;
 
-                // If an nvlink device is present include this in the list of devices
-                if ((has_nvlink = find_device_node(err, root, NV_NVLINK_DEVICE_PATH, &nvlink)) < 0) {
-                        log_errf("Error querying %s", NV_NVLINK_DEVICE_PATH);
-                        return (-1);
-                }
-
-                // If an nvswitchctl device is present include this in the list of devices
-                if ((has_nvswitchctl = find_device_node(err, root, NV_NVSWITCH_CTL_PATH, &nvswitchctl)) < 0) {
-                        log_errf("Error querying %s", NV_NVSWITCH_CTL_PATH);
-                        return (-1);
-                }
-
-                // Find the nvswitchX devices and include them in the list of devices
-                for (unsigned int i = 0; i < NV_NVSWITCH_MAX_DEVICES; ++i) {
-                        int has_nvswitch_x = 0;
-                        char *nvswitch_x_path;
-
-                        if (xasprintf(err, &(nvswitch_x_path), NV_NVSWITCH_DEVICE_PATH, nnvswitch) < 0) {
-                                log_errf("Error constructing device path for NVSwitch device %d", i);
+                if (ctx->with_nvlink) {
+                        // If an nvlink device is present include this in the list of devices
+                        if ((has_nvlink = find_device_node(err, root, NV_NVLINK_DEVICE_PATH, &nvlink)) < 0) {
+                                log_errf("Error querying %s", NV_NVLINK_DEVICE_PATH);
                                 return (-1);
                         }
-                        if ((has_nvswitch_x = find_device_node(err, root, nvswitch_x_path, &(nvswitch_devices[nnvswitch]))) < 0) {
-                                log_errf("Error querying %s", nvswitch_x_path);
+                }
+
+                if (ctx->with_nvswitch) {
+                        // If an nvswitchctl device is present include this in the list of devices
+                        if ((has_nvswitchctl = find_device_node(err, root, NV_NVSWITCH_CTL_PATH, &nvswitchctl)) < 0) {
+                                log_errf("Error querying %s", NV_NVSWITCH_CTL_PATH);
                                 return (-1);
                         }
-                        if (!has_nvswitch_x) {
-                                log_infof("Discovered %d nvswitch devices", nnvswitch);
-                                free(nvswitch_x_path);
-                                break;
+
+                        // Find the nvswitchX devices and include them in the list of devices
+                        for (unsigned int i = 0; i < NV_NVSWITCH_MAX_DEVICES; ++i) {
+                                int has_nvswitch_x = 0;
+                                char *nvswitch_x_path;
+
+                                if (xasprintf(err, &(nvswitch_x_path), NV_NVSWITCH_DEVICE_PATH, nnvswitch) < 0) {
+                                        log_errf("Error constructing device path for NVSwitch device %d", i);
+                                        return (-1);
+                                }
+                                if ((has_nvswitch_x = find_device_node(err, root, nvswitch_x_path, &(nvswitch_devices[nnvswitch]))) < 0) {
+                                        log_errf("Error querying %s", nvswitch_x_path);
+                                        return (-1);
+                                }
+                                if (!has_nvswitch_x) {
+                                        log_infof("Discovered %d nvswitch devices", nnvswitch);
+                                        free(nvswitch_x_path);
+                                        break;
+                                }
+                                nnvswitch += has_nvswitch_x;
                         }
-                        nnvswitch += has_nvswitch_x;
                 }
         }
 
@@ -762,7 +766,7 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
                 goto fail;
         if (lookup_binaries(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags) < 0)
                 goto fail;
-        if (lookup_devices(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags) < 0)
+        if (lookup_devices(&ctx->err, ctx, info, ctx->cfg.root, flags) < 0)
                 goto fail;
         if (lookup_ipcs(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;
