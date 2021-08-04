@@ -18,8 +18,8 @@ struct dxcore_adapter
         unsigned int             hAdapter;
         unsigned int             wddmVersion;
         char*                    pDriverStorePath;
-        unsigned int             driverStoreLibraryCount;
-        const char*              pDriverStoreLibraries[MAX_DXCORE_DRIVERSTORE_LIBRAIRIES];
+        unsigned int             driverStoreComponentCount;
+        const char*              pDriverStoreComponents[MAX_DXCORE_DRIVERSTORE_LIBRAIRIES];
         struct dxcore_context    *pContext;
 };
 

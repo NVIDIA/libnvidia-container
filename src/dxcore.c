@@ -9,9 +9,9 @@
 #define DXCORE_MAX_PATH 260
 
 /*
- * List of libraries we expect to find in the driver store that we need to mount
+ * List of components we expect to find in the driver store that we need to mount
  */
-static const char * const dxcore_nvidia_libs[] = {
+static const char * const dxcore_nvidia_driver_store_components[] = {
         "libcuda.so.1.1",                   /* Core library for cuda support */
         "libcuda_loader.so",                /* Core library for cuda support on WSL */
         "libnvidia-ptxjitcompiler.so.1",    /* Core library for PTX Jit support */
@@ -197,22 +197,22 @@ static int dxcore_query_adapter_driverstore(struct dxcore_lib* pLib, unsigned in
 
 static int dxcore_populate_driverstore_library(struct dxcore_adapter *pAdapterInfo)
 {
-        unsigned int libraryIndex = 0;
+        unsigned int index = 0;
 
-        pAdapterInfo->driverStoreLibraryCount = 0;
+        pAdapterInfo->driverStoreComponentCount = 0;
 
-        for (libraryIndex = 0; libraryIndex < nitems(dxcore_nvidia_libs); libraryIndex++) {
-                if (file_exists_at(NULL, pAdapterInfo->pDriverStorePath, dxcore_nvidia_libs[libraryIndex])) {
-                        pAdapterInfo->pDriverStoreLibraries[pAdapterInfo->driverStoreLibraryCount] = dxcore_nvidia_libs[libraryIndex];
-                        pAdapterInfo->driverStoreLibraryCount++;
+        for (index = 0; index < nitems(dxcore_nvidia_driver_store_components); index++) {
+                if (file_exists_at(NULL, pAdapterInfo->pDriverStorePath, dxcore_nvidia_driver_store_components[index])) {
+                        pAdapterInfo->pDriverStoreComponents[pAdapterInfo->driverStoreComponentCount] = dxcore_nvidia_driver_store_components[index];
+                        pAdapterInfo->driverStoreComponentCount++;
                 }
                 else {
-                        log_infof("Core Nvidia library %s not found in %s", dxcore_nvidia_libs[libraryIndex], pAdapterInfo->pDriverStorePath);
+                        log_infof("Core Nvidia component %s not found in %s", dxcore_nvidia_driver_store_components[index], pAdapterInfo->pDriverStorePath);
                 }
         }
 
-        if (pAdapterInfo->driverStoreLibraryCount == 0) {
-                log_infof("No Nvidia Libraries found in %s", pAdapterInfo->pDriverStorePath);
+        if (pAdapterInfo->driverStoreComponentCount == 0) {
+                log_infof("No Nvidia component found in %s", pAdapterInfo->pDriverStorePath);
                 return (-1);
         }
 

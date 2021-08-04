@@ -591,15 +591,15 @@ device_mount_dxcore(struct nvc_context *ctx, const struct nvc_container *cnt)
         // the NVIDIA adapters should share the same drivers on a system. If this
         // assumption is changed we will need to query the LUID for each nvc_device
         // and find the matching driver store.
-        drvstore_size = (size_t)ctx->dxcore.adapterList[0].driverStoreLibraryCount;
+        drvstore_size = (size_t)ctx->dxcore.adapterList[0].driverStoreComponentCount;
         if ((drvstore_mnt = mount_driverstore_files(&ctx->err,
                                                     ctx->cfg.root,
                                                     cnt,
                                                     ctx->dxcore.adapterList[0].pDriverStorePath,
-                                                    ctx->dxcore.adapterList[0].pDriverStoreLibraries,
+                                                    ctx->dxcore.adapterList[0].pDriverStoreComponents,
                                                     drvstore_size)) == NULL)
         {
-                log_errf("failed to mount DriverStore libraries %s", ctx->dxcore.adapterList[0].pDriverStorePath);
+                log_errf("failed to mount DriverStore components %s", ctx->dxcore.adapterList[0].pDriverStorePath);
                 return (-1);
         }
 
