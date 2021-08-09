@@ -47,8 +47,10 @@ static int find_library_paths(struct error *, struct dxcore_context *, struct nv
 static int find_binary_paths(struct error *, struct dxcore_context*, struct nvc_driver_info *, const char *, const char * const [], size_t);
 static int find_device_node(struct error *, const char *, const char *, struct nvc_device_node *);
 static int find_ipc_path(struct error *, const char *, const char *, char **);
+static int lookup_paths(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_libraries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_directories(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_devices(struct error *, const struct nvc_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
@@ -351,6 +353,27 @@ find_ipc_path(struct error *err, const char *root, const char *ipc, char **buf)
 }
 
 static int
+lookup_paths(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags, const char *ldcache)
+{
+        if (lookup_libraries(err, dxcore, info, root, flags, ldcache) < 0) {
+                log_err("error looking up libraries");
+                return (-1);
+        }
+
+        if (lookup_binaries(err, dxcore, info, root, flags) < 0) {
+                log_err("error looking up binaries");
+                return (-1);
+        }
+
+        if (lookup_directories(err, dxcore, info, root, flags) < 0) {
+                log_err("error looking up additional paths");
+                return (-1);
+        }
+
+        return (0);
+}
+
+static int
 lookup_libraries(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags, const char *ldcache)
 {
         const char *libs[MAX_LIBS];
@@ -403,6 +426,38 @@ lookup_binaries(struct error *err, struct dxcore_context* dxcore, struct nvc_dri
                         log_warnf("missing binary %s", bins[i]);
         }
         array_pack(info->bins, &info->nbins);
+        return (0);
+}
+
+static int
+lookup_directories(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags) {
+        int fd;
+        char *firmware_path = NULL;
+
+        if (dxcore->initialized) {
+                log_info("skipping path lookup for dxcore");
+                return 0;
+        }
+
+        // If the NVIDIA driver firmware path exists, include this in the mounted folders.
+        if (xasprintf(err, &firmware_path, NV_FIRMWARE_DRIVER_PATH, info->nvrm_version) < 0) {
+                log_errf("error constructing firmware path for %s", info->nvrm_version);
+                return (-1);
+        }
+        if ((fd = xopen(err, firmware_path, O_PATH|O_DIRECTORY)) < 0) {
+                log_infof("missing firmware path %s", firmware_path);
+                return (0);
+        }
+        close(fd);
+
+        info->dirs = array_new(err, 1);
+        if (info->dirs == NULL) {
+                log_err("error creating path array");
+                return (-1);
+        }
+        info->dirs[0] = firmware_path;
+        info->ndirs = 1;
+
         return (0);
 }
 
@@ -762,9 +817,7 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
                 goto fail;
         if (driver_get_cuda_version(&ctx->drv, &info->cuda_version) < 0)
                 goto fail;
-        if (lookup_libraries(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
-                goto fail;
-        if (lookup_binaries(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags) < 0)
+        if (lookup_paths(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
                 goto fail;
         if (lookup_devices(&ctx->err, ctx, info, ctx->cfg.root, flags) < 0)
                 goto fail;
