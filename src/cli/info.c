@@ -77,7 +77,7 @@ info_command(const struct context *ctx)
         nvc_cfg->gid = (!run_as_root && ctx->gid == (gid_t)-1) ? getegid() : ctx->gid;
         nvc_cfg->root = ctx->root;
         nvc_cfg->ldcache = ctx->ldcache;
-        if (nvc_init(nvc, nvc_cfg, ctx->init_flags) < 0) {
+        if (nvc_init(nvc, nvc_cfg, ctx->init_flags, NULL) < 0) {
                 warnx("initialization error: %s", nvc_error(nvc));
                 goto fail;
         }

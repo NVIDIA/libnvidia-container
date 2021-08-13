@@ -20,6 +20,7 @@ const struct argp list_usage = {
                 {"compat32", 0x80, NULL, 0, "Enable 32bits compatibility", -1},
                 {"mig-config", 0x81, "ID", 0, "MIG devices to list config capabilities files for", -1},
                 {"mig-monitor", 0x82, "ID", 0, "MIG devices to list monitor capabilities files for", -1},
+                {"fabric-device", 0x83, "ID", 0, "Include NVIDIA fabric (nvlink, nvswitch) devices", -1},
                 {0},
         },
         list_parser,
@@ -59,6 +60,10 @@ list_parser(int key, char *arg, struct argp_state *state)
                 break;
         case 0x82:
                 if (str_join(&err, &ctx->mig_monitor, arg, ",") < 0)
+                        goto fatal;
+                break;
+        case 0x83:
+                if (str_join(&err, &ctx->fabric_devices, arg, ",") < 0)
                         goto fatal;
                 break;
         case ARGP_KEY_END:
@@ -122,7 +127,7 @@ list_command(const struct context *ctx)
         nvc_cfg->gid = (!run_as_root && ctx->gid == (gid_t)-1) ? getegid() : ctx->gid;
         nvc_cfg->root = ctx->root;
         nvc_cfg->ldcache = ctx->ldcache;
-        if (nvc_init(nvc, nvc_cfg, ctx->init_flags) < 0) {
+        if (nvc_init(nvc, nvc_cfg, ctx->init_flags, ctx->fabric_devices) < 0) {
                 warnx("initialization error: %s", nvc_error(nvc));
                 goto fail;
         }

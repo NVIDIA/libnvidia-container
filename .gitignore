@@ -16,3 +16,5 @@ src/driver_clt.c
 src/driver_rpc.h
 src/driver_svc.c
 src/driver_xdr.c
+/dist
+/.vscode

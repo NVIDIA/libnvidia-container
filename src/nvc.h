@@ -110,7 +110,7 @@ void nvc_context_free(struct nvc_context *);
 struct nvc_config *nvc_config_new(void);
 void nvc_config_free(struct nvc_config *);
 
-int nvc_init(struct nvc_context *, const struct nvc_config *, const char *);
+int nvc_init(struct nvc_context *, const struct nvc_config *, const char *, const char *);
 int nvc_shutdown(struct nvc_context *);
 
 struct nvc_container_config *nvc_container_config_new(pid_t, const char *);
