@@ -720,7 +720,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
                 return (-1);
 
-        nmnt = 2 + info->nbins + info->nlibs + cnt->nlibs + info->nlibs32 + info->nipcs + info->ndevs;
+        nmnt = 2 + info->nbins + info->nlibs + cnt->nlibs + info->nlibs32 + info->nipcs + info->ndevs + info->ndirs;
         mnt = ptr = (const char **)array_new(&ctx->err, nmnt);
         if (mnt == NULL)
                 goto fail;
@@ -776,6 +776,18 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
                 free(libs);
+        }
+
+        /* Directory mounts */
+        for (size_t i = 0; i < info->ndirs; ++i) {
+                if (str_has_prefix(NV_FIRMWARE_PATH, info->dirs[i])) {
+                        if (!(cnt->flags & OPT_UTILITY_LIBS))
+                                continue;
+                }
+                if ((*ptr++ = mount_directory(&ctx->err, ctx->cfg.root, cnt, info->dirs[i])) == NULL) {
+                        log_errf("error mounting directory %s", info->dirs[i]);
+                        goto fail;
+                }
         }
 
         /* IPC mounts */
