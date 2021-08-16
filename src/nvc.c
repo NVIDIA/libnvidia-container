@@ -350,7 +350,7 @@ copy_config(struct error *err, struct nvc_context *ctx, const struct nvc_config 
 }
 
 int
-nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts, const char *fabric_devices)
+nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts)
 {
         int32_t flags;
         char path[PATH_MAX];
@@ -376,16 +376,6 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
 
         if (copy_config(&ctx->err, ctx, cfg) < 0)
                 goto fail;
-
-        // Set the nvlink and nvswitch flags if fabric_devices=all
-        if (str_equal(fabric_devices, "all")) {
-                log_infof("selecting fabric devices: %s", fabric_devices);
-                ctx->with_nvlink = true;
-                ctx->with_nvswitch = true;
-        } else if (fabric_devices != NULL) {
-                log_warnf("ignoring unsupported fabric devices option: '%s'", fabric_devices);
-        }
-
         if (xsnprintf(&ctx->err, path, sizeof(path), PROC_NS_PATH(PROC_SELF), "mnt") < 0)
                 goto fail;
         if ((ctx->mnt_ns = xopen(&ctx->err, path, O_RDONLY|O_CLOEXEC)) < 0)
