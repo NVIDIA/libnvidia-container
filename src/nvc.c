@@ -378,8 +378,8 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
                 goto fail;
 
         // Set the nvlink and nvswitch flags if fabric_devices=all
-        if (str_equal(fabric_devices, "all")) {
-                log_infof("selecting fabric devices: %s", fabric_devices);
+        if (fabric_devices != NULL && str_equal(fabric_devices, "all")) {
+                log_infof("selecting fabric devices: '%s'", fabric_devices);
                 ctx->with_nvlink = true;
                 ctx->with_nvswitch = true;
         } else if (fabric_devices != NULL) {
