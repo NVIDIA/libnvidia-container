@@ -99,6 +99,11 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+
+* Tue Aug 17 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.5.0-0.1.rc.2
+- Remove --fabric-device option to include nvlink and nvswitch devices
+- Build: Read TAG (e.g. rc.2) from NVC_VERSION in makefile
+
 * Fri Aug 13 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.5.0~rc.1-1
 - Add --fabric-device option to include nvlink and nvswitch devices
 - Add support for GSP firmware
