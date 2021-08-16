@@ -99,6 +99,11 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Fri Aug 13 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.5.0~rc.1-1
+- Add --fabric-device option to include nvlink and nvswitch devices
+- Add support for GSP firmware
+- WSL - Mount binaries from driver store
+
 * Sat Apr 24 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.4.0-1
 - Mount all of /proc/.../nvidia/capabilities with --mig-{config, monitor}
 - Add fabricmanager as a valid IPC to inject into a container
@@ -236,7 +241,7 @@ This package contains command-line tools that facilitate using the library.
 - fa9853b Bump nvidia-modprobe-utils to 387.34
 - 7888296 Move the driver capabilities to the container options
 - ea2f780 Add support for EGL device isolation
-- b5bffa3 Fix driver procfs remount to work with unpatched kernels 
+- b5bffa3 Fix driver procfs remount to work with unpatched kernels
 
 * Mon Oct 30 2017 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.0-0.1.alpha.2
 - b80e4b6 Relax some requirement constraints
