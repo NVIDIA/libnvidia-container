@@ -1,3 +1,10 @@
+libnvidia-container (1.5.0~rc.2) experimental; urgency=medium
+
+  * Remove --fabric-device option to include nvlink and nvswitch devices
+  * Build: Read TAG (e.g. rc.2) from NVC_VERSION in makefile
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 17 Aug 2021 14:40:14 +0200
+
 libnvidia-container (1.5.0~rc.1-1) experimental; urgency=medium
 
   * Add --fabric-device option to include nvlink and nvswitch devices
