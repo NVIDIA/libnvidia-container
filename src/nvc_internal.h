@@ -24,25 +24,15 @@
 #include "dxcore.h"
 
 #define NV_DEVICE_MAJOR          195
-
 #define NV_CTL_DEVICE_MINOR      255
 #define NV_MODESET_DEVICE_MINOR  254
-
-#define NV_NVSWITCH_MAX_DEVICES   32
-
 #define NV_DEVICE_PATH           _PATH_DEV "nvidia%d"
 #define NV_CTL_DEVICE_PATH       _PATH_DEV "nvidiactl"
 #define NV_UVM_DEVICE_PATH       _PATH_DEV "nvidia-uvm"
 #define NV_UVM_TOOLS_DEVICE_PATH _PATH_DEV "nvidia-uvm-tools"
 #define NV_MODESET_DEVICE_PATH   _PATH_DEV "nvidia-modeset"
-#define NV_NVLINK_DEVICE_PATH    _PATH_DEV "nvidia-nvlink"
-#define NV_NVSWITCH_CTL_PATH     _PATH_DEV "nvidia-nvswitchctl"
-#define NV_NVSWITCH_DEVICE_PATH  _PATH_DEV "nvidia-nvswitch%d"
-
 #define NV_CAPS_DEVICE_DIR       _PATH_DEV "nvidia-caps"
 #define NV_CAPS_DEVICE_PATH      NV_CAPS_DEVICE_DIR "/nvidia-cap%d"
-
-
 #define NV_PERSISTENCED_SOCKET   _PATH_VARRUN "nvidia-persistenced/socket"
 #define NV_FABRICMANAGER_SOCKET  _PATH_VARRUN "nvidia-fabricmanager/socket"
 #define NV_MPS_PIPE_DIR          _PATH_TMP "nvidia-mps"
@@ -76,8 +66,6 @@ struct nvc_context {
         int mnt_ns;
         struct driver drv;
         bool no_pivot;
-        bool with_nvlink;
-        bool with_nvswitch;
         struct dxcore_context dxcore;
 };
 

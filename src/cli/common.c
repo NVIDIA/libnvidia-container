@@ -10,7 +10,7 @@
 #include "cli.h"
 #include "nvml.h"
 
-bool
+bool 
 matches_pci_format(const char *gpu, char *buf, size_t bufsize) {
         int domainid, busid, deviceid;
 
@@ -19,7 +19,7 @@ matches_pci_format(const char *gpu, char *buf, size_t bufsize) {
         if (out != 3) {
                 return false;
         }
-
+        
         // update to expected format with leading zeros
         snprintf(buf, bufsize, "%08x:%02x:%02x.0", domainid, busid, deviceid);
         return true;

@@ -22,14 +22,6 @@
 #include "utils.h"
 #include "xfuncs.h"
 
-#ifndef NV_NVLINK_MODULE_NAME
-#define NV_NVLINK_MODULE_NAME "nvidia-nvlink"
-#endif // #ifndef NV_NVLINK_MODULE_NAME
-
-#ifndef NV_NVSWITCH_MODULE_NAME
-#define NV_NVSWITCH_MODULE_NAME "nvidia-nvswitch"
-#endif // #ifndef NV_NVSWITCH_MODULE_NAME
-
 #define MAX_BINS (nitems(utility_bins) + \
                   nitems(compute_bins))
 #define MAX_LIBS (nitems(dxcore_libs) + \
@@ -51,7 +43,7 @@ static int lookup_paths(struct error *, struct dxcore_context *, struct nvc_driv
 static int lookup_libraries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_directories(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
-static int lookup_devices(struct error *, const struct nvc_context *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_devices(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
 static void clear_mig_device_info(struct nvc_mig_device_info *);
@@ -462,25 +454,16 @@ lookup_directories(struct error *err, struct dxcore_context *dxcore, struct nvc_
 }
 
 static int
-lookup_devices(struct error *err, const struct nvc_context *ctx, struct nvc_driver_info *info, const char *root, int32_t flags)
+lookup_devices(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags)
 {
         struct nvc_device_node uvm, uvm_tools, modeset, nvidiactl, dxg, *node;
-        struct nvc_device_node nvlink;
-        struct nvc_device_node nvswitchctl;
-
-        struct nvc_device_node nvswitch_devices[NV_NVSWITCH_MAX_DEVICES];
-
         int has_dxg = 0;
         int has_nvidiactl = 0;
         int has_uvm = 0;
         int has_uvm_tools = 0;
         int has_modeset = 0;
 
-        int has_nvlink = 0;
-        int has_nvswitchctl = 0;
-        int nnvswitch = 0;
-
-        if (ctx->dxcore.initialized) {
+        if (dxcore->initialized) {
                 struct stat dxgDeviceStat;
 
                 if (xstat(err, (char *)MSFT_DXG_DEVICE_PATH, &dxgDeviceStat) < 0) {
@@ -507,46 +490,9 @@ lookup_devices(struct error *err, const struct nvc_context *ctx, struct nvc_driv
                 nvidiactl.path = (char *)NV_CTL_DEVICE_PATH;
                 nvidiactl.id = makedev(NV_DEVICE_MAJOR, NV_CTL_DEVICE_MINOR);
                 has_nvidiactl = 1;
-
-                if (ctx->with_nvlink) {
-                        // If an nvlink device is present include this in the list of devices
-                        if ((has_nvlink = find_device_node(err, root, NV_NVLINK_DEVICE_PATH, &nvlink)) < 0) {
-                                log_errf("Error querying %s", NV_NVLINK_DEVICE_PATH);
-                                return (-1);
-                        }
-                }
-
-                if (ctx->with_nvswitch) {
-                        // If an nvswitchctl device is present include this in the list of devices
-                        if ((has_nvswitchctl = find_device_node(err, root, NV_NVSWITCH_CTL_PATH, &nvswitchctl)) < 0) {
-                                log_errf("Error querying %s", NV_NVSWITCH_CTL_PATH);
-                                return (-1);
-                        }
-
-                        // Find the nvswitchX devices and include them in the list of devices
-                        for (unsigned int i = 0; i < NV_NVSWITCH_MAX_DEVICES; ++i) {
-                                int has_nvswitch_x = 0;
-                                char *nvswitch_x_path;
-
-                                if (xasprintf(err, &(nvswitch_x_path), NV_NVSWITCH_DEVICE_PATH, nnvswitch) < 0) {
-                                        log_errf("Error constructing device path for NVSwitch device %d", i);
-                                        return (-1);
-                                }
-                                if ((has_nvswitch_x = find_device_node(err, root, nvswitch_x_path, &(nvswitch_devices[nnvswitch]))) < 0) {
-                                        log_errf("Error querying %s", nvswitch_x_path);
-                                        return (-1);
-                                }
-                                if (!has_nvswitch_x) {
-                                        log_infof("Discovered %d nvswitch devices", nnvswitch);
-                                        free(nvswitch_x_path);
-                                        break;
-                                }
-                                nnvswitch += has_nvswitch_x;
-                        }
-                }
         }
 
-        info->ndevs = (size_t)(has_dxg + has_nvidiactl + has_uvm + has_uvm_tools + has_modeset + has_nvlink + has_nvswitchctl + nnvswitch);
+        info->ndevs = (size_t)(has_dxg + has_nvidiactl + has_uvm + has_uvm_tools + has_modeset);
         info->devs = node = xcalloc(err, info->ndevs, sizeof(*info->devs));
         if (info->devs == NULL)
                 return (-1);
@@ -561,14 +507,6 @@ lookup_devices(struct error *err, const struct nvc_context *ctx, struct nvc_driv
                 *(node++) = uvm_tools;
         if (has_modeset)
                 *(node++) = modeset;
-        if (has_nvlink)
-                *(node++) = nvlink;
-        if (has_nvswitchctl) {
-                *(node++) = nvswitchctl;
-                for (int i = 0; i < nnvswitch; ++i) {
-                        *(node++) = nvswitch_devices[i];
-                }
-        }
 
         for (size_t i = 0; i < info->ndevs; ++i)
                 log_infof("listing device %s", info->devs[i].path);
@@ -819,7 +757,7 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
                 goto fail;
         if (lookup_paths(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
                 goto fail;
-        if (lookup_devices(&ctx->err, ctx, info, ctx->cfg.root, flags) < 0)
+        if (lookup_devices(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags) < 0)
                 goto fail;
         if (lookup_ipcs(&ctx->err, info, ctx->cfg.root, flags) < 0)
                 goto fail;

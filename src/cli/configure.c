@@ -32,7 +32,6 @@ const struct argp configure_usage = {
                 {"mig-monitor", 0x82, "ID", 0, "Enable monitoring of MIG devices", -1},
                 {"no-cgroups", 0x83, NULL, 0, "Don't use cgroup enforcement", -1},
                 {"no-devbind", 0x84, NULL, 0, "Don't bind mount devices", -1},
-                {"fabric-device", 0x85, "ID", 0, "Include NVIDIA fabric (nvlink, nvswitch) devices", -1},
                 {0},
         },
         configure_parser,
@@ -120,10 +119,6 @@ configure_parser(int key, char *arg, struct argp_state *state)
                 break;
         case 0x84:
                 if (str_join(&err, &ctx->container_flags, "no-devbind", " ") < 0)
-                        goto fatal;
-                break;
-        case 0x85:
-                if (str_join(&err, &ctx->fabric_devices, arg, ",") < 0)
                         goto fatal;
                 break;
         case ARGP_KEY_ARG:
@@ -229,7 +224,7 @@ configure_command(const struct context *ctx)
         nvc_cfg->gid = ctx->gid;
         nvc_cfg->root = ctx->root;
         nvc_cfg->ldcache = ctx->ldcache;
-        if (nvc_init(nvc, nvc_cfg, ctx->init_flags, ctx->fabric_devices) < 0) {
+        if (nvc_init(nvc, nvc_cfg, ctx->init_flags) < 0) {
                 warnx("initialization error: %s", nvc_error(nvc));
                 goto fail;
         }
