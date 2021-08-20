@@ -41,6 +41,11 @@ ARG REVISION
 ENV REVISION=${REVISION}
 RUN make distclean && make -j"$(nproc)"
 
-ENV DIST_DIR /dist
-VOLUME $DIST_DIR
-CMD make dist && make rpm
+# Use the revision as the package version for the time being
+ENV PKG_NAME libnvidia-container
+ENV PKG_VERS ${REVISION}
+ENV DIST_DIR=/tmp/${PKG_NAME}-${PKG_VERS}
+RUN mkdir -p $DIST_DIR /dist
+CMD make dist && \
+    make rpm && \
+    mv /tmp/${PKG_NAME}-${PKG_VERS}/*.rpm /dist;

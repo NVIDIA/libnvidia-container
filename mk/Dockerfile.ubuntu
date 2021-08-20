@@ -39,11 +39,16 @@ ARG REVISION
 ENV REVISION=${REVISION}
 RUN make distclean && make -j"$(nproc)"
 
-ENV DIST_DIR /dist
-VOLUME $DIST_DIR
+# Use the revision as the package version for the time being
+ENV PKG_NAME libnvidia-container
+ENV PKG_VERS ${REVISION}
+ENV DIST_DIR=/tmp/${PKG_NAME}-${PKG_VERS}
+RUN mkdir -p $DIST_DIR /dist
+
 CMD bash -c " \
         export DISTRIB=$(lsb_release -c -s); \
         export SECTION="" \
         make dist; \
         make deb; \
+        mv /tmp/${PKG_NAME}-${PKG_VERS}/*.deb /dist; \
      "
