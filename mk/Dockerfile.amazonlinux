@@ -37,6 +37,8 @@ RUN if [ "$WITH_LIBELF" = "no" ]; then \
 WORKDIR /tmp/libnvidia-container
 COPY . .
 
+ARG REVISION
+ENV REVISION=${REVISION}
 RUN make distclean && make -j"$(nproc)"
 
 ENV DIST_DIR /dist
