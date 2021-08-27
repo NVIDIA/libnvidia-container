@@ -22,7 +22,7 @@ PATCH    ?= patch
 UID      := $(shell id -u)
 GID      := $(shell id -g)
 DATE     := $(shell date -u --iso-8601=minutes)
-REVISION := $(shell git rev-parse HEAD)
+REVISION ?= $(shell git rev-parse HEAD)
 COMPILER := $(realpath $(shell which $(CC)))
 PLATFORM ?= $(shell uname -m)
 

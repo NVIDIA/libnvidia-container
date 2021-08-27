@@ -25,6 +25,7 @@ PLATFORM     ?= $(shell uname -m)
 
 DIST_DIR     ?= $(CURDIR)/dist
 MAKE_DIR     ?= $(CURDIR)/mk
+REVISION 	 ?= $(shell git rev-parse HEAD)
 
 # Supported OSs by architecture
 AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
@@ -151,6 +152,7 @@ docker-build-%:
 	    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
 	    --build-arg CFLAGS="$(CFLAGS)" \
 	    --build-arg LDLIBS="$(LDLIBS)" \
+	    --build-arg REVISION="$(REVISION)" \
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
