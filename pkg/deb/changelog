@@ -1,3 +1,11 @@
+libnvidia-container (1.5.0-1) UNRELEASED; urgency=medium
+
+  * Promote 1.5.0~rc.2 to 1.5.0-1
+  * [BUILD] Allow REVISION to be specified as make variable
+  * [BUILD] Only copy package files to dist folder
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 31 Aug 2021 09:00:00 +0200
+
 libnvidia-container (1.5.0~rc.2-1) experimental; urgency=medium
 
   * Remove --fabric-device option to include nvlink and nvswitch devices
