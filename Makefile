@@ -39,7 +39,6 @@ export DIST_DIR    ?= $(CURDIR)/dist
 export MAKE_DIR    ?= $(CURDIR)/mk
 export DEBUG_DIR   ?= $(CURDIR)/.debug
 
-#export TAG        ?=
 #export DISTRIB    ?=
 #export SECTION    ?=
 
@@ -95,19 +94,9 @@ ARCH    ?= $(call getarch)
 MAJOR   := $(call getdef,NVC_MAJOR,$(LIB_INCS))
 MINOR   := $(call getdef,NVC_MINOR,$(LIB_INCS))
 PATCH   := $(call getdef,NVC_PATCH,$(LIB_INCS))
-VERSION_STRING := $(subst ",,$(call getdef,NVC_VERSION,$(LIB_INCS)))
+# Extract the TAG from the version header file. We strip quotes.
+TAG     := $(subst ",,$(call getdef,NVC_TAG,$(LIB_INCS)))
 VERSION := $(MAJOR).$(MINOR).$(PATCH)
-
-# We try to get a tag to apply to the version
-ifeq ($(GIT_TAG:v%=%),$(VERSION))
-TAG :=
-else
-ifneq ($(word 1,$(subst ~, ,$(VERSION_STRING))),$(VERSION))
-$(error "git tag '$(VERSION_STRING)' does not start with '$(VERSION)'")
-endif
-TAG := $(subst $(VERSION)~,,$(VERSION_STRING))
-$(info Using TAG=$(TAG))
-endif
 
 ifeq ($(MAJOR),)
 $(error Invalid major version)

@@ -100,10 +100,11 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 
-* Tue Aug 31 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.5.0-1
+* Thu Sep 02 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.5.0-1
 - Promote 1.5.0-0.1.rc.2 to 1.5.0-1
 - [BUILD] Allow REVISION to be specified as make variable
 - [BUILD] Only copy package files to dist folder
+- [BUILD] Define TAG in nvc.h and remove logic to determine it automatically.
 
 * Tue Aug 17 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.5.0-0.1.rc.2
 - Remove --fabric-device option to include nvlink and nvswitch devices
