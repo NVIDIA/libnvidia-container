@@ -261,6 +261,7 @@ limit_syscalls(struct error *err)
                 SCMP_SYS(getegid),
                 SCMP_SYS(geteuid),
                 SCMP_SYS(getgid),
+		SCMP_SYS(getpgrp),
                 SCMP_SYS(getpid),
                 SCMP_SYS(gettid),
                 SCMP_SYS(gettimeofday),
