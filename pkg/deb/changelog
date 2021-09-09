@@ -1,5 +1,9 @@
 libnvidia-container (1.5.1~rc.1-1) UNRELEASED; urgency=medium
 
+  * [BUILD] Add support for SOURCE_DATE_EPOCH to specify build date
+  * Allow getpgrp syscall when SECCOMP is enabled
+  * Allow _llseek syscall when SECCOMP is enabled
+
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Thu, 02 Sep 2021 11:00:00 +0200
 
 libnvidia-container (1.5.0-1) UNRELEASED; urgency=medium
