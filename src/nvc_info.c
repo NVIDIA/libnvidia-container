@@ -779,6 +779,7 @@ nvc_driver_info_free(struct nvc_driver_info *info)
         array_free(info->libs, info->nlibs);
         array_free(info->libs32, info->nlibs32);
         array_free(info->ipcs, info->nipcs);
+        array_free(info->dirs, info->ndirs);
         free(info->devs);
         free(info);
 }
