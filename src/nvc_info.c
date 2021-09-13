@@ -38,7 +38,7 @@ static int select_wsl_libraries(struct error *, void *, const char *, const char
 static int find_library_paths(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, const char *, const char * const [], size_t);
 static int find_binary_paths(struct error *, struct dxcore_context*, struct nvc_driver_info *, const char *, const char * const [], size_t);
 static int find_device_node(struct error *, const char *, const char *, struct nvc_device_node *);
-static int find_ipc_path(struct error *, const char *, const char *, char **);
+static int find_path(struct error *, const char *, const char *, const char *, char **);
 static int lookup_paths(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_libraries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
@@ -324,22 +324,27 @@ find_device_node(struct error *err, const char *root, const char *dev, struct nv
         return (-1);
 }
 
+// find_path resolves a path relative to the specified root. If the path exists, the
+// output buffer is populated with the resolved path not including the root. A `tag` parameter is
+// provided to control logging output.
 static int
-find_ipc_path(struct error *err, const char *root, const char *ipc, char **buf)
+find_path(struct error *err, const char *tag, const char *root, const char *target, char **buf)
 {
         char path[PATH_MAX];
         int ret;
 
-        if (path_resolve(err, path, root, ipc) < 0)
+        if (path_resolve(err, path, root, target) < 0)
                 return (-1);
         if ((ret = file_exists_at(err, root, path)) < 0)
                 return (-1);
         if (ret) {
-                log_infof("listing ipc %s", path);
-                if ((*buf = xstrdup(err, path)) == NULL)
+                log_infof("listing %s path %s", tag, path);
+                if ((*buf = xstrdup(err, path)) == NULL) {
+                        log_err("error creating output buffer");
                         return (-1);
+                }
         } else {
-                log_warnf("missing ipc %s", ipc);
+                log_warnf("missing %s path %s", tag, target);
         }
         return (0);
 }
@@ -423,7 +428,9 @@ lookup_binaries(struct error *err, struct dxcore_context* dxcore, struct nvc_dri
 
 static int
 lookup_directories(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags) {
-        int fd;
+        char **ptr;
+        int rc = -1;
+
         char *firmware_path = NULL;
 
         if (dxcore->initialized) {
@@ -436,21 +443,22 @@ lookup_directories(struct error *err, struct dxcore_context *dxcore, struct nvc_
                 log_errf("error constructing firmware path for %s", info->nvrm_version);
                 return (-1);
         }
-        if ((fd = xopen(err, firmware_path, O_PATH|O_DIRECTORY)) < 0) {
-                log_infof("missing firmware path %s", firmware_path);
-                return (0);
-        }
-        close(fd);
 
-        info->dirs = array_new(err, 1);
+        info->ndirs = 1;
+        info->dirs = ptr = array_new(err, info->ndirs);
         if (info->dirs == NULL) {
                 log_err("error creating path array");
-                return (-1);
+                goto cleanup;
         }
-        info->dirs[0] = firmware_path;
-        info->ndirs = 1;
-
-        return (0);
+        if (find_path(err, "firmware", root, firmware_path, ptr++) < 0) {
+                log_errf("error finding firmware path %s", firmware_path);
+                goto cleanup;
+        }
+        array_pack(info->dirs, &info->ndirs);
+        rc = 0;
+cleanup:
+        free(firmware_path);
+        return (rc);
 }
 
 static int
@@ -525,17 +533,17 @@ lookup_ipcs(struct error *err, struct nvc_driver_info *info, const char *root, i
                 return (-1);
 
         if (!(flags & OPT_NO_PERSISTENCED)) {
-                if (find_ipc_path(err, root, NV_PERSISTENCED_SOCKET, ptr++) < 0)
+                if (find_path(err, "ipc", root, NV_PERSISTENCED_SOCKET, ptr++) < 0)
                         return (-1);
         }
         if (!(flags & OPT_NO_FABRICMANAGER)) {
-                if (find_ipc_path(err, root, NV_FABRICMANAGER_SOCKET, ptr++) < 0)
+                if (find_path(err, "ipc", root, NV_FABRICMANAGER_SOCKET, ptr++) < 0)
                         return (-1);
         }
         if (!(flags & OPT_NO_MPS)) {
                 if ((mps = secure_getenv("CUDA_MPS_PIPE_DIRECTORY")) == NULL)
                         mps = NV_MPS_PIPE_DIR;
-                if (find_ipc_path(err, root, mps, ptr++) < 0)
+                if (find_path(err, "ipc", root, mps, ptr++) < 0)
                         return (-1);
         }
         array_pack(info->ipcs, &info->nipcs);

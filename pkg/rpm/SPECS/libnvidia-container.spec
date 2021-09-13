@@ -100,6 +100,7 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Thu Sep 02 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.5.1-0.1.rc.1
+- [BUGFIX] Respect root setting when resolving GSP firmware path
 - [BUILD] Add support for SOURCE_DATE_EPOCH to specify build date
 - Allow getpgrp syscall when SECCOMP is enabled
 - Allow _llseek syscall when SECCOMP is enabled
