@@ -1,3 +1,9 @@
+libnvidia-container (1.5.1-1) UNRELEASED; urgency=medium
+
+  * Promote 1.5.1-0.1.rc.1 to 1.5.1-1
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 20 Sep 2021 15:24:36 +0200
+
 libnvidia-container (1.5.1~rc.1-1) UNRELEASED; urgency=medium
 
   * [BUGFIX] Respect root setting when resolving GSP firmware path
