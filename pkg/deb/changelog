@@ -1,3 +1,7 @@
+libnvidia-container (1.6.0~rc.1-1) experimental; urgency=medium
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 20 Sep 2021 22:24:22 +0200
+
 libnvidia-container (1.5.1-1) UNRELEASED; urgency=medium
 
   * Promote 1.5.1-0.1.rc.1 to 1.5.1-1
