@@ -14,8 +14,8 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define NVC_MAJOR   1
-#define NVC_MINOR   5
-#define NVC_PATCH   1
+#define NVC_MINOR   6
+#define NVC_PATCH   0
 
 // Specify the release tag.
 // For stable releases, this should be defined as empty.
