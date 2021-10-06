@@ -13,8 +13,12 @@
 # limitations under the License.
 #
 
+# Version of golang to use in docker specific builds.
+GOLANG_VERSION := 1.17.1
+
 # Global definitions. These are defined here to allow the docker targets to be
 # invoked directly without the root makefile.
+WITH_NVCGO   ?= no
 WITH_LIBELF  ?= no
 WITH_TIRPC   ?= no
 WITH_SECCOMP ?= yes
@@ -150,6 +154,8 @@ docker-build-%:
 	    --build-arg BASEIMAGE="$(BASEIMAGE)" \
 	    --build-arg OS_VERSION="$(VERSION)" \
 	    --build-arg OS_ARCH="$(ARCH)" \
+	    --build-arg GOLANG_VERSION="$(GOLANG_VERSION)" \
+	    --build-arg WITH_NVCGO="$(WITH_NVCGO)" \
 	    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
 	    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
 	    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \

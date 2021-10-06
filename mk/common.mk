@@ -6,6 +6,7 @@
 
 MV       ?= mv -f
 CP       ?= cp -a
+GO       ?= go
 LN       ?= ln
 TAR      ?= tar
 CURL     ?= curl

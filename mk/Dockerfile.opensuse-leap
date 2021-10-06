@@ -1,6 +1,8 @@
 ARG BASEIMAGE
 FROM ${BASEIMAGE}
 
+SHELL ["/bin/bash", "-c"]
+
 RUN zypper install -y \
         bmake \
         bzip2 \
@@ -21,9 +23,20 @@ RUN zypper install -y \
         which && \
     rm -rf /var/cache/zypp/*
 
+ARG OS_ARCH
+ARG GOLANG_VERSION
+ENV OS_ARCH=${OS_ARCH}
+RUN OS_ARCH=${OS_ARCH/x86_64/amd64} && OS_ARCH=${OS_ARCH/aarch64/arm64} && \
+    curl https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-${OS_ARCH}.tar.gz \
+    | tar -C /usr/local -xz
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+
+ARG WITH_NVCGO=no
 ARG WITH_LIBELF=no
 ARG WITH_TIRPC=no
 ARG WITH_SECCOMP=yes
+ENV WITH_NVCGO=${WITH_NVCGO}
 ENV WITH_LIBELF=${WITH_LIBELF}
 ENV WITH_TIRPC=${WITH_TIRPC}
 ENV WITH_SECCOMP=${WITH_SECCOMP}

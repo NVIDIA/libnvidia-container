@@ -17,6 +17,7 @@
 
 ##### Global variables #####
 
+WITH_NVCGO   ?= no
 WITH_LIBELF  ?= no
 WITH_TIRPC   ?= no
 WITH_SECCOMP ?= yes
@@ -142,6 +143,10 @@ LIB_CFLAGS         = -fPIC
 LIB_LDFLAGS        = -L$(DEPS_DIR)$(libdir) -shared -Wl,-soname=$(LIB_SONAME)
 LIB_LDLIBS_STATIC  = -l:libnvidia-modprobe-utils.a
 LIB_LDLIBS_SHARED  = -ldl -lcap
+ifeq ($(WITH_NVCGO), yes)
+LIB_CPPFLAGS       += -DWITH_NVCGO
+LIB_LDLIBS_SHARED  += -lpthread
+endif
 ifeq ($(WITH_LIBELF), yes)
 LIB_CPPFLAGS       += -DWITH_LIBELF
 LIB_LDLIBS_SHARED  += -lelf
@@ -240,6 +245,9 @@ deps: export DESTDIR:=$(DEPS_DIR)
 deps: $(LIB_RPC_SRCS) $(BUILD_DEFS)
 	$(MKDIR) -p $(DEPS_DIR)
 	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk install
+ifeq ($(WITH_NVCGO), yes)
+	$(MAKE) -f $(MAKE_DIR)/nvcgo.mk VERSION=$(VERSION) install
+endif
 ifeq ($(WITH_LIBELF), no)
 	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk install
 endif
@@ -288,6 +296,9 @@ dist: install
 depsclean:
 	$(RM) $(BUILD_DEFS)
 	-$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk clean
+ifeq ($(WITH_NVCGO), yes)
+	-$(MAKE) -f $(MAKE_DIR)/nvcgo.mk clean
+endif
 ifeq ($(WITH_LIBELF), no)
 	-$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk clean
 endif
