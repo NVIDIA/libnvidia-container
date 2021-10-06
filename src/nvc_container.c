@@ -268,8 +268,10 @@ nvc_container_new(struct nvc_context *ctx, const struct nvc_container_config *cf
         log_infof("setting cudart directory to %s", cnt->cfg.cudart_dir);
         log_infof("setting ldconfig to %s%s", cnt->cfg.ldconfig, (cnt->cfg.ldconfig[0] == '@') ? " (host relative)" : "");
         log_infof("setting mount namespace to %s", cnt->mnt_ns);
-        if (!(flags & OPT_NO_CGROUPS))
+        if (!(flags & OPT_NO_CGROUPS)) {
+                log_infof("detected cgroupv%d", cnt->dev_cg_version);
                 log_infof("setting devices cgroup to %s", cnt->dev_cg);
+        }
         return (cnt);
 
  fail:

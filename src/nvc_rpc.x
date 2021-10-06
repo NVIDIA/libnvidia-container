@@ -180,10 +180,34 @@ union nvcgo_shutdown_res switch (int errcode) {
                 string errmsg<>;
 };
 
+union nvcgo_get_device_cgroup_version_res switch (int errcode) {
+        case 0:
+                unsigned int vers;
+        default:
+                string errmsg<>;
+};
+
+union nvcgo_find_device_cgroup_path_res switch (int errcode) {
+        case 0:
+                string cgroup_path<>;
+        default:
+                string errmsg<>;
+};
+
+union nvcgo_setup_device_cgroup_res switch (int errcode) {
+        case 0:
+                void;
+        default:
+                string errmsg<>;
+};
+
 program NVCGO_PROGRAM {
         version NVCGO_VERSION {
                 nvcgo_init_res NVCGO_INIT(ptr_t) = 1;
                 nvcgo_shutdown_res NVCGO_SHUTDOWN(ptr_t) = 2;
+                nvcgo_get_device_cgroup_version_res NVCGO_GET_DEVICE_CGROUP_VERSION(ptr_t, string, int) = 3;
+                nvcgo_find_device_cgroup_path_res NVCGO_FIND_DEVICE_CGROUP_PATH(ptr_t, int, string, int, int) = 4;
+                nvcgo_setup_device_cgroup_res NVCGO_SETUP_DEVICE_CGROUP(ptr_t, int, string, u_long) = 5;
         } = 1;
 } = 2;
 #endif
