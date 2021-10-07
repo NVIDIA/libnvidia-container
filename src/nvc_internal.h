@@ -101,6 +101,7 @@ static const cap_value_t pcaps[] = {
         CAP_FOWNER,          /* kmods */
         CAP_KILL,            /* privsep */
         CAP_MKNOD,           /* kmods */
+        CAP_NET_ADMIN,       /* bpf_prog_query */
         CAP_SETGID,          /* privsep, userns */
         CAP_SETPCAP,         /* bounds, userns */
         CAP_SETUID,          /* privsep, userns */
@@ -121,7 +122,7 @@ static const cap_value_t ecaps[][nitems(pcaps) + 1] = {
 
         [NVC_INFO]       = {CAP_KILL, -1},
 
-        [NVC_MOUNT]      = {CAP_KILL, CAP_SETUID, CAP_SETGID, CAP_SYS_CHROOT,
+        [NVC_MOUNT]      = {CAP_KILL, CAP_NET_ADMIN, CAP_SETUID, CAP_SETGID, CAP_SYS_CHROOT,
                             CAP_SYS_ADMIN, CAP_DAC_READ_SEARCH, CAP_SYS_PTRACE, CAP_DAC_OVERRIDE, -1},
 
         [NVC_LDCACHE]    = {CAP_KILL, CAP_SETUID, CAP_SETGID, CAP_SYS_CHROOT,
