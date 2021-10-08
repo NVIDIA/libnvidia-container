@@ -18,6 +18,7 @@
 
 #include "nvc_internal.h"
 
+#include "cgroup.h"
 #include "error.h"
 #include "options.h"
 #include "utils.h"
@@ -34,7 +35,6 @@ static char *mount_procfs_mig(struct error *, const char *, const struct nvc_con
 static char *mount_app_profile(struct error *, const struct nvc_container *);
 static int  update_app_profile(struct error *, const struct nvc_container *, dev_t);
 static void unmount(const char *);
-static int  setup_cgroup(struct error *, const char *, dev_t);
 static int  symlink_library(struct error *, const char *, const char *, const char *, uid_t, gid_t);
 static int  symlink_libraries(struct error *, const struct nvc_container *, const char * const [], size_t);
 static void filter_libraries(const struct nvc_driver_info *, char * [], size_t *);
@@ -482,31 +482,6 @@ unmount(const char *path)
                 return;
         umount2(path, MNT_DETACH);
         file_remove(NULL, path);
-}
-
-static int
-setup_cgroup(struct error *err, const char *cgroup, dev_t id)
-{
-        char path[PATH_MAX];
-        FILE *fs;
-        int rv = -1;
-
-        if (path_join(err, path, cgroup, "devices.allow") < 0)
-                return (-1);
-        if ((fs = xfopen(err, path, "a")) == NULL)
-                return (-1);
-
-        log_infof("whitelisting device node %u:%u", major(id), minor(id));
-        /* XXX dprintf doesn't seem to catch the write errors, flush the stream explicitly instead. */
-        if (fprintf(fs, "c %u:%u rw", major(id), minor(id)) < 0 || fflush(fs) == EOF || ferror(fs)) {
-                error_set(err, "write error: %s", path);
-                goto fail;
-        }
-        rv = 0;
-
- fail:
-        fclose(fs);
-        return (rv);
 }
 
 static int

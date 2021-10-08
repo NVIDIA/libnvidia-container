@@ -55,7 +55,8 @@ DOC_FILES    := $(CURDIR)/NOTICE \
 BUILD_DEFS   := $(SRCS_DIR)/build.h
 
 LIB_INCS     := $(SRCS_DIR)/nvc.h
-LIB_SRCS     := $(SRCS_DIR)/driver.c        \
+LIB_SRCS     := $(SRCS_DIR)/cgroup.c        \
+                $(SRCS_DIR)/driver.c        \
                 $(SRCS_DIR)/dxcore.c        \
                 $(SRCS_DIR)/elftool.c       \
                 $(SRCS_DIR)/error_generic.c \
