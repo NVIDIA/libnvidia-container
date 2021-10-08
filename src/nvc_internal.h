@@ -75,6 +75,7 @@ struct nvc_container {
         uid_t uid;
         gid_t gid;
         char *mnt_ns;
+        int dev_cg_version;
         char *dev_cg;
         char **libs;
         size_t nlibs;

@@ -26,6 +26,14 @@ static char *cgroup_mount(char *, char *, const char *);
 static char *cgroup_root(char *, char *, const char *);
 static char *parse_proc_file(struct error *, const char *, parse_fn, char *, const char *);
 
+int
+get_device_cgroup_version(struct error *err, const struct nvc_container *cnt)
+{
+        (void)err;
+        (void)cnt;
+        return 1;
+}
+
 char *
 find_device_cgroup_path(struct error *err, const struct nvc_container *cnt)
 {
