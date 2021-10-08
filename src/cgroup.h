@@ -22,7 +22,7 @@
 #include "error.h"
 #include "nvc_internal.h"
 
-char *find_cgroup_path(struct error *, const struct nvc_container *, const char *);
-int  setup_cgroup(struct error *, const char *, dev_t);
+char *find_device_cgroup_path(struct error *, const struct nvc_container *);
+int  setup_device_cgroup(struct error *, const struct nvc_container *, dev_t);
 
 #endif /* HEADER_CGROUP_H */

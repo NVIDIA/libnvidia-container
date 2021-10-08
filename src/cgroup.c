@@ -27,7 +27,7 @@ static char *cgroup_root(char *, char *, const char *);
 static char *parse_proc_file(struct error *, const char *, parse_fn, char *, const char *);
 
 char *
-find_cgroup_path(struct error *err, const struct nvc_container *cnt, const char *subsys)
+find_device_cgroup_path(struct error *err, const struct nvc_container *cnt)
 {
         pid_t pid;
         const char *prefix;
@@ -42,11 +42,11 @@ find_cgroup_path(struct error *err, const struct nvc_container *cnt, const char 
 
         if (xsnprintf(err, path, sizeof(path), "%s"PROC_MOUNTS_PATH(PROC_PID), prefix, (int32_t)pid) < 0)
                 goto fail;
-        if ((mount = parse_proc_file(err, path, cgroup_mount, root_prefix, subsys)) == NULL)
+        if ((mount = parse_proc_file(err, path, cgroup_mount, root_prefix, "devices")) == NULL)
                 goto fail;
         if (xsnprintf(err, path, sizeof(path), "%s"PROC_CGROUP_PATH(PROC_PID), prefix, (int32_t)cnt->cfg.pid) < 0)
                 goto fail;
-        if ((root = parse_proc_file(err, path, cgroup_root, root_prefix, subsys)) == NULL)
+        if ((root = parse_proc_file(err, path, cgroup_root, root_prefix, "devices")) == NULL)
                 goto fail;
 
         xasprintf(err, &cgroup, "%s%s%s", prefix, mount, root);
@@ -58,13 +58,13 @@ find_cgroup_path(struct error *err, const struct nvc_container *cnt, const char 
 }
 
 int
-setup_cgroup(struct error *err, const char *cgroup, dev_t id)
+setup_device_cgroup(struct error *err, const struct nvc_container *cnt, dev_t id)
 {
         char path[PATH_MAX];
         FILE *fs;
         int rv = -1;
 
-        if (path_join(err, path, cgroup, "devices.allow") < 0)
+        if (path_join(err, path, cnt->dev_cg, "devices.allow") < 0)
                 return (-1);
         if ((fs = xfopen(err, path, "a")) == NULL)
                 return (-1);

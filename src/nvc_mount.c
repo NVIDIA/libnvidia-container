@@ -599,7 +599,7 @@ device_mount_native(struct nvc_context *ctx, const struct nvc_container *cnt, co
                         goto fail;
         }
         if (!(cnt->flags & OPT_NO_CGROUPS)) {
-                if (setup_cgroup(&ctx->err, cnt->dev_cg, dev->node.id) < 0)
+                if (setup_device_cgroup(&ctx->err, cnt, dev->node.id) < 0)
                         goto fail;
         }
 
@@ -632,7 +632,7 @@ cap_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                        goto fail;
         }
         if (!(cnt->flags & OPT_NO_CGROUPS))
-                if (setup_cgroup(&ctx->err, cnt->dev_cg, node.id) < 0)
+                if (setup_device_cgroup(&ctx->err, cnt, node.id) < 0)
                         goto fail;
 
         rv = 0;
@@ -669,7 +669,7 @@ setup_mig_minor_cgroups(struct error *err, const struct nvc_container *cnt, int 
                         continue;
                 if (gpu_minor != minor(node->id))
                         continue;
-                if (setup_cgroup(err, cnt->dev_cg, makedev((unsigned int)mig_major, mig_minor)) < 0)
+                if (setup_device_cgroup(err, cnt, makedev((unsigned int)mig_major, mig_minor)) < 0)
                         goto fail;
         }
 
@@ -790,7 +790,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                                 goto fail;
                 }
                 if (!(cnt->flags & OPT_NO_CGROUPS)) {
-                        if (setup_cgroup(&ctx->err, cnt->dev_cg, info->devs[i].id) < 0)
+                        if (setup_device_cgroup(&ctx->err, cnt, info->devs[i].id) < 0)
                                 goto fail;
                 }
         }
@@ -941,7 +941,7 @@ nvc_mig_config_global_caps_mount(struct nvc_context *ctx, const struct nvc_conta
                         goto fail;
 
                 if (!(cnt->flags & OPT_NO_CGROUPS))
-                        if (setup_cgroup(&ctx->err, cnt->dev_cg, node.id) < 0)
+                        if (setup_device_cgroup(&ctx->err, cnt, node.id) < 0)
                                 goto fail;
         }
 
@@ -1003,7 +1003,7 @@ nvc_mig_monitor_global_caps_mount(struct nvc_context *ctx, const struct nvc_cont
                         goto fail;
 
                 if (!(cnt->flags & OPT_NO_CGROUPS))
-                        if (setup_cgroup(&ctx->err, cnt->dev_cg, node.id) < 0)
+                        if (setup_device_cgroup(&ctx->err, cnt, node.id) < 0)
                                 goto fail;
         }
 

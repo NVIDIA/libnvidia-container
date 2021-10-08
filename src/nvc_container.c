@@ -253,7 +253,7 @@ nvc_container_new(struct nvc_context *ctx, const struct nvc_container_config *cf
         if ((cnt->mnt_ns = find_namespace_path(&ctx->err, cnt, "mnt")) == NULL)
                 goto fail;
         if (!(flags & OPT_NO_CGROUPS)) {
-                if ((cnt->dev_cg = find_cgroup_path(&ctx->err, cnt, "devices")) == NULL)
+                if ((cnt->dev_cg = find_device_cgroup_path(&ctx->err, cnt)) == NULL)
                         goto fail;
         }
 
