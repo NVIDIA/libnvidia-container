@@ -18,6 +18,7 @@
 
 #include "nvc_internal.h"
 
+#include "cgroup.h"
 #include "error.h"
 #include "options.h"
 #include "utils.h"
@@ -34,7 +35,6 @@ static char *mount_procfs_mig(struct error *, const char *, const struct nvc_con
 static char *mount_app_profile(struct error *, const struct nvc_container *);
 static int  update_app_profile(struct error *, const struct nvc_container *, dev_t);
 static void unmount(const char *);
-static int  setup_cgroup(struct error *, const char *, dev_t);
 static int  symlink_library(struct error *, const char *, const char *, const char *, uid_t, gid_t);
 static int  symlink_libraries(struct error *, const struct nvc_container *, const char * const [], size_t);
 static void filter_libraries(const struct nvc_driver_info *, char * [], size_t *);
@@ -485,31 +485,6 @@ unmount(const char *path)
 }
 
 static int
-setup_cgroup(struct error *err, const char *cgroup, dev_t id)
-{
-        char path[PATH_MAX];
-        FILE *fs;
-        int rv = -1;
-
-        if (path_join(err, path, cgroup, "devices.allow") < 0)
-                return (-1);
-        if ((fs = xfopen(err, path, "a")) == NULL)
-                return (-1);
-
-        log_infof("whitelisting device node %u:%u", major(id), minor(id));
-        /* XXX dprintf doesn't seem to catch the write errors, flush the stream explicitly instead. */
-        if (fprintf(fs, "c %u:%u rw", major(id), minor(id)) < 0 || fflush(fs) == EOF || ferror(fs)) {
-                error_set(err, "write error: %s", path);
-                goto fail;
-        }
-        rv = 0;
-
- fail:
-        fclose(fs);
-        return (rv);
-}
-
-static int
 symlink_library(struct error *err, const char *src, const char *target, const char *linkname, uid_t uid, gid_t gid)
 {
         char path[PATH_MAX];
@@ -624,7 +599,7 @@ device_mount_native(struct nvc_context *ctx, const struct nvc_container *cnt, co
                         goto fail;
         }
         if (!(cnt->flags & OPT_NO_CGROUPS)) {
-                if (setup_cgroup(&ctx->err, cnt->dev_cg, dev->node.id) < 0)
+                if (setup_device_cgroup(&ctx->err, cnt, dev->node.id) < 0)
                         goto fail;
         }
 
@@ -657,7 +632,7 @@ cap_device_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                        goto fail;
         }
         if (!(cnt->flags & OPT_NO_CGROUPS))
-                if (setup_cgroup(&ctx->err, cnt->dev_cg, node.id) < 0)
+                if (setup_device_cgroup(&ctx->err, cnt, node.id) < 0)
                         goto fail;
 
         rv = 0;
@@ -694,7 +669,7 @@ setup_mig_minor_cgroups(struct error *err, const struct nvc_container *cnt, int 
                         continue;
                 if (gpu_minor != minor(node->id))
                         continue;
-                if (setup_cgroup(err, cnt->dev_cg, makedev((unsigned int)mig_major, mig_minor)) < 0)
+                if (setup_device_cgroup(err, cnt, makedev((unsigned int)mig_major, mig_minor)) < 0)
                         goto fail;
         }
 
@@ -815,7 +790,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                                 goto fail;
                 }
                 if (!(cnt->flags & OPT_NO_CGROUPS)) {
-                        if (setup_cgroup(&ctx->err, cnt->dev_cg, info->devs[i].id) < 0)
+                        if (setup_device_cgroup(&ctx->err, cnt, info->devs[i].id) < 0)
                                 goto fail;
                 }
         }
@@ -966,7 +941,7 @@ nvc_mig_config_global_caps_mount(struct nvc_context *ctx, const struct nvc_conta
                         goto fail;
 
                 if (!(cnt->flags & OPT_NO_CGROUPS))
-                        if (setup_cgroup(&ctx->err, cnt->dev_cg, node.id) < 0)
+                        if (setup_device_cgroup(&ctx->err, cnt, node.id) < 0)
                                 goto fail;
         }
 
@@ -1028,7 +1003,7 @@ nvc_mig_monitor_global_caps_mount(struct nvc_context *ctx, const struct nvc_cont
                         goto fail;
 
                 if (!(cnt->flags & OPT_NO_CGROUPS))
-                        if (setup_cgroup(&ctx->err, cnt->dev_cg, node.id) < 0)
+                        if (setup_device_cgroup(&ctx->err, cnt, node.id) < 0)
                                 goto fail;
         }
 
