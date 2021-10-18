@@ -100,6 +100,7 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Mon Sep 20 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.1
+- Add AARCH64 package for Amazon Linux 2
 
 * Mon Sep 20 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.5.1-1
 - Promote 1.5.1-0.1.rc.1 to 1.5.1-1
