@@ -99,6 +99,8 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Tue Oct 26 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.2
+
 * Mon Sep 20 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.1
 - Add AARCH64 package for Amazon Linux 2
 
