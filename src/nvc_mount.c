@@ -351,8 +351,14 @@ mount_procfs(struct error *err, const char *root, const struct nvc_container *cn
                 if (path_append(err, dst, files[i]) < 0)
                         goto fail;
                 if (file_mode(err, src, &mode) < 0) {
-                        if (err->code == ENOENT)
+                        if (err->code == ENOENT) {
+                                log_warnf("%s not found; skipping", src);
+                                // We reset the strings to ensure that the paths are
+                                // not concatenated if one of the files is not found.
+                                *src_end = '\0';
+                                *dst_end = '\0';
                                 continue;
+                        }
                         goto fail;
                 }
                 if (file_read_text(err, src, &buf) < 0)
