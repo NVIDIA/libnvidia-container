@@ -99,7 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Tue Oct 26 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.2
+* Mon Nov 08 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.3
+
+* Fri Nov 05 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.2
 - Fix bug that lead to unexected mount error when /proc/driver/nvidia does not exist on the host
 
 * Mon Sep 20 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.1

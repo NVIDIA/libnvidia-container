@@ -1,8 +1,12 @@
+libnvidia-container (1.6.0~rc.3-1) experimental; urgency=medium
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 08 Nov 2021 14:54:46 +0100
+
 libnvidia-container (1.6.0~rc.2-1) experimental; urgency=medium
 
   * Fix bug that lead to unexected mount error when /proc/driver/nvidia does not exist on the host
 
- -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 26 Oct 2021 12:24:22 +0200
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 05 Nov 2021 12:24:22 +0200
 
 libnvidia-container (1.6.0~rc.1-1) experimental; urgency=medium
 
