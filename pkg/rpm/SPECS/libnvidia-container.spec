@@ -99,7 +99,8 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Mon Nov 08 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.3
+* Sat Nov 13 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.3
+- Bump nvidia-modprobe dependency to 495.44
 
 * Fri Nov 05 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.2
 - Fix bug that lead to unexected mount error when /proc/driver/nvidia does not exist on the host
