@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Wed Nov 17 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-1
+- Promote 1.6.0-0.1.rc.3 to 1.6.0-1
+
 * Sat Nov 13 2021  NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.3
 - Bump nvidia-modprobe dependency to 495.44
 
