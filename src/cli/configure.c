@@ -213,9 +213,9 @@ configure_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if ((nvc = nvc_context_new()) == NULL ||
-            (nvc_cfg = nvc_config_new()) == NULL ||
-            (cnt_cfg = nvc_container_config_new(ctx->pid, ctx->rootfs)) == NULL) {
+        if ((nvc = libnvc.context_new()) == NULL ||
+            (nvc_cfg = libnvc.config_new()) == NULL ||
+            (cnt_cfg = libnvc.container_config_new(ctx->pid, ctx->rootfs)) == NULL) {
                 warn("memory allocation failed");
                 goto fail;
         }
@@ -224,8 +224,8 @@ configure_command(const struct context *ctx)
         nvc_cfg->gid = ctx->gid;
         nvc_cfg->root = ctx->root;
         nvc_cfg->ldcache = ctx->ldcache;
-        if (nvc_init(nvc, nvc_cfg, ctx->init_flags) < 0) {
-                warnx("initialization error: %s", nvc_error(nvc));
+        if (libnvc.init(nvc, nvc_cfg, ctx->init_flags) < 0) {
+                warnx("initialization error: %s", libnvc.error(nvc));
                 goto fail;
         }
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_CONTAINER], ecaps_size(NVC_CONTAINER)) < 0) {
@@ -233,8 +233,8 @@ configure_command(const struct context *ctx)
                 goto fail;
         }
         cnt_cfg->ldconfig = ctx->ldconfig;
-        if ((cnt = nvc_container_new(nvc, cnt_cfg, ctx->container_flags)) == NULL) {
-                warnx("container error: %s", nvc_error(nvc));
+        if ((cnt = libnvc.container_new(nvc, cnt_cfg, ctx->container_flags)) == NULL) {
+                warnx("container error: %s", libnvc.error(nvc));
                 goto fail;
         }
 
@@ -243,9 +243,9 @@ configure_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if ((drv = nvc_driver_info_new(nvc, NULL)) == NULL ||
-            (dev = nvc_device_info_new(nvc, NULL)) == NULL) {
-                warnx("detection error: %s", nvc_error(nvc));
+        if ((drv = libnvc.driver_info_new(nvc, NULL)) == NULL ||
+            (dev = libnvc.device_info_new(nvc, NULL)) == NULL) {
+                warnx("detection error: %s", libnvc.error(nvc));
                 goto fail;
         }
 
@@ -326,44 +326,44 @@ configure_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if (nvc_driver_mount(nvc, cnt, drv) < 0) {
-                warnx("mount error: %s", nvc_error(nvc));
+        if (libnvc.driver_mount(nvc, cnt, drv) < 0) {
+                warnx("mount error: %s", libnvc.error(nvc));
                 goto fail;
         }
         for (size_t i = 0; i < devices.ngpus; ++i) {
-                if (nvc_device_mount(nvc, cnt, devices.gpus[i]) < 0) {
-                        warnx("mount error: %s", nvc_error(nvc));
+                if (libnvc.device_mount(nvc, cnt, devices.gpus[i]) < 0) {
+                        warnx("mount error: %s", libnvc.error(nvc));
                         goto fail;
                 }
         }
         if (!mig_config_devices.all && !mig_monitor_devices.all) {
                 for (size_t i = 0; i < devices.nmigs; ++i) {
-                        if (nvc_mig_device_access_caps_mount(nvc, cnt, devices.migs[i]) < 0) {
-                                warnx("mount error: %s", nvc_error(nvc));
+                        if (libnvc.mig_device_access_caps_mount(nvc, cnt, devices.migs[i]) < 0) {
+                                warnx("mount error: %s", libnvc.error(nvc));
                                 goto fail;
                         }
                 }
         }
         if (mig_config_devices.all && mig_config_devices.ngpus) {
-                if (nvc_mig_config_global_caps_mount(nvc, cnt) < 0) {
-                        warnx("mount error: %s", nvc_error(nvc));
+                if (libnvc.mig_config_global_caps_mount(nvc, cnt) < 0) {
+                        warnx("mount error: %s", libnvc.error(nvc));
                         goto fail;
                 }
                 for (size_t i = 0; i < mig_config_devices.ngpus; ++i) {
-                        if (nvc_device_mig_caps_mount(nvc, cnt, mig_config_devices.gpus[i]) < 0) {
-                                warnx("mount error: %s", nvc_error(nvc));
+                        if (libnvc.device_mig_caps_mount(nvc, cnt, mig_config_devices.gpus[i]) < 0) {
+                                warnx("mount error: %s", libnvc.error(nvc));
                                 goto fail;
                         }
                 }
         }
         if (mig_monitor_devices.all && mig_monitor_devices.ngpus) {
-                if (nvc_mig_monitor_global_caps_mount(nvc, cnt) < 0) {
-                        warnx("mount error: %s", nvc_error(nvc));
+                if (libnvc.mig_monitor_global_caps_mount(nvc, cnt) < 0) {
+                        warnx("mount error: %s", libnvc.error(nvc));
                         goto fail;
                 }
                 for (size_t i = 0; i < mig_monitor_devices.ngpus; ++i) {
-                        if (nvc_device_mig_caps_mount(nvc, cnt, mig_monitor_devices.gpus[i]) < 0) {
-                                warnx("mount error: %s", nvc_error(nvc));
+                        if (libnvc.device_mig_caps_mount(nvc, cnt, mig_monitor_devices.gpus[i]) < 0) {
+                                warnx("mount error: %s", libnvc.error(nvc));
                                 goto fail;
                         }
                 }
@@ -374,8 +374,8 @@ configure_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if (nvc_ldcache_update(nvc, cnt) < 0) {
-                warnx("ldcache error: %s", nvc_error(nvc));
+        if (libnvc.ldcache_update(nvc, cnt) < 0) {
+                warnx("ldcache error: %s", libnvc.error(nvc));
                 goto fail;
         }
 
@@ -387,13 +387,13 @@ configure_command(const struct context *ctx)
 
  fail:
         free_devices(&devices);
-        nvc_shutdown(nvc);
-        nvc_container_free(cnt);
-        nvc_device_info_free(dev);
-        nvc_driver_info_free(drv);
-        nvc_container_config_free(cnt_cfg);
-        nvc_config_free(nvc_cfg);
-        nvc_context_free(nvc);
+        libnvc.shutdown(nvc);
+        libnvc.container_free(cnt);
+        libnvc.device_info_free(dev);
+        libnvc.driver_info_free(drv);
+        libnvc.container_config_free(cnt_cfg);
+        libnvc.config_free(nvc_cfg);
+        libnvc.context_free(nvc);
         error_reset(&err);
         return (rv);
 }

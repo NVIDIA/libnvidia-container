@@ -475,7 +475,7 @@ print_nvcaps_device_from_proc_file(struct nvc_context *ctx, const char* cap_dir,
 
         if (path_join(NULL, cap_path, cap_dir, cap_file) < 0)
                 return (-1);
-        if (nvc_nvcaps_device_from_proc_path(ctx, cap_path, &node) < 0)
+        if (libnvc.nvcaps_device_from_proc_path(ctx, cap_path, &node) < 0)
                 return (-1);
 
         printf("%s\n", node.path);

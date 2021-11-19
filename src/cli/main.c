@@ -137,8 +137,12 @@ main(int argc, char *argv[])
         int rv;
 
         argp_parse(&usage, argc, argv, ARGP_IN_ORDER, NULL, &ctx);
-        rv = ctx.command->func(&ctx);
 
+        if ((rv = load_libnvc()) != 0)
+                goto fail;
+
+        rv = ctx.command->func(&ctx);
+ fail:
         free(ctx.devices);
         free(ctx.init_flags);
         free(ctx.container_flags);

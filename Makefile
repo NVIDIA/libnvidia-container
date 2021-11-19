@@ -83,6 +83,7 @@ BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
                 $(SRCS_DIR)/cli/info.c      \
                 $(SRCS_DIR)/cli/list.c      \
                 $(SRCS_DIR)/cli/main.c      \
+                $(SRCS_DIR)/cli/libnvc.c    \
                 $(SRCS_DIR)/error_generic.c \
                 $(SRCS_DIR)/utils.c
 

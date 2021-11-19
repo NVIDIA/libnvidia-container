@@ -113,8 +113,8 @@ list_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if ((nvc = nvc_context_new()) == NULL ||
-            (nvc_cfg = nvc_config_new()) == NULL) {
+        if ((nvc = libnvc.context_new()) == NULL ||
+            (nvc_cfg = libnvc.config_new()) == NULL) {
                 warn("memory allocation failed");
                 goto fail;
         }
@@ -122,8 +122,8 @@ list_command(const struct context *ctx)
         nvc_cfg->gid = (!run_as_root && ctx->gid == (gid_t)-1) ? getegid() : ctx->gid;
         nvc_cfg->root = ctx->root;
         nvc_cfg->ldcache = ctx->ldcache;
-        if (nvc_init(nvc, nvc_cfg, ctx->init_flags) < 0) {
-                warnx("initialization error: %s", nvc_error(nvc));
+        if (libnvc.init(nvc, nvc_cfg, ctx->init_flags) < 0) {
+                warnx("initialization error: %s", libnvc.error(nvc));
                 goto fail;
         }
 
@@ -132,9 +132,9 @@ list_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if ((drv = nvc_driver_info_new(nvc, NULL)) == NULL ||
-            (dev = nvc_device_info_new(nvc, NULL)) == NULL) {
-                warnx("detection error: %s", nvc_error(nvc));
+        if ((drv = libnvc.driver_info_new(nvc, NULL)) == NULL ||
+            (dev = libnvc.device_info_new(nvc, NULL)) == NULL) {
+                warnx("detection error: %s", libnvc.error(nvc));
                 goto fail;
         }
 
@@ -188,7 +188,7 @@ list_command(const struct context *ctx)
                         for (size_t i = 0; i < devices.nmigs; ++i) {
                                 printf("%s/%s\n", devices.migs[i]->gi_caps_path, NV_MIG_ACCESS_FILE);
                                 printf("%s/%s\n", devices.migs[i]->ci_caps_path, NV_MIG_ACCESS_FILE);
-                                if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
+                                if (libnvc.nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
                                         print_nvcaps_device_from_proc_file(nvc, devices.migs[i]->gi_caps_path, NV_MIG_ACCESS_FILE);
                                         print_nvcaps_device_from_proc_file(nvc, devices.migs[i]->ci_caps_path, NV_MIG_ACCESS_FILE);
                                 }
@@ -199,11 +199,11 @@ list_command(const struct context *ctx)
         /* List the files required for MIG configuration of the visible devices */
         if (mig_config_devices.all && mig_config_devices.ngpus) {
                 printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_CONFIG_FILE);
-                if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV)
+                if (libnvc.nvcaps_style() == NVC_NVCAPS_STYLE_DEV)
                         print_nvcaps_device_from_proc_file(nvc, NV_MIG_CAPS_PATH, NV_MIG_CONFIG_FILE);
                 for (size_t i = 0; i < mig_config_devices.ngpus; ++i) {
                         printf("%s\n", mig_config_devices.gpus[i]->mig_caps_path);
-                        if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
+                        if (libnvc.nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
                                 printf("%s\n", NV_CAPS_DEVICE_DIR);
                                 print_all_mig_minor_devices(&mig_config_devices.gpus[i]->node);
                         }
@@ -212,11 +212,11 @@ list_command(const struct context *ctx)
         /* List the files required for MIG monitoring of the visible devices */
         if (mig_monitor_devices.all && mig_monitor_devices.ngpus) {
                 printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_MONITOR_FILE);
-                if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV)
+                if (libnvc.nvcaps_style() == NVC_NVCAPS_STYLE_DEV)
                         print_nvcaps_device_from_proc_file(nvc, NV_MIG_CAPS_PATH, NV_MIG_MONITOR_FILE);
                 for (size_t i = 0; i < mig_monitor_devices.ngpus; ++i) {
                         printf("%s\n", mig_monitor_devices.gpus[i]->mig_caps_path);
-                        if (nvc_nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
+                        if (libnvc.nvcaps_style() == NVC_NVCAPS_STYLE_DEV) {
                                 printf("%s\n", NV_CAPS_DEVICE_DIR);
                                 print_all_mig_minor_devices(&mig_monitor_devices.gpus[i]->node);
                         }
@@ -248,11 +248,11 @@ list_command(const struct context *ctx)
         rv = EXIT_SUCCESS;
  fail:
         free_devices(&devices);
-        nvc_shutdown(nvc);
-        nvc_device_info_free(dev);
-        nvc_driver_info_free(drv);
-        nvc_config_free(nvc_cfg);
-        nvc_context_free(nvc);
+        libnvc.shutdown(nvc);
+        libnvc.device_info_free(dev);
+        libnvc.driver_info_free(drv);
+        libnvc.config_free(nvc_cfg);
+        libnvc.context_free(nvc);
         error_reset(&err);
         return (rv);
 }
