@@ -179,10 +179,12 @@ list_command(const struct context *ctx)
         /* List the visible GPU devices and MIG devices. */
         if (ctx->devices != NULL) {
                 for (size_t i = 0; i < drv->ndevs; ++i) {
-                        printf("%s\n", drv->devs[i].path);
+                        if (drv->devs[i].path != NULL)
+                                printf("%s\n", drv->devs[i].path);
                 }
                 for (size_t i = 0; i < devices.ngpus; ++i) {
-                        printf("%s\n", devices.gpus[i]->node.path);
+                        if (devices.gpus[i]->node.path != NULL)
+                                printf("%s\n", devices.gpus[i]->node.path);
                 }
                 if (!mig_config_devices.all && !mig_monitor_devices.all) {
                         for (size_t i = 0; i < devices.nmigs; ++i) {
