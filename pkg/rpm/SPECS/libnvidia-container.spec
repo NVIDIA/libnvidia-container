@@ -99,7 +99,7 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Fri Nov 19 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-0.1.rc.1
+* Fri Nov 19 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.7.0-0.1.rc.1
 - [Placeholder for 1.7.0-0.1.rc.1 development]
 
 * Wed Nov 17 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-1
