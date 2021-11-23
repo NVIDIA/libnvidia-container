@@ -9,8 +9,9 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include "nvc_internal.h"
+#include "cli/libnvc.h"
 
+#include "nvc_internal.h"
 #include "error_generic.h"
 
 struct context;

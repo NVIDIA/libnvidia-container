@@ -55,7 +55,8 @@ static const struct command commands[] = {
 static void
 print_version(FILE *stream, maybe_unused struct argp_state *state)
 {
-        fprintf(stream, "version: %s\n", NVC_VERSION);
+        fprintf(stream, "cli-version: %s\n", NVC_VERSION);
+        fprintf(stream, "lib-version: %s\n", libnvc.version()->string);
         fprintf(stream, "build date: %s\n", BUILD_DATE);
         fprintf(stream, "build revision: %s\n", BUILD_REVISION);
         fprintf(stream, "build compiler: %s\n", BUILD_COMPILER);
@@ -136,9 +137,12 @@ main(int argc, char *argv[])
         struct context ctx = {.uid = (uid_t)-1, .gid = (gid_t)-1};
         int rv;
 
+        if ((rv = load_libnvc()) != 0)
+                goto fail;
+
         argp_parse(&usage, argc, argv, ARGP_IN_ORDER, NULL, &ctx);
         rv = ctx.command->func(&ctx);
-
+ fail:
         free(ctx.devices);
         free(ctx.init_flags);
         free(ctx.container_flags);

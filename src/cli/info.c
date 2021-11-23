@@ -68,8 +68,8 @@ info_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if ((nvc = nvc_context_new()) == NULL ||
-            (nvc_cfg = nvc_config_new()) == NULL) {
+        if ((nvc = libnvc.context_new()) == NULL ||
+            (nvc_cfg = libnvc.config_new()) == NULL) {
                 warn("memory allocation failed");
                 goto fail;
         }
@@ -77,8 +77,8 @@ info_command(const struct context *ctx)
         nvc_cfg->gid = (!run_as_root && ctx->gid == (gid_t)-1) ? getegid() : ctx->gid;
         nvc_cfg->root = ctx->root;
         nvc_cfg->ldcache = ctx->ldcache;
-        if (nvc_init(nvc, nvc_cfg, ctx->init_flags) < 0) {
-                warnx("initialization error: %s", nvc_error(nvc));
+        if (libnvc.init(nvc, nvc_cfg, ctx->init_flags) < 0) {
+                warnx("initialization error: %s", libnvc.error(nvc));
                 goto fail;
         }
 
@@ -87,9 +87,9 @@ info_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if ((drv = nvc_driver_info_new(nvc, NULL)) == NULL ||
-            (dev = nvc_device_info_new(nvc, NULL)) == NULL) {
-                warnx("detection error: %s", nvc_error(nvc));
+        if ((drv = libnvc.driver_info_new(nvc, NULL)) == NULL ||
+            (dev = libnvc.device_info_new(nvc, NULL)) == NULL) {
+                warnx("detection error: %s", libnvc.error(nvc));
                 goto fail;
         }
 
@@ -114,11 +114,11 @@ info_command(const struct context *ctx)
         }
         rv = EXIT_SUCCESS;
  fail:
-        nvc_shutdown(nvc);
-        nvc_device_info_free(dev);
-        nvc_driver_info_free(drv);
-        nvc_config_free(nvc_cfg);
-        nvc_context_free(nvc);
+        libnvc.shutdown(nvc);
+        libnvc.device_info_free(dev);
+        libnvc.driver_info_free(drv);
+        libnvc.config_free(nvc_cfg);
+        libnvc.context_free(nvc);
         error_reset(&err);
         return (rv);
 }
