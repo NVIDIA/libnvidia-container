@@ -23,7 +23,8 @@ grep -rIlE '@(SECTION|VERSION|MAJOR|DEB_HOST_MULTIARCH)@' . | \
   xargs -r sed -i "s;@SECTION@;${SECTION:+$SECTION/};
                    s;@VERSION@;$VERSION;
                    s;@MAJOR@;$MAJOR;
-                   s;@DEB_HOST_MULTIARCH@;$DEB_HOST_MULTIARCH;"
+                   s;@DEB_HOST_MULTIARCH@;$DEB_HOST_MULTIARCH;
+                   s;@LIBNVIDIA_CONTAINER0_DEPENDENCY@;${LIBNVIDIA_CONTAINER0_DEPENDENCY:+${LIBNVIDIA_CONTAINER0_DEPENDENCY}, };"
 
 if [ -n "$DISTRIB" ]; then
     sed -i "s;UNRELEASED;$DISTRIB;" debian/changelog
