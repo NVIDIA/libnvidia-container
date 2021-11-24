@@ -96,7 +96,8 @@ ARCH    ?= $(call getarch)
 MAJOR   := $(call getdef,NVC_MAJOR,$(LIB_INCS))
 MINOR   := $(call getdef,NVC_MINOR,$(LIB_INCS))
 PATCH   := $(call getdef,NVC_PATCH,$(LIB_INCS))
-# Extract the TAG from the version header file. We strip quotes.
+# Extract the VERSION and TAG from the version header file. We strip quotes.
+VERSION_STRING := $(subst ",,$(call getdef,NVC_VERSION,$(LIB_INCS)))
 TAG     := $(subst ",,$(call getdef,NVC_TAG,$(LIB_INCS)))
 VERSION := $(MAJOR).$(MINOR).$(PATCH)
 
@@ -108,6 +109,10 @@ $(error Invalid minor version)
 endif
 ifeq ($(PATCH),)
 $(error Invalid patch version)
+endif
+
+ifneq ($(VERSION_STRING),$(VERSION)$(if $(TAG),~$(TAG),))
+$(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(TAG),~$(TAG),))
 endif
 
 BIN_NAME    := nvidia-container-cli
