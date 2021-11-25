@@ -100,10 +100,10 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Thu Nov 25 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.7.0-0.1.rc.1
-- On Ubuntu18.04 arm64 platforms libnvidia-container-tools depends on both libnvidia-container0 and libnvidia-container0 to support Jetson
+- On Ubuntu18.04 arm64 platforms libnvidia-container-tools depends on both libnvidia-container0 and libnvidia-container1 to support Jetson
 - Filter command line options based on libnvidia-container library version
 - Include libnvidia-container version in CLI version output
-- Allow for nvidia-container-cli to load libnvidia-container0.so dynamically on Jetson platforms
+- Allow for nvidia-container-cli to load libnvidia-container.so.0 dynamically on Jetson platforms
 
 * Wed Nov 17 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.6.0-1
 - Promote 1.6.0-0.1.rc.3 to 1.6.0-1
