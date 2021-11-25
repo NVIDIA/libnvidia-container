@@ -68,9 +68,11 @@ configure_parser(int key, char *arg, struct argp_state *state)
                         goto fatal;
                 break;
         case 'r':
-                if (strncmp(arg, "base-only", 9) == 0) {
-                        if (str_join(&err, &ctx->container_flags, "jetpack-base-only", " ") < 0)
-                                goto fatal;
+                if (libnvc.version()->major == 0) {
+                        if (strncmp(arg, "base-only", 9) == 0) {
+                                if (str_join(&err, &ctx->container_flags, "jetpack-base-only", " ") < 0)
+                                        goto fatal;
+                        }
                         break;
                 }
                 if (ctx->nreqs >= nitems(ctx->reqs)) {
@@ -103,6 +105,8 @@ configure_parser(int key, char *arg, struct argp_state *state)
                         goto fatal;
                 break;
         case 'n':
+                if (libnvc.version()->major == 0)
+                        break;
                 if (str_join(&err, &ctx->container_flags, "ngx", " ") < 0)
                         goto fatal;
                 break;
