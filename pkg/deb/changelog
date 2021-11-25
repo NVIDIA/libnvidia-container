@@ -1,8 +1,11 @@
 libnvidia-container (1.7.0~rc.1-1) experimental; urgency=medium
 
-  * [Placeholder for 1.7.0~rc.1-1 development]
+  * On Ubuntu18.04 arm64 platforms libnvidia-container-tools depends on both libnvidia-container0 and libnvidia-container0 to support Jetson
+  * Filter command line options based on libnvidia-container library version
+  * Include libnvidia-container version in CLI version output
+  * Allow for nvidia-container-cli to load libnvidia-container0.so dynamically on Jetson platforms
 
- -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 19 Nov 2021 15:02:16 +0100
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Thu, 25 Nov 2021 11:29:43 +0100
 
 libnvidia-container (1.6.0-1) UNRELEASED; urgency=medium
 
