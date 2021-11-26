@@ -24,7 +24,7 @@ SVCXPRT *svcunixfd_create(int, u_int, u_int);
 
 struct driver_device;
 
-struct driver {
+struct rpc {
         struct error *err;
         void *nvml_dl;
         int fd[2];
@@ -34,6 +34,10 @@ struct driver {
         unsigned long rpc_prognum;
         unsigned long rpc_versnum;
         void (*rpc_dispatch)(struct svc_req *, SVCXPRT *);
+};
+
+struct driver {
+        struct rpc;
 };
 
 int driver_init(struct driver *, struct error *, struct dxcore_context *, const char *, uid_t, gid_t);

@@ -36,9 +36,9 @@
 
 void driver_program_1(struct svc_req *, register SVCXPRT *);
 
-static int setup_rpc_client(struct driver *);
-static noreturn void setup_rpc_service(struct driver *, const char *, uid_t, gid_t, pid_t);
-static int reap_process(struct error *, pid_t, int, bool);
+static int rpc_setup_client(struct rpc *);
+static noreturn void rpc_setup_service(struct rpc *, const char *, uid_t, gid_t, pid_t);
+static int rpc_reap_process(struct error *, pid_t, int, bool);
 
 struct mig_device {
         nvmlDevice_t nvml;
@@ -68,7 +68,7 @@ static struct driver_device {
         static_assert(sizeof(ptr_t) >= sizeof(intptr_t), "incompatible types");                        \
         sigaction(SIGPIPE, &sa_, &osa_);                                                               \
         if ((r_ = func((ptr_t)ctx, ##__VA_ARGS__, res, (ctx)->rpc_clt)) != RPC_SUCCESS)                \
-                error_set_rpc((ctx)->err, r_, "driver error");                                         \
+                error_set_rpc((ctx)->err, r_, "rpc error");                                            \
         else if ((res)->errcode != 0)                                                                  \
                 error_from_xdr((ctx)->err, res);                                                       \
         sigaction(SIGPIPE, &osa_, NULL);                                                               \
@@ -76,7 +76,7 @@ static struct driver_device {
 })
 
 static int
-setup_rpc_client(struct driver *ctx)
+rpc_setup_client(struct rpc *ctx)
 {
         struct sockaddr_un addr;
         socklen_t addrlen;
@@ -90,7 +90,7 @@ setup_rpc_client(struct driver *ctx)
                 return (-1);
         }
         if ((ctx->rpc_clt = clntunix_create(&addr, ctx->rpc_prognum, ctx->rpc_versnum, &ctx->fd[SOCK_CLT], 0, 0)) == NULL) {
-                error_setx(ctx->err, "%s", clnt_spcreateerror("driver client creation failed"));
+                error_setx(ctx->err, "%s", clnt_spcreateerror("rpc client creation failed"));
                 return (-1);
         }
         clnt_control(ctx->rpc_clt, CLSET_TIMEOUT, (char *)&timeout);
@@ -98,12 +98,12 @@ setup_rpc_client(struct driver *ctx)
 }
 
 static void
-setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppid)
+rpc_setup_service(struct rpc *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppid)
 {
         int rv = EXIT_FAILURE;
 
-        log_info("starting driver service");
-        prctl(PR_SET_NAME, (unsigned long)"nvc:[driver]", 0, 0, 0);
+        log_info("starting rpc service");
+        prctl(PR_SET_NAME, (unsigned long)"nvc:[rpc]", 0, 0, 0);
 
         xclose(ctx->fd[SOCK_CLT]);
 
@@ -155,19 +155,19 @@ setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pi
         }
         svc_run();
 
-        log_info("terminating driver service");
+        log_info("terminating rpc service");
         rv = EXIT_SUCCESS;
 
  fail:
         if (rv != EXIT_SUCCESS)
-                log_errf("could not start driver service: %s", ctx->err->msg);
+                log_errf("could not start rpc service: %s", ctx->err->msg);
         if (ctx->rpc_svc != NULL)
                 svc_destroy(ctx->rpc_svc);
         _exit(rv);
 }
 
 static int
-reap_process(struct error *err, pid_t pid, int fd, bool force)
+rpc_reap_process(struct error *err, pid_t pid, int fd, bool force)
 {
         int ret = 0;
         int status;
@@ -181,7 +181,7 @@ reap_process(struct error *err, pid_t pid, int fd, bool force)
                 case -1:
                         break;
                 case 0:
-                        log_warn("terminating driver service (forced)");
+                        log_warn("terminating rpc service (forced)");
                         ret = kill(pid, SIGKILL);
                         /* Fallthrough */
                 default:
@@ -192,7 +192,7 @@ reap_process(struct error *err, pid_t pid, int fd, bool force)
         if (ret < 0)
                 error_set(err, "process reaping failed (pid %"PRId32")", (int32_t)pid);
         else
-                log_infof("driver service terminated %s%.0d",
+                log_infof("rpc service terminated %s%.0d",
                     WIFSIGNALED(status) ? "with signal " : "successfully",
                     WIFSIGNALED(status) ? WTERMSIG(status) : 0);
         return (ret);
@@ -213,7 +213,7 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
         char nvml_path[PATH_MAX] = SONAME_LIBNVML;
         struct driver_init_res res = {0};
 
-        *ctx = (struct driver){err, NULL, {-1, -1}, -1, NULL, NULL, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1};
+        *ctx = (struct driver){{err, NULL, {-1, -1}, -1, NULL, NULL, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1}};
 
         pid = getpid();
         if (socketpair(PF_LOCAL, SOCK_STREAM|SOCK_CLOEXEC, 0, ctx->fd) < 0 || (ctx->pid = fork()) < 0) {
@@ -221,8 +221,8 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
                 goto fail;
         }
         if (ctx->pid == 0)
-                setup_rpc_service(ctx, root, uid, gid, pid);
-        if (setup_rpc_client(ctx) < 0)
+                rpc_setup_service(ctx, root, uid, gid, pid);
+        if (rpc_setup_client(ctx) < 0)
                 goto fail;
 
         if (dxcore->initialized) {
@@ -239,8 +239,8 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
         return (0);
 
  fail:
-        if (ctx->pid > 0 && reap_process(NULL, ctx->pid, ctx->fd[SOCK_CLT], true) < 0)
-                log_warnf("could not terminate driver service (pid %"PRId32")", (int32_t)ctx->pid);
+        if (ctx->pid > 0 && rpc_reap_process(NULL, ctx->pid, ctx->fd[SOCK_CLT], true) < 0)
+                log_warnf("could not terminate rpc service (pid %"PRId32")", (int32_t)ctx->pid);
         if (ctx->rpc_clt != NULL)
                 clnt_destroy(ctx->rpc_clt);
 
@@ -278,15 +278,15 @@ driver_shutdown(struct driver *ctx)
         ret = call_rpc(ctx, &res, driver_shutdown_1);
         xdr_free((xdrproc_t)xdr_driver_shutdown_res, (caddr_t)&res);
         if (ret < 0)
-                log_warnf("could not terminate driver service: %s", ctx->err->msg);
+                log_warnf("could not terminate rpc service: %s", ctx->err->msg);
 
-        if (reap_process(ctx->err, ctx->pid, ctx->fd[SOCK_CLT], (ret < 0)) < 0)
+        if (rpc_reap_process(ctx->err, ctx->pid, ctx->fd[SOCK_CLT], (ret < 0)) < 0)
                 return (-1);
         clnt_destroy(ctx->rpc_clt);
 
         xclose(ctx->fd[SOCK_CLT]);
         xclose(ctx->fd[SOCK_SVC]);
-        *ctx = (struct driver){NULL, NULL, {-1, -1}, -1, NULL, NULL, 0, 0, NULL};
+        *ctx = (struct driver){{NULL, NULL, {-1, -1}, -1, NULL, NULL, 0, 0, NULL}};
         return (0);
 }
 
