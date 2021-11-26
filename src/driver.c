@@ -23,6 +23,8 @@
 #include "driver_rpc.h"
 #pragma GCC diagnostic pop
 
+#include "nvc_internal.h"
+
 #include "driver.h"
 #include "error.h"
 #include "utils.h"
