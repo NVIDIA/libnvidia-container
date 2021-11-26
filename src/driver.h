@@ -30,7 +30,6 @@ struct driver_mig_device;
 
 struct driver {
         struct error *err;
-        void *cuda_dl;
         void *nvml_dl;
         int fd[2];
         pid_t pid;

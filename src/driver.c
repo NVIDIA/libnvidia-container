@@ -218,7 +218,7 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
         pid_t pid;
         struct driver_init_res res = {0};
 
-        *ctx = (struct driver){err, NULL, NULL, {-1, -1}, -1, NULL, NULL};
+        *ctx = (struct driver){err, NULL, {-1, -1}, -1, NULL, NULL};
 
         pid = getpid();
         if (socketpair(PF_LOCAL, SOCK_STREAM|SOCK_CLOEXEC, 0, ctx->fd) < 0 || (ctx->pid = fork()) < 0) {
@@ -280,7 +280,7 @@ driver_shutdown(struct driver *ctx)
 
         xclose(ctx->fd[SOCK_CLT]);
         xclose(ctx->fd[SOCK_SVC]);
-        *ctx = (struct driver){NULL, NULL, NULL, {-1, -1}, -1, NULL, NULL};
+        *ctx = (struct driver){NULL, NULL, {-1, -1}, -1, NULL, NULL};
         return (0);
 }
 
