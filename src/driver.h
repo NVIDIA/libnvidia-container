@@ -7,34 +7,13 @@
 
 #include <sys/types.h>
 
-#include <rpc/rpc.h>
-
-#ifndef WITH_TIRPC
-/* Glibc is missing this prototype */
-SVCXPRT *svcunixfd_create(int, u_int, u_int);
-#endif /* WITH_TIRPC */
-
 #include <stdbool.h>
 
 #include "error.h"
 #include "dxcore.h"
-
-#define SOCK_CLT 0
-#define SOCK_SVC 1
+#include "rpc.h"
 
 struct driver_device;
-
-struct rpc {
-        struct error *err;
-        void *nvml_dl;
-        int fd[2];
-        pid_t pid;
-        SVCXPRT *rpc_svc;
-        CLIENT *rpc_clt;
-        unsigned long rpc_prognum;
-        unsigned long rpc_versnum;
-        void (*rpc_dispatch)(struct svc_req *, SVCXPRT *);
-};
 
 struct driver {
         struct rpc;

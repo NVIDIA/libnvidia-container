@@ -2,20 +2,9 @@
  * Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
  */
 
-#include <sys/prctl.h>
-#include <sys/socket.h>
-#include <sys/time.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 
 #include <inttypes.h>
-#include <poll.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdnoreturn.h>
-#include <string.h>
-#include <unistd.h>
 
 #include "nvml.h"
 
@@ -28,17 +17,13 @@
 #include "driver.h"
 #include "error.h"
 #include "utils.h"
+#include "rpc.h"
 #include "xfuncs.h"
 
 #define MAX_DEVICES     64
 #define MAX_MIG_DEVICES  8
-#define REAP_TIMEOUT_MS 10
 
 void driver_program_1(struct svc_req *, register SVCXPRT *);
-
-static int rpc_setup_client(struct rpc *);
-static noreturn void rpc_setup_service(struct rpc *, const char *, uid_t, gid_t, pid_t);
-static int rpc_reap_process(struct error *, pid_t, int, bool);
 
 struct mig_device {
         nvmlDevice_t nvml;
@@ -60,143 +45,6 @@ static struct driver_device {
                 error_set_nvml((ctx)->err, (ctx)->nvml_dl, r_, "nvml error");                          \
         (r_ == NVML_SUCCESS) ? 0 : -1;                                                                 \
 })
-
-#define call_rpc(ctx, res, func, ...) __extension__ ({                                                 \
-        enum clnt_stat r_;                                                                             \
-        struct sigaction osa_, sa_ = {.sa_handler = SIG_IGN};                                          \
-                                                                                                       \
-        static_assert(sizeof(ptr_t) >= sizeof(intptr_t), "incompatible types");                        \
-        sigaction(SIGPIPE, &sa_, &osa_);                                                               \
-        if ((r_ = func((ptr_t)ctx, ##__VA_ARGS__, res, (ctx)->rpc_clt)) != RPC_SUCCESS)                \
-                error_set_rpc((ctx)->err, r_, "rpc error");                                            \
-        else if ((res)->errcode != 0)                                                                  \
-                error_from_xdr((ctx)->err, res);                                                       \
-        sigaction(SIGPIPE, &osa_, NULL);                                                               \
-        (r_ == RPC_SUCCESS && (res)->errcode == 0) ? 0 : -1;                                           \
-})
-
-static int
-rpc_setup_client(struct rpc *ctx)
-{
-        struct sockaddr_un addr;
-        socklen_t addrlen;
-        struct timeval timeout = {10, 0};
-
-        xclose(ctx->fd[SOCK_SVC]);
-
-        addrlen = sizeof(addr);
-        if (getpeername(ctx->fd[SOCK_CLT], (struct sockaddr *)&addr, &addrlen) < 0) {
-                error_set(ctx->err, "address resolution failed");
-                return (-1);
-        }
-        if ((ctx->rpc_clt = clntunix_create(&addr, ctx->rpc_prognum, ctx->rpc_versnum, &ctx->fd[SOCK_CLT], 0, 0)) == NULL) {
-                error_setx(ctx->err, "%s", clnt_spcreateerror("rpc client creation failed"));
-                return (-1);
-        }
-        clnt_control(ctx->rpc_clt, CLSET_TIMEOUT, (char *)&timeout);
-        return (0);
-}
-
-static void
-rpc_setup_service(struct rpc *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppid)
-{
-        int rv = EXIT_FAILURE;
-
-        log_info("starting rpc service");
-        prctl(PR_SET_NAME, (unsigned long)"nvc:[rpc]", 0, 0, 0);
-
-        xclose(ctx->fd[SOCK_CLT]);
-
-        if (!str_equal(root, "/")) {
-                /* Preload glibc libraries to avoid symbols mismatch after changing root. */
-                if (xdlopen(ctx->err, "libm.so.6", RTLD_NOW) == NULL)
-                        goto fail;
-                if (xdlopen(ctx->err, "librt.so.1", RTLD_NOW) == NULL)
-                        goto fail;
-                if (xdlopen(ctx->err, "libpthread.so.0", RTLD_NOW) == NULL)
-                        goto fail;
-
-                if (chroot(root) < 0 || chdir("/") < 0) {
-                        error_set(ctx->err, "change root failed");
-                        goto fail;
-                }
-        }
-
-        /*
-         * Drop privileges and capabilities for security reasons.
-         *
-         * We might be inside a user namespace with full capabilities, this should also help prevent NVML
-         * from potentially adjusting the host device nodes based on the (wrong) driver registry parameters.
-         *
-         * If we are not changing group, then keep our supplementary groups as well.
-         * This is arguable but allows us to support unprivileged processes (i.e. without CAP_SETGID) and user namespaces.
-         */
-        if (perm_drop_privileges(ctx->err, uid, gid, (getegid() != gid)) < 0)
-                goto fail;
-        if (perm_set_capabilities(ctx->err, CAP_PERMITTED, NULL, 0) < 0)
-                goto fail;
-
-        /*
-         * Set PDEATHSIG in case our parent terminates unexpectedly.
-         * We need to do it late since the kernel resets it on credential change.
-         */
-        if (prctl(PR_SET_PDEATHSIG, SIGTERM, 0, 0, 0) < 0) {
-                error_set(ctx->err, "process initialization failed");
-                goto fail;
-        }
-        if (getppid() != ppid)
-                kill(getpid(), SIGTERM);
-
-
-        if ((ctx->rpc_svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
-            !svc_register(ctx->rpc_svc, ctx->rpc_prognum, ctx->rpc_versnum, ctx->rpc_dispatch, 0)) {
-                error_setx(ctx->err, "program registration failed");
-                goto fail;
-        }
-        svc_run();
-
-        log_info("terminating rpc service");
-        rv = EXIT_SUCCESS;
-
- fail:
-        if (rv != EXIT_SUCCESS)
-                log_errf("could not start rpc service: %s", ctx->err->msg);
-        if (ctx->rpc_svc != NULL)
-                svc_destroy(ctx->rpc_svc);
-        _exit(rv);
-}
-
-static int
-rpc_reap_process(struct error *err, pid_t pid, int fd, bool force)
-{
-        int ret = 0;
-        int status;
-        struct pollfd fds = {.fd = fd, .events = POLLRDHUP};
-
-        if (waitpid(pid, &status, WNOHANG) <= 0) {
-                if (force)
-                        kill(pid, SIGTERM);
-
-                switch ((ret = poll(&fds, 1, REAP_TIMEOUT_MS))) {
-                case -1:
-                        break;
-                case 0:
-                        log_warn("terminating rpc service (forced)");
-                        ret = kill(pid, SIGKILL);
-                        /* Fallthrough */
-                default:
-                        if (ret >= 0)
-                                ret = waitpid(pid, &status, 0);
-                }
-        }
-        if (ret < 0)
-                error_set(err, "process reaping failed (pid %"PRId32")", (int32_t)pid);
-        else
-                log_infof("rpc service terminated %s%.0d",
-                    WIFSIGNALED(status) ? "with signal " : "successfully",
-                    WIFSIGNALED(status) ? WTERMSIG(status) : 0);
-        return (ret);
-}
 
 int
 driver_program_1_freeresult(maybe_unused SVCXPRT *svc, xdrproc_t xdr_result, caddr_t res)
