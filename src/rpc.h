@@ -46,9 +46,8 @@ struct rpc {
         void (*rpc_dispatch)(struct svc_req *, SVCXPRT *);
 };
 
-int rpc_setup_client(struct rpc *);
-void rpc_setup_service(struct rpc *, const char *, uid_t, gid_t, pid_t);
-int rpc_reap_process(struct error *, pid_t, int, bool);
+int rpc_init(struct rpc *, struct error *, const char *, uid_t, gid_t, unsigned long, unsigned long, void (*dispatch)(struct svc_req *, SVCXPRT *));
+int rpc_shutdown(struct rpc *, struct error *err, bool force);
 
 #define call_rpc(ctx, res, func, ...) __extension__ ({                                                 \
         enum clnt_stat r_;                                                                             \
