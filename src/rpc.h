@@ -39,11 +39,11 @@ struct rpc {
         void *nvml_dl;
         int fd[2];
         pid_t pid;
-        SVCXPRT *rpc_svc;
-        CLIENT *rpc_clt;
-        unsigned long rpc_prognum;
-        unsigned long rpc_versnum;
-        void (*rpc_dispatch)(struct svc_req *, SVCXPRT *);
+        SVCXPRT *svc;
+        CLIENT *clt;
+        unsigned long prognum;
+        unsigned long versnum;
+        void (*dispatch)(struct svc_req *, SVCXPRT *);
 };
 
 int rpc_init(struct rpc *, struct error *, const char *, uid_t, gid_t, unsigned long, unsigned long, void (*dispatch)(struct svc_req *, SVCXPRT *));
@@ -55,7 +55,7 @@ int rpc_shutdown(struct rpc *, struct error *err, bool force);
                                                                                                        \
         static_assert(sizeof(ptr_t) >= sizeof(intptr_t), "incompatible types");                        \
         sigaction(SIGPIPE, &sa_, &osa_);                                                               \
-        if ((r_ = func((ptr_t)ctx, ##__VA_ARGS__, res, (ctx)->rpc_clt)) != RPC_SUCCESS)                \
+        if ((r_ = func((ptr_t)ctx, ##__VA_ARGS__, res, (ctx)->clt)) != RPC_SUCCESS)                    \
                 error_set_rpc((ctx)->err, r_, "rpc error");                                            \
         else if ((res)->errcode != 0)                                                                  \
                 error_from_xdr((ctx)->err, res);                                                       \

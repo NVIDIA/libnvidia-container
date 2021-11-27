@@ -54,11 +54,11 @@ setup_client(struct rpc *ctx)
                 error_set(ctx->err, "address resolution failed");
                 return (-1);
         }
-        if ((ctx->rpc_clt = clntunix_create(&addr, ctx->rpc_prognum, ctx->rpc_versnum, &ctx->fd[SOCK_CLT], 0, 0)) == NULL) {
+        if ((ctx->clt = clntunix_create(&addr, ctx->prognum, ctx->versnum, &ctx->fd[SOCK_CLT], 0, 0)) == NULL) {
                 error_setx(ctx->err, "%s", clnt_spcreateerror("rpc client creation failed"));
                 return (-1);
         }
-        clnt_control(ctx->rpc_clt, CLSET_TIMEOUT, (char *)&timeout);
+        clnt_control(ctx->clt, CLSET_TIMEOUT, (char *)&timeout);
         return (0);
 }
 
@@ -113,8 +113,8 @@ setup_service(struct rpc *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppi
                 kill(getpid(), SIGTERM);
 
 
-        if ((ctx->rpc_svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
-            !svc_register(ctx->rpc_svc, ctx->rpc_prognum, ctx->rpc_versnum, ctx->rpc_dispatch, 0)) {
+        if ((ctx->svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
+            !svc_register(ctx->svc, ctx->prognum, ctx->versnum, ctx->dispatch, 0)) {
                 error_setx(ctx->err, "program registration failed");
                 goto fail;
         }
@@ -126,8 +126,8 @@ setup_service(struct rpc *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppi
  fail:
         if (rv != EXIT_SUCCESS)
                 log_errf("could not start rpc service: %s", ctx->err->msg);
-        if (ctx->rpc_svc != NULL)
-                svc_destroy(ctx->rpc_svc);
+        if (ctx->svc != NULL)
+                svc_destroy(ctx->svc);
         _exit(rv);
 }
 
@@ -185,8 +185,8 @@ rpc_init(struct rpc *ctx, struct error *err, const char *root, uid_t uid, gid_t 
  fail:
         if (ctx->pid > 0 && reap_process(NULL, ctx->pid, ctx->fd[SOCK_CLT], true) < 0)
                 log_warnf("could not terminate rpc service (pid %"PRId32")", (int32_t)ctx->pid);
-        if (ctx->rpc_clt != NULL)
-                clnt_destroy(ctx->rpc_clt);
+        if (ctx->clt != NULL)
+                clnt_destroy(ctx->clt);
 
         xclose(ctx->fd[SOCK_CLT]);
         xclose(ctx->fd[SOCK_SVC]);
@@ -200,8 +200,8 @@ rpc_shutdown(struct rpc *ctx, struct error *err, bool force)
                 log_warnf("could not terminate rpc service: %s", err->msg);
                 return (-1);
         }
-        if (ctx->rpc_clt != NULL)
-                clnt_destroy(ctx->rpc_clt);
+        if (ctx->clt != NULL)
+                clnt_destroy(ctx->clt);
 
         xclose(ctx->fd[SOCK_CLT]);
         xclose(ctx->fd[SOCK_SVC]);
