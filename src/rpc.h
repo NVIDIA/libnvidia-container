@@ -35,8 +35,7 @@ SVCXPRT *svcunixfd_create(int, u_int, u_int);
 #define SOCK_SVC 1
 
 struct rpc {
-        struct error *err;
-        void *nvml_dl;
+        bool initialized;
         int fd[2];
         pid_t pid;
         SVCXPRT *svc;
@@ -46,19 +45,19 @@ struct rpc {
         void (*dispatch)(struct svc_req *, SVCXPRT *);
 };
 
-int rpc_init(struct rpc *, struct error *, const char *, uid_t, gid_t, unsigned long, unsigned long, void (*dispatch)(struct svc_req *, SVCXPRT *));
-int rpc_shutdown(struct rpc *, struct error *err, bool force);
+int rpc_init(struct error *, struct rpc *, const char *, uid_t, gid_t, unsigned long, unsigned long, void (*dispatch)(struct svc_req *, SVCXPRT *));
+int rpc_shutdown(struct error *, struct rpc *, bool force);
 
-#define call_rpc(ctx, res, func, ...) __extension__ ({                                                 \
+#define call_rpc(err, ctx, res, func, ...) __extension__ ({                                            \
         enum clnt_stat r_;                                                                             \
         struct sigaction osa_, sa_ = {.sa_handler = SIG_IGN};                                          \
                                                                                                        \
         static_assert(sizeof(ptr_t) >= sizeof(intptr_t), "incompatible types");                        \
         sigaction(SIGPIPE, &sa_, &osa_);                                                               \
         if ((r_ = func((ptr_t)ctx, ##__VA_ARGS__, res, (ctx)->clt)) != RPC_SUCCESS)                    \
-                error_set_rpc((ctx)->err, r_, "rpc error");                                            \
+                error_set_rpc(err, r_, "rpc error");                                                   \
         else if ((res)->errcode != 0)                                                                  \
-                error_from_xdr((ctx)->err, res);                                                       \
+                error_from_xdr(err, res);                                                              \
         sigaction(SIGPIPE, &osa_, NULL);                                                               \
         (r_ == RPC_SUCCESS && (res)->errcode == 0) ? 0 : -1;                                           \
 })

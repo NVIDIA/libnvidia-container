@@ -568,7 +568,7 @@ fill_mig_device_info(struct nvc_context *ctx, bool mig_enabled, struct driver_de
 
         // Otherwise, get the max count of MIG devices for the given device
         // from the driver.
-        if (driver_get_device_max_mig_device_count(&ctx->drv, drv_device, &count) < 0)
+        if (driver_get_device_max_mig_device_count(&ctx->err, drv_device, &count) < 0)
                 goto fail;
 
         // Allocate space in 'devices' to hold all of the MIG devices.
@@ -579,7 +579,7 @@ fill_mig_device_info(struct nvc_context *ctx, bool mig_enabled, struct driver_de
         // pulled from the driver.
         for (unsigned int i = 0; i < count; ++i) {
                 // Get a reference to the MIG device at this index.
-                if (driver_get_device_mig_device(&ctx->drv, drv_device, i, &mig_device) < 0)
+                if (driver_get_device_mig_device(&ctx->err, drv_device, i, &mig_device) < 0)
                         goto fail;
 
                // If no MIG device exists at this index, then we are done. Due
@@ -589,11 +589,11 @@ fill_mig_device_info(struct nvc_context *ctx, bool mig_enabled, struct driver_de
                         break;
 
                 // Get the ID of the GPU Instance for this MIG device from the driver.
-                if (driver_get_device_gpu_instance_id(&ctx->drv, mig_device, &info->devices[i].gi) < 0)
+                if (driver_get_device_gpu_instance_id(&ctx->err, mig_device, &info->devices[i].gi) < 0)
                         goto fail;
 
                 // Get the ID of the Compute Instance for this MIG device from the driver.
-                if (driver_get_device_compute_instance_id(&ctx->drv, mig_device, &info->devices[i].ci) < 0)
+                if (driver_get_device_compute_instance_id(&ctx->err, mig_device, &info->devices[i].ci) < 0)
                         goto fail;
 
                 // Set a reference back to the device associated with the
@@ -601,7 +601,7 @@ fill_mig_device_info(struct nvc_context *ctx, bool mig_enabled, struct driver_de
                 info->devices[i].parent = device;
 
                 // Populate the UUID of the MIG device.
-                if (driver_get_device_uuid(&ctx->drv, mig_device, &info->devices[i].uuid) < 0)
+                if (driver_get_device_uuid(&ctx->err, mig_device, &info->devices[i].uuid) < 0)
                         goto fail;
 
                 // Build a path to the MIG caps inside '/proc' associated
@@ -655,22 +655,21 @@ static int
 init_nvc_device(struct nvc_context *ctx, unsigned int index, struct nvc_device *gpu)
 {
         struct driver_device *dev;
-        struct driver *drv = &ctx->drv;
         struct error *err = &ctx->err;
         bool mig_enabled;
         unsigned int minor;
 
-        if (driver_get_device(drv, index, &dev) < 0)
+        if (driver_get_device(err, index, &dev) < 0)
                 goto fail;
-        if (driver_get_device_model(drv, dev, &gpu->model) < 0)
+        if (driver_get_device_model(err, dev, &gpu->model) < 0)
                 goto fail;
-        if (driver_get_device_uuid(drv, dev, &gpu->uuid) < 0)
+        if (driver_get_device_uuid(err, dev, &gpu->uuid) < 0)
                 goto fail;
-        if (driver_get_device_busid(drv, dev, &gpu->busid) < 0)
+        if (driver_get_device_busid(err, dev, &gpu->busid) < 0)
                 goto fail;
-        if (driver_get_device_arch(drv, dev, &gpu->arch) < 0)
+        if (driver_get_device_arch(err, dev, &gpu->arch) < 0)
                 goto fail;
-        if (driver_get_device_brand(drv, dev, &gpu->brand) < 0)
+        if (driver_get_device_brand(err, dev, &gpu->brand) < 0)
                 goto fail;
         if (ctx->dxcore.initialized)
         {
@@ -688,15 +687,15 @@ init_nvc_device(struct nvc_context *ctx, unsigned int index, struct nvc_device *
         }
         else
         {
-                if (driver_get_device_minor(drv, dev, &minor) < 0)
+                if (driver_get_device_minor(err, dev, &minor) < 0)
                         goto fail;
                 if (xasprintf(err, &gpu->mig_caps_path, NV_GPU_CAPS_PATH, minor) < 0)
                         goto fail;
                 if (xasprintf(err, &gpu->node.path, NV_DEVICE_PATH, minor) < 0)
                         goto fail;
-                if (driver_get_device_mig_capable(drv, dev, &gpu->mig_capable) < 0)
+                if (driver_get_device_mig_capable(err, dev, &gpu->mig_capable) < 0)
                         goto fail;
-                if (driver_get_device_mig_enabled(drv, dev, &mig_enabled) < 0)
+                if (driver_get_device_mig_enabled(err, dev, &mig_enabled) < 0)
                         goto fail;
                 gpu->node.id = makedev(NV_DEVICE_MAJOR, minor);
 
@@ -760,9 +759,9 @@ nvc_driver_info_new(struct nvc_context *ctx, const char *opts)
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 
-        if (driver_get_rm_version(&ctx->drv, &info->nvrm_version) < 0)
+        if (driver_get_rm_version(&ctx->err, &info->nvrm_version) < 0)
                 goto fail;
-        if (driver_get_cuda_version(&ctx->drv, &info->cuda_version) < 0)
+        if (driver_get_cuda_version(&ctx->err, &info->cuda_version) < 0)
                 goto fail;
         if (lookup_paths(&ctx->err, &ctx->dxcore, info, ctx->cfg.root, flags, ctx->cfg.ldcache) < 0)
                 goto fail;
@@ -816,7 +815,7 @@ nvc_device_info_new(struct nvc_context *ctx, const char *opts)
         if ((info = xcalloc(&ctx->err, 1, sizeof(*info))) == NULL)
                 return (NULL);
 
-        if (driver_get_device_count(&ctx->drv, &n) < 0)
+        if (driver_get_device_count(&ctx->err, &n) < 0)
             goto fail;
 
         info->ngpus = n;
