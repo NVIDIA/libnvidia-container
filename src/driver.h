@@ -11,7 +11,6 @@
 
 #include "error.h"
 #include "dxcore.h"
-#include "rpc.h"
 
 struct driver_device;
 

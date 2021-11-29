@@ -8,10 +8,6 @@
 
 #include "nvml.h"
 
-#pragma GCC diagnostic push
-#include "driver_rpc.h"
-#pragma GCC diagnostic pop
-
 #include "nvc_internal.h"
 
 #include "driver.h"

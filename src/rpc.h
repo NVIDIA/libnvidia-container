@@ -28,6 +28,10 @@ SVCXPRT *svcunixfd_create(int, u_int, u_int);
 
 #include <stdbool.h>
 
+#pragma GCC diagnostic push
+#include "nvc_rpc.h"
+#pragma GCC diagnostic pop
+
 #include "error.h"
 #include "dxcore.h"
 
