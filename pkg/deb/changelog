@@ -1,3 +1,9 @@
+libnvidia-container (1.7.0~rc.2-1) experimental; urgency=medium
+
+  * Add replacement for versions in debian symbol file
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 29 Nov 2021 10:06:53 +0100
+
 libnvidia-container (1.7.0~rc.1-1) experimental; urgency=medium
 
   * On Ubuntu18.04 arm64 platforms libnvidia-container-tools depends on both libnvidia-container0 and libnvidia-container1 to support Jetson

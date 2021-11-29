@@ -5,6 +5,7 @@ set -e
 # Replace templated files/contents according to the package version and architecture.
 # Also set the package distribution and section area if the environment specifies it.
 
+VERSION_TAG=${1%%[-+]*}
 VERSION=${1%%[-~+]*}
 MAJOR=${1%%.*}
 
@@ -19,12 +20,13 @@ find . -type d -name '*@DEB_HOST_MULTIARCH@*' | sed "p;s;@DEB_HOST_MULTIARCH@;$D
 find . -type f -name '*@MAJOR@*' | sed "p;s;@MAJOR@;$MAJOR;" | \
   xargs -r -n2 sh -c 'rm -f $1 && mv -T $0 $1'
 
-grep -rIlE '@(SECTION|VERSION|MAJOR|DEB_HOST_MULTIARCH)@' . | \
+grep -rIlE '@(SECTION|VERSION|MAJOR|DEB_HOST_MULTIARCH|LIBNVIDIA_CONTAINER0_DEPENDENCY|VERSION_TAG)@' . | \
   xargs -r sed -i "s;@SECTION@;${SECTION:+$SECTION/};
                    s;@VERSION@;$VERSION;
                    s;@MAJOR@;$MAJOR;
                    s;@DEB_HOST_MULTIARCH@;$DEB_HOST_MULTIARCH;
-                   s;@LIBNVIDIA_CONTAINER0_DEPENDENCY@;${LIBNVIDIA_CONTAINER0_DEPENDENCY:+${LIBNVIDIA_CONTAINER0_DEPENDENCY}, };"
+                   s;@LIBNVIDIA_CONTAINER0_DEPENDENCY@;${LIBNVIDIA_CONTAINER0_DEPENDENCY:+${LIBNVIDIA_CONTAINER0_DEPENDENCY}, };
+                   s;@VERSION_TAG@;${VERSION_TAG:-${VERSION}};"
 
 if [ -n "$DISTRIB" ]; then
     sed -i "s;UNRELEASED;$DISTRIB;" debian/changelog

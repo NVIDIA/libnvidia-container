@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Mon Nov 29 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.7.0-0.1.rc.2
+- Add replacement for versions in debian symbol file
+
 * Thu Nov 25 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.7.0-0.1.rc.1
 - On Ubuntu18.04 arm64 platforms libnvidia-container-tools depends on both libnvidia-container0 and libnvidia-container1 to support Jetson
 - Filter command line options based on libnvidia-container library version
