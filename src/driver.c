@@ -37,7 +37,7 @@
 void driver_program_1(struct svc_req *, register SVCXPRT *);
 
 static int setup_rpc_client(struct driver *);
-static noreturn void setup_rpc_service(struct driver *, struct dxcore_context* dxcore, const char *, uid_t, gid_t, pid_t);
+static noreturn void setup_rpc_service(struct driver *, const char *, uid_t, gid_t, pid_t);
 static int reap_process(struct error *, pid_t, int, bool);
 
 struct mig_device {
@@ -98,7 +98,7 @@ setup_rpc_client(struct driver *ctx)
 }
 
 static void
-setup_rpc_service(struct driver *ctx, struct dxcore_context* dxcore, const char *root, uid_t uid, gid_t gid, pid_t ppid)
+setup_rpc_service(struct driver *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppid)
 {
         int rv = EXIT_FAILURE;
 
@@ -148,15 +148,6 @@ setup_rpc_service(struct driver *ctx, struct dxcore_context* dxcore, const char 
                 kill(getpid(), SIGTERM);
 
 
-        if (dxcore->initialized) {
-                char nvml_path[PATH_MAX];
-                if (path_join(ctx->err, nvml_path, dxcore->adapterList[0].pDriverStorePath, SONAME_LIBNVML) < 0)
-                        goto fail;
-                if ((ctx->nvml_dl = xdlopen(ctx->err, nvml_path, RTLD_NOW)) == NULL)
-                        goto fail;
-        } else if ((ctx->nvml_dl = xdlopen(ctx->err, SONAME_LIBNVML, RTLD_NOW)) == NULL)
-                goto fail;
-
         if ((ctx->rpc_svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
             !svc_register(ctx->rpc_svc, ctx->rpc_prognum, ctx->rpc_versnum, ctx->rpc_dispatch, 0)) {
                 error_setx(ctx->err, "program registration failed");
@@ -170,7 +161,6 @@ setup_rpc_service(struct driver *ctx, struct dxcore_context* dxcore, const char 
  fail:
         if (rv != EXIT_SUCCESS)
                 log_errf("could not start driver service: %s", ctx->err->msg);
-        xdlclose(NULL, ctx->nvml_dl);
         if (ctx->rpc_svc != NULL)
                 svc_destroy(ctx->rpc_svc);
         _exit(rv);
@@ -220,6 +210,7 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
 {
         int ret;
         pid_t pid;
+        char nvml_path[PATH_MAX] = SONAME_LIBNVML;
         struct driver_init_res res = {0};
 
         *ctx = (struct driver){err, NULL, {-1, -1}, -1, NULL, NULL, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1};
@@ -230,11 +221,17 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
                 goto fail;
         }
         if (ctx->pid == 0)
-                setup_rpc_service(ctx, dxcore, root, uid, gid, pid);
+                setup_rpc_service(ctx, root, uid, gid, pid);
         if (setup_rpc_client(ctx) < 0)
                 goto fail;
 
-        ret = call_rpc(ctx, &res, driver_init_1);
+        if (dxcore->initialized) {
+                memset(nvml_path, 0, strlen(nvml_path));
+                if (path_join(err, nvml_path, dxcore->adapterList[0].pDriverStorePath, SONAME_LIBNVML) < 0)
+                        goto fail;
+        }
+
+        ret = call_rpc(ctx, &res, driver_init_1, nvml_path);
         xdr_free((xdrproc_t)xdr_driver_init_res, (caddr_t)&res);
         if (ret < 0)
                 goto fail;
@@ -253,13 +250,18 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
 }
 
 bool_t
-driver_init_1_svc(ptr_t ctxptr, driver_init_res *res, maybe_unused struct svc_req *req)
+driver_init_1_svc(ptr_t ctxptr, char *nvml_path, driver_init_res *res, maybe_unused struct svc_req *req)
 {
         struct driver *ctx = (struct driver *)ctxptr;
 
         memset(res, 0, sizeof(*res));
+
+        if ((ctx->nvml_dl = xdlopen(ctx->err, nvml_path, RTLD_NOW)) == NULL)
+                goto fail;
+
         if (call_nvml(ctx, nvmlInit_v2) < 0)
                 goto fail;
+
         return (true);
 
  fail:
@@ -292,15 +294,17 @@ bool_t
 driver_shutdown_1_svc(ptr_t ctxptr, driver_shutdown_res *res, maybe_unused struct svc_req *req)
 {
         struct driver *ctx = (struct driver *)ctxptr;
+        int rv = -1;
 
         memset(res, 0, sizeof(*res));
-        if (call_nvml(ctx, nvmlShutdown) < 0)
+        if ((rv = call_nvml(ctx, nvmlShutdown)) < 0)
                 goto fail;
         svc_exit();
-        return (true);
 
  fail:
-        error_to_xdr(ctx->err, res);
+        if (rv < 0)
+                error_to_xdr(ctx->err, res);
+        xdlclose(NULL, ctx->nvml_dl);
         return (true);
 }
 

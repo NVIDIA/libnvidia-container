@@ -145,7 +145,7 @@ union driver_get_device_compute_instance_id_res switch (int errcode) {
 
 program DRIVER_PROGRAM {
         version DRIVER_VERSION {
-                driver_init_res DRIVER_INIT(ptr_t) = 1;
+                driver_init_res DRIVER_INIT(ptr_t, string) = 1;
                 driver_shutdown_res DRIVER_SHUTDOWN(ptr_t) = 2;
                 driver_get_rm_version_res DRIVER_GET_RM_VERSION(ptr_t) = 3;
                 driver_get_cuda_version_res DRIVER_GET_CUDA_VERSION(ptr_t) = 4;
