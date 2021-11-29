@@ -31,9 +31,10 @@ struct driver {
         pid_t pid;
         SVCXPRT *rpc_svc;
         CLIENT *rpc_clt;
+        unsigned long rpc_prognum;
+        unsigned long rpc_versnum;
+        void (*rpc_dispatch)(struct svc_req *, SVCXPRT *);
 };
-
-void driver_program_1(struct svc_req *, register SVCXPRT *);
 
 int driver_init(struct driver *, struct error *, struct dxcore_context *, const char *, uid_t, gid_t);
 int driver_shutdown(struct driver *);

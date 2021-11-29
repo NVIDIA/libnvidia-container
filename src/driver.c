@@ -34,6 +34,8 @@
 #define MAX_MIG_DEVICES  8
 #define REAP_TIMEOUT_MS 10
 
+void driver_program_1(struct svc_req *, register SVCXPRT *);
+
 static int setup_rpc_client(struct driver *);
 static noreturn void setup_rpc_service(struct driver *, struct dxcore_context* dxcore, const char *, uid_t, gid_t, pid_t);
 static int reap_process(struct error *, pid_t, int, bool);
@@ -87,7 +89,7 @@ setup_rpc_client(struct driver *ctx)
                 error_set(ctx->err, "address resolution failed");
                 return (-1);
         }
-        if ((ctx->rpc_clt = clntunix_create(&addr, DRIVER_PROGRAM, DRIVER_VERSION, &ctx->fd[SOCK_CLT], 0, 0)) == NULL) {
+        if ((ctx->rpc_clt = clntunix_create(&addr, ctx->rpc_prognum, ctx->rpc_versnum, &ctx->fd[SOCK_CLT], 0, 0)) == NULL) {
                 error_setx(ctx->err, "%s", clnt_spcreateerror("driver client creation failed"));
                 return (-1);
         }
@@ -156,7 +158,7 @@ setup_rpc_service(struct driver *ctx, struct dxcore_context* dxcore, const char 
                 goto fail;
 
         if ((ctx->rpc_svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
-            !svc_register(ctx->rpc_svc, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1, 0)) {
+            !svc_register(ctx->rpc_svc, ctx->rpc_prognum, ctx->rpc_versnum, ctx->rpc_dispatch, 0)) {
                 error_setx(ctx->err, "program registration failed");
                 goto fail;
         }
@@ -220,7 +222,7 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
         pid_t pid;
         struct driver_init_res res = {0};
 
-        *ctx = (struct driver){err, NULL, {-1, -1}, -1, NULL, NULL};
+        *ctx = (struct driver){err, NULL, {-1, -1}, -1, NULL, NULL, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1};
 
         pid = getpid();
         if (socketpair(PF_LOCAL, SOCK_STREAM|SOCK_CLOEXEC, 0, ctx->fd) < 0 || (ctx->pid = fork()) < 0) {
@@ -282,7 +284,7 @@ driver_shutdown(struct driver *ctx)
 
         xclose(ctx->fd[SOCK_CLT]);
         xclose(ctx->fd[SOCK_SVC]);
-        *ctx = (struct driver){NULL, NULL, {-1, -1}, -1, NULL, NULL};
+        *ctx = (struct driver){NULL, NULL, {-1, -1}, -1, NULL, NULL, 0, 0, NULL};
         return (0);
 }
 
