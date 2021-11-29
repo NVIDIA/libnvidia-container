@@ -25,6 +25,9 @@
 #include "dxcore.h"
 #include "debug.h"
 #include "error.h"
+#ifdef WITH_NVCGO
+#include "nvcgo.h"
+#endif
 #include "options.h"
 #include "utils.h"
 #include "xfuncs.h"
@@ -403,6 +406,11 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
         if (driver_init(&ctx->err, &ctx->dxcore, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
                 goto fail;
 
+        #ifdef WITH_NVCGO
+        if (nvcgo_init(&ctx->err) < 0)
+                goto fail;
+        #endif
+
         ctx->initialized = true;
         return (0);
 
@@ -422,6 +430,10 @@ nvc_shutdown(struct nvc_context *ctx)
                 return (0);
 
         log_info("shutting down library context");
+        #ifdef WITH_NVCGO
+        if (nvcgo_shutdown(&ctx->err) < 0)
+                return (-1);
+        #endif
         if (driver_shutdown(&ctx->err) < 0)
                 return (-1);
         if (ctx->dxcore.initialized)

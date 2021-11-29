@@ -72,6 +72,10 @@ LIB_SRCS     := $(SRCS_DIR)/cgroup.c        \
                 $(SRCS_DIR)/rpc.c           \
                 $(SRCS_DIR)/utils.c
 
+ifeq ($(WITH_NVCGO), yes)
+LIB_SRCS += $(SRCS_DIR)/nvcgo.c
+endif
+
 # Order sensitive (see flags definitions)
 LIB_RPC_SPEC := $(SRCS_DIR)/nvc_rpc.x
 LIB_RPC_SRCS := $(SRCS_DIR)/nvc_rpc.h \
@@ -179,6 +183,10 @@ $(word 1,$(LIB_RPC_SRCS)): RPCGENFLAGS=-h
 $(word 2,$(LIB_RPC_SRCS)): RPCGENFLAGS=-c
 $(word 3,$(LIB_RPC_SRCS)): RPCGENFLAGS=-m
 $(word 4,$(LIB_RPC_SRCS)): RPCGENFLAGS=-l
+
+ifeq ($(WITH_NVCGO), yes)
+$(LIB_RPC_SRCS): RPCGENFLAGS+=-DWITH_NVCGO
+endif
 
 ##### Private rules #####
 

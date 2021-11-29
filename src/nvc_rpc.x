@@ -163,4 +163,27 @@ program DRIVER_PROGRAM {
                 driver_get_device_gpu_instance_id_res DRIVER_GET_DEVICE_GPU_INSTANCE_ID(ptr_t, ptr_t) = 16;
                 driver_get_device_compute_instance_id_res DRIVER_GET_DEVICE_COMPUTE_INSTANCE_ID(ptr_t, ptr_t) = 17;
         } = 1;
-} = 0x1;
+} = 1;
+
+#ifdef WITH_NVCGO
+union nvcgo_init_res switch (int errcode) {
+        case 0:
+                void;
+        default:
+                string errmsg<>;
+};
+
+union nvcgo_shutdown_res switch (int errcode) {
+        case 0:
+                void;
+        default:
+                string errmsg<>;
+};
+
+program NVCGO_PROGRAM {
+        version NVCGO_VERSION {
+                nvcgo_init_res NVCGO_INIT(ptr_t) = 1;
+                nvcgo_shutdown_res NVCGO_SHUTDOWN(ptr_t) = 2;
+        } = 1;
+} = 2;
+#endif
