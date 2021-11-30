@@ -42,7 +42,7 @@ struct mig_device {
         nvmlDevice_t nvml;
 };
 
-struct driver_device {
+static struct driver_device {
         nvmlDevice_t nvml;
         struct mig_device mig[MAX_MIG_DEVICES];
 } device_handles[MAX_DEVICES];
