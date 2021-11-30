@@ -33,6 +33,7 @@ static struct driver_device {
 static struct driver {
         struct rpc rpc;
         char root[PATH_MAX];
+        char nvml_path[PATH_MAX];
         uid_t uid;
         gid_t gid;
         void *nvml_dl;
@@ -67,13 +68,13 @@ int
 driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, uid_t uid, gid_t gid)
 {
         int ret;
-        char nvml_path[PATH_MAX] = SONAME_LIBNVML;
         struct driver *ctx = driver_get_context();
         struct driver_init_res res = {0};
 
         *ctx = (struct driver){
                 .rpc = {0},
                 .root = {0},
+                .nvml_path = SONAME_LIBNVML,
                 .uid = uid,
                 .gid = gid,
                 .nvml_dl = NULL,
@@ -81,15 +82,15 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
         strcpy(ctx->root, root);
 
         if (dxcore->initialized) {
-                memset(nvml_path, 0, strlen(nvml_path));
-                if (path_join(err, nvml_path, dxcore->adapterList[0].pDriverStorePath, SONAME_LIBNVML) < 0)
+                memset(ctx->nvml_path, 0, strlen(ctx->nvml_path));
+                if (path_join(err, ctx->nvml_path, dxcore->adapterList[0].pDriverStorePath, SONAME_LIBNVML) < 0)
                         goto fail;
         }
 
         if (rpc_init(err, &ctx->rpc, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1) < 0)
                 goto fail;
 
-        ret = call_rpc(err, &ctx->rpc, &res, driver_init_1, nvml_path);
+        ret = call_rpc(err, &ctx->rpc, &res, driver_init_1);
         xdr_free((xdrproc_t)xdr_driver_init_res, (caddr_t)&res);
         if (ret < 0)
                 goto fail;
@@ -102,7 +103,7 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
 }
 
 bool_t
-driver_init_1_svc(ptr_t ctxptr, char *nvml_path, driver_init_res *res, maybe_unused struct svc_req *req)
+driver_init_1_svc(ptr_t ctxptr, driver_init_res *res, maybe_unused struct svc_req *req)
 {
         struct error *err = (struct error[]){0};
         struct driver *ctx = (struct driver *)ctxptr;
@@ -139,7 +140,7 @@ driver_init_1_svc(ptr_t ctxptr, char *nvml_path, driver_init_res *res, maybe_unu
                  goto fail;
 
         /* Load and initialize the NVML library. */
-        if ((ctx->nvml_dl = xdlopen(err, nvml_path, RTLD_NOW)) == NULL)
+        if ((ctx->nvml_dl = xdlopen(err, ctx->nvml_path, RTLD_NOW)) == NULL)
                 goto fail;
 
         if (call_nvml(err, ctx, nvmlInit_v2) < 0)
