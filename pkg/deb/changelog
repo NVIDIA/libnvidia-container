@@ -1,8 +1,9 @@
-libnvidia-container (1.7.0~rc.2-1) experimental; urgency=medium
+libnvidia-container (1.7.0-1) UNRELEASED; urgency=medium
 
+  * Promote 1.7.0~rc.1-1 to 1.7.0-1
   * Add replacement for versions in debian symbol file
 
- -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 29 Nov 2021 10:06:53 +0100
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 30 Nov 2021 13:42:08 +0100
 
 libnvidia-container (1.7.0~rc.1-1) experimental; urgency=medium
 
