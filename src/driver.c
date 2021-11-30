@@ -32,6 +32,7 @@ static struct driver_device {
 
 static struct driver {
         struct rpc rpc;
+        bool initialized;
         char root[PATH_MAX];
         char nvml_path[PATH_MAX];
         uid_t uid;
@@ -95,6 +96,7 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
         if (ret < 0)
                 goto fail;
 
+        ctx->initialized = true;
         return (0);
 
  fail:
@@ -160,11 +162,15 @@ driver_shutdown(struct error *err)
         struct driver *ctx = driver_get_context();
         struct driver_shutdown_res res = {0};
 
+        if (ctx->initialized == false)
+                return (0);
+
         ret = call_rpc(err, &ctx->rpc, &res, driver_shutdown_1);
         xdr_free((xdrproc_t)xdr_driver_shutdown_res, (caddr_t)&res);
         if (rpc_shutdown(err, &ctx->rpc, (ret < 0)) < 0)
                 return (-1);
 
+        ctx->initialized = false;
         return (0);
 }
 

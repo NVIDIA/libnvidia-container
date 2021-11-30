@@ -34,6 +34,7 @@ void nvcgo_program_1(struct svc_req *, register SVCXPRT *);
 
 static struct nvcgo_ext {
         struct nvcgo;
+        bool initialized;
         void *dl_handle;
 } global_nvcgo_context;
 
@@ -66,6 +67,7 @@ nvcgo_init(struct error *err)
         if (ret < 0)
                 goto fail;
 
+        ctx->initialized = true;
         return (0);
 
  fail:
@@ -126,11 +128,15 @@ nvcgo_shutdown(struct error *err)
         struct nvcgo_ext *ctx = (struct nvcgo_ext *)nvcgo_get_context();
         struct nvcgo_shutdown_res res = {0};
 
+        if (ctx->initialized == false)
+                return (0);
+
         ret = call_rpc(err, &ctx->rpc, &res, nvcgo_shutdown_1);
         xdr_free((xdrproc_t)xdr_nvcgo_shutdown_res, (caddr_t)&res);
         if (rpc_shutdown(err, &ctx->rpc, (ret < 0)) < 0)
                 return (-1);
 
+        ctx->initialized = false;
         return (0);
 }
 
