@@ -23,6 +23,9 @@
 #include "utils.h"
 #include "dxcore.h"
 
+#define SONAME_LIBCUDA "libcuda.so.1"
+#define SONAME_LIBNVML "libnvidia-ml.so.1"
+
 #define NV_DEVICE_MAJOR          195
 #define NV_CTL_DEVICE_MINOR      255
 #define NV_MODESET_DEVICE_MINOR  254

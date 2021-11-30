@@ -428,6 +428,7 @@ lookup_binaries(struct error *err, struct dxcore_context* dxcore, struct nvc_dri
 
 static int
 lookup_directories(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags) {
+        (void)flags;
         char **ptr;
         int rc = -1;
 

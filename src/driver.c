@@ -23,6 +23,8 @@
 #include "driver_rpc.h"
 #pragma GCC diagnostic pop
 
+#include "nvc_internal.h"
+
 #include "driver.h"
 #include "error.h"
 #include "utils.h"
@@ -40,7 +42,7 @@ struct mig_device {
         nvmlDevice_t nvml;
 };
 
-struct driver_device {
+static struct driver_device {
         nvmlDevice_t nvml;
         struct mig_device mig[MAX_MIG_DEVICES];
 } device_handles[MAX_DEVICES];
@@ -218,7 +220,7 @@ driver_init(struct driver *ctx, struct error *err, struct dxcore_context *dxcore
         pid_t pid;
         struct driver_init_res res = {0};
 
-        *ctx = (struct driver){err, NULL, NULL, {-1, -1}, -1, NULL, NULL};
+        *ctx = (struct driver){err, NULL, {-1, -1}, -1, NULL, NULL};
 
         pid = getpid();
         if (socketpair(PF_LOCAL, SOCK_STREAM|SOCK_CLOEXEC, 0, ctx->fd) < 0 || (ctx->pid = fork()) < 0) {
@@ -280,7 +282,7 @@ driver_shutdown(struct driver *ctx)
 
         xclose(ctx->fd[SOCK_CLT]);
         xclose(ctx->fd[SOCK_SVC]);
-        *ctx = (struct driver){NULL, NULL, NULL, {-1, -1}, -1, NULL, NULL};
+        *ctx = (struct driver){NULL, NULL, {-1, -1}, -1, NULL, NULL};
         return (0);
 }
 

@@ -19,18 +19,13 @@ SVCXPRT *svcunixfd_create(int, u_int, u_int);
 #include "error.h"
 #include "dxcore.h"
 
-#define SONAME_LIBCUDA "libcuda.so.1"
-#define SONAME_LIBNVML "libnvidia-ml.so.1"
-
 #define SOCK_CLT 0
 #define SOCK_SVC 1
 
 struct driver_device;
-struct driver_mig_device;
 
 struct driver {
         struct error *err;
-        void *cuda_dl;
         void *nvml_dl;
         int fd[2];
         pid_t pid;
