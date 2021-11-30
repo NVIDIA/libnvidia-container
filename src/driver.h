@@ -23,7 +23,6 @@ SVCXPRT *svcunixfd_create(int, u_int, u_int);
 #define SOCK_SVC 1
 
 struct driver_device;
-struct driver_mig_device;
 
 struct driver {
         struct error *err;
