@@ -49,7 +49,7 @@ struct rpc {
         void (*dispatch)(struct svc_req *, SVCXPRT *);
 };
 
-int rpc_init(struct error *, struct rpc *, const char *, uid_t, gid_t, unsigned long, unsigned long, void (*dispatch)(struct svc_req *, SVCXPRT *));
+int rpc_init(struct error *, struct rpc *, unsigned long, unsigned long, void (*dispatch)(struct svc_req *, SVCXPRT *));
 int rpc_shutdown(struct error *, struct rpc *, bool force);
 
 #define call_rpc(err, ctx, res, func, ...) __extension__ ({                                            \

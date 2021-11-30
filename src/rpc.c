@@ -63,7 +63,7 @@ setup_client(struct error *err, struct rpc *ctx)
 }
 
 static noreturn void
-setup_service(struct error *err, struct rpc *ctx, const char *root, uid_t uid, gid_t gid, pid_t ppid)
+setup_service(struct error *err, struct rpc *ctx, pid_t ppid)
 {
         int rv = EXIT_FAILURE;
 
@@ -71,35 +71,6 @@ setup_service(struct error *err, struct rpc *ctx, const char *root, uid_t uid, g
         prctl(PR_SET_NAME, (unsigned long)"nvc:[rpc]", 0, 0, 0);
 
         xclose(ctx->fd[SOCK_CLT]);
-
-        if (!str_equal(root, "/")) {
-                /* Preload glibc libraries to avoid symbols mismatch after changing root. */
-                if (xdlopen(err, "libm.so.6", RTLD_NOW) == NULL)
-                        goto fail;
-                if (xdlopen(err, "librt.so.1", RTLD_NOW) == NULL)
-                        goto fail;
-                if (xdlopen(err, "libpthread.so.0", RTLD_NOW) == NULL)
-                        goto fail;
-
-                if (chroot(root) < 0 || chdir("/") < 0) {
-                        error_set(err, "change root failed");
-                        goto fail;
-                }
-        }
-
-        /*
-         * Drop privileges and capabilities for security reasons.
-         *
-         * We might be inside a user namespace with full capabilities, this should also help prevent NVML
-         * from potentially adjusting the host device nodes based on the (wrong) driver registry parameters.
-         *
-         * If we are not changing group, then keep our supplementary groups as well.
-         * This is arguable but allows us to support unprivileged processes (i.e. without CAP_SETGID) and user namespaces.
-         */
-        if (perm_drop_privileges(err, uid, gid, (getegid() != gid)) < 0)
-                goto fail;
-        if (perm_set_capabilities(err, CAP_PERMITTED, NULL, 0) < 0)
-                goto fail;
 
         /*
          * Set PDEATHSIG in case our parent terminates unexpectedly.
@@ -111,7 +82,6 @@ setup_service(struct error *err, struct rpc *ctx, const char *root, uid_t uid, g
         }
         if (getppid() != ppid)
                 kill(getpid(), SIGTERM);
-
 
         if ((ctx->svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
             !svc_register(ctx->svc, ctx->prognum, ctx->versnum, ctx->dispatch, 0)) {
@@ -164,7 +134,7 @@ reap_process(struct error *err, pid_t pid, int fd, bool force)
 }
 
 int
-rpc_init(struct error *err, struct rpc *ctx, const char *root, uid_t uid, gid_t gid, unsigned long prognum, unsigned long versnum, void (*dispatch)(struct svc_req *, SVCXPRT *))
+rpc_init(struct error *err, struct rpc *ctx, unsigned long prognum, unsigned long versnum, void (*dispatch)(struct svc_req *, SVCXPRT *))
 {
         pid_t pid;
 
@@ -179,7 +149,7 @@ rpc_init(struct error *err, struct rpc *ctx, const char *root, uid_t uid, gid_t 
                 goto fail;
         }
         if (ctx->pid == 0)
-                setup_service(err, ctx, root, uid, gid, pid);
+                setup_service(err, ctx, pid);
         if (setup_client(err, ctx) < 0)
                 goto fail;
 

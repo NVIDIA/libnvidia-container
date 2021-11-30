@@ -32,6 +32,9 @@ static struct driver_device {
 
 static struct driver {
         struct rpc rpc;
+        char root[PATH_MAX];
+        uid_t uid;
+        gid_t gid;
         void *nvml_dl;
 } global_driver_context;
 
@@ -68,15 +71,23 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
         struct driver *ctx = driver_get_context();
         struct driver_init_res res = {0};
 
-        memset(ctx, 0, sizeof(*ctx));
-        if (rpc_init(err, &ctx->rpc, root, uid, gid, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1) < 0)
-                goto fail;
+        *ctx = (struct driver){
+                .rpc = {0},
+                .root = {0},
+                .uid = uid,
+                .gid = gid,
+                .nvml_dl = NULL,
+        };
+        strcpy(ctx->root, root);
 
         if (dxcore->initialized) {
                 memset(nvml_path, 0, strlen(nvml_path));
                 if (path_join(err, nvml_path, dxcore->adapterList[0].pDriverStorePath, SONAME_LIBNVML) < 0)
                         goto fail;
         }
+
+        if (rpc_init(err, &ctx->rpc, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1) < 0)
+                goto fail;
 
         ret = call_rpc(err, &ctx->rpc, &res, driver_init_1, nvml_path);
         xdr_free((xdrproc_t)xdr_driver_init_res, (caddr_t)&res);
@@ -98,6 +109,36 @@ driver_init_1_svc(ptr_t ctxptr, char *nvml_path, driver_init_res *res, maybe_unu
 
         memset(res, 0, sizeof(*res));
 
+        /* Preload glibc libraries to avoid symbols mismatch after changing root. */
+        if (!str_equal(ctx->root, "/")) {
+                if (xdlopen(err, "libm.so.6", RTLD_NOW) == NULL)
+                        goto fail;
+                if (xdlopen(err, "librt.so.1", RTLD_NOW) == NULL)
+                        goto fail;
+                if (xdlopen(err, "libpthread.so.0", RTLD_NOW) == NULL)
+                        goto fail;
+
+                if (chroot(ctx->root) < 0 || chdir("/") < 0) {
+                        error_set(err, "change root failed");
+                        goto fail;
+                }
+        }
+
+        /*
+         * Drop privileges and capabilities for security reasons.
+         *
+         * We might be inside a user namespace with full capabilities, this should also help prevent NVML
+         * from potentially adjusting the host device nodes based on the (wrong) driver registry parameters.
+         *
+         * If we are not changing group, then keep our supplementary groups as well.
+         * This is arguable but allows us to support unprivileged processes (i.e. without CAP_SETGID) and user namespaces.
+         */
+        if (perm_drop_privileges(err, ctx->uid, ctx->gid, (getegid() != ctx->gid)) < 0)
+                 goto fail;
+        if (perm_set_capabilities(err, CAP_PERMITTED, NULL, 0) < 0)
+                 goto fail;
+
+        /* Load and initialize the NVML library. */
         if ((ctx->nvml_dl = xdlopen(err, nvml_path, RTLD_NOW)) == NULL)
                 goto fail;
 
