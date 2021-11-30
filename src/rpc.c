@@ -51,11 +51,11 @@ setup_client(struct error *err, struct rpc *ctx)
 
         addrlen = sizeof(addr);
         if (getpeername(ctx->fd[SOCK_CLT], (struct sockaddr *)&addr, &addrlen) < 0) {
-                error_set(err, "address resolution failed");
+                error_set(err, "%s rpc address resolution failed", ctx->progname);
                 return (-1);
         }
         if ((ctx->clt = clntunix_create(&addr, ctx->prognum, ctx->versnum, &ctx->fd[SOCK_CLT], 0, 0)) == NULL) {
-                error_setx(err, "%s", clnt_spcreateerror("rpc client creation failed"));
+                error_setx(err, "%s rpc %s", ctx->progname, clnt_spcreateerror("client creation failed"));
                 return (-1);
         }
         clnt_control(ctx->clt, CLSET_TIMEOUT, (char *)&timeout);
@@ -65,10 +65,12 @@ setup_client(struct error *err, struct rpc *ctx)
 static noreturn void
 setup_service(struct error *err, struct rpc *ctx, pid_t ppid)
 {
+        char procname[16];
         int rv = EXIT_FAILURE;
 
-        log_info("starting rpc service");
-        prctl(PR_SET_NAME, (unsigned long)"nvc:[rpc]", 0, 0, 0);
+        log_infof("starting %s rpc service", ctx->progname);
+        snprintf(procname, 16, "nvc:[%s]", ctx->progname);
+        prctl(PR_SET_NAME, (unsigned long)procname, 0, 0, 0);
 
         xclose(ctx->fd[SOCK_CLT]);
 
@@ -77,7 +79,7 @@ setup_service(struct error *err, struct rpc *ctx, pid_t ppid)
          * We need to do it late since the kernel resets it on credential change.
          */
         if (prctl(PR_SET_PDEATHSIG, SIGTERM, 0, 0, 0) < 0) {
-                error_set(err, "process initialization failed");
+                error_set(err, "%s rpc service initialization failed", ctx->progname);
                 goto fail;
         }
         if (getppid() != ppid)
@@ -85,67 +87,68 @@ setup_service(struct error *err, struct rpc *ctx, pid_t ppid)
 
         if ((ctx->svc = svcunixfd_create(ctx->fd[SOCK_SVC], 0, 0)) == NULL ||
             !svc_register(ctx->svc, ctx->prognum, ctx->versnum, ctx->dispatch, 0)) {
-                error_setx(err, "program registration failed");
+                error_setx(err, "%s rpc service registration failed", ctx->progname);
                 goto fail;
         }
         svc_run();
 
-        log_info("terminating rpc service");
+        log_infof("terminating %s rpc service", ctx->progname);
         rv = EXIT_SUCCESS;
 
  fail:
         if (rv != EXIT_SUCCESS)
-                log_errf("could not start rpc service: %s", err->msg);
+                log_errf("could not start %s rpc service: %s", ctx->progname, err->msg);
         if (ctx->svc != NULL)
                 svc_destroy(ctx->svc);
         _exit(rv);
 }
 
 static int
-reap_process(struct error *err, pid_t pid, int fd, bool force)
+reap_process(struct error *err, struct rpc *ctx, int fd, bool force)
 {
         int ret = 0;
         int status;
         struct pollfd fds = {.fd = fd, .events = POLLRDHUP};
 
-        if (waitpid(pid, &status, WNOHANG) <= 0) {
+        if (waitpid(ctx->pid, &status, WNOHANG) <= 0) {
                 if (force)
-                        kill(pid, SIGTERM);
+                        kill(ctx->pid, SIGTERM);
 
                 switch ((ret = poll(&fds, 1, REAP_TIMEOUT_MS))) {
                 case -1:
                         break;
                 case 0:
-                        log_warn("terminating rpc service (forced)");
-                        ret = kill(pid, SIGKILL);
+                        log_warnf("terminating %s rpc service (forced)", ctx->progname);
+                        ret = kill(ctx->pid, SIGKILL);
                         /* Fallthrough */
                 default:
                         if (ret >= 0)
-                                ret = waitpid(pid, &status, 0);
+                                ret = waitpid(ctx->pid, &status, 0);
                 }
         }
         if (ret < 0)
-                error_set(err, "process reaping failed (pid %"PRId32")", (int32_t)pid);
+                error_set(err, "reaping %s rpc service process failed (pid %"PRId32")", ctx->progname, (int32_t)ctx->pid);
         else
-                log_infof("rpc service terminated %s%.0d",
+                log_infof("%s rpc service terminated %s%.0d",
+                    ctx->progname,
                     WIFSIGNALED(status) ? "with signal " : "successfully",
                     WIFSIGNALED(status) ? WTERMSIG(status) : 0);
         return (ret);
 }
 
 int
-rpc_init(struct error *err, struct rpc *ctx, unsigned long prognum, unsigned long versnum, void (*dispatch)(struct svc_req *, SVCXPRT *))
+rpc_init(struct error *err, struct rpc *ctx, const char *progname, unsigned long prognum, unsigned long versnum, void (*dispatch)(struct svc_req *, SVCXPRT *))
 {
         pid_t pid;
 
         if (ctx->initialized)
                 return (0);
 
-        *ctx = (struct rpc){false, {-1, -1}, -1, NULL, NULL, prognum, versnum, dispatch};
+        *ctx = (struct rpc){false, {-1, -1}, -1, NULL, NULL, progname, prognum, versnum, dispatch};
 
         pid = getpid();
         if (socketpair(PF_LOCAL, SOCK_STREAM|SOCK_CLOEXEC, 0, ctx->fd) < 0 || (ctx->pid = fork()) < 0) {
-                error_set(err, "process creation failed");
+                error_set(err, "%s rpc service process creation failed", ctx->progname);
                 goto fail;
         }
         if (ctx->pid == 0)
@@ -157,8 +160,8 @@ rpc_init(struct error *err, struct rpc *ctx, unsigned long prognum, unsigned lon
         return (0);
 
  fail:
-        if (ctx->pid > 0 && reap_process(NULL, ctx->pid, ctx->fd[SOCK_CLT], true) < 0)
-                log_warnf("could not terminate rpc service (pid %"PRId32")", (int32_t)ctx->pid);
+        if (ctx->pid > 0 && reap_process(NULL, ctx, ctx->fd[SOCK_CLT], true) < 0)
+                log_warnf("could not terminate %s rpc service (pid %"PRId32")", ctx->progname, (int32_t)ctx->pid);
         if (ctx->clt != NULL)
                 clnt_destroy(ctx->clt);
 
@@ -170,8 +173,8 @@ rpc_init(struct error *err, struct rpc *ctx, unsigned long prognum, unsigned lon
 int
 rpc_shutdown(struct error *err, struct rpc *ctx, bool force)
 {
-        if (ctx->pid > 0 && reap_process(err, ctx->pid, ctx->fd[SOCK_CLT], force) < 0) {
-                log_warnf("could not terminate rpc service: %s", err->msg);
+        if (ctx->pid > 0 && reap_process(err, ctx, ctx->fd[SOCK_CLT], force) < 0) {
+                log_warnf("could not terminate %s rpc service: %s", ctx->progname, err->msg);
                 return (-1);
         }
         if (ctx->clt != NULL)
@@ -179,6 +182,6 @@ rpc_shutdown(struct error *err, struct rpc *ctx, bool force)
 
         xclose(ctx->fd[SOCK_CLT]);
         xclose(ctx->fd[SOCK_SVC]);
-        *ctx = (struct rpc){false, {-1, -1}, -1, NULL, NULL, 0, 0, NULL};
+        *ctx = (struct rpc){false, {-1, -1}, -1, NULL, NULL, NULL, 0, 0, NULL};
         return (0);
 }

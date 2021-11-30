@@ -58,7 +58,7 @@ nvcgo_init(struct error *err)
         struct nvcgo_init_res res = {0};
 
         memset(ctx, 0, sizeof(*ctx));
-        if (rpc_init(err, &ctx->rpc, NVCGO_PROGRAM, NVCGO_VERSION, nvcgo_program_1) < 0)
+        if (rpc_init(err, &ctx->rpc, "nvcgo", NVCGO_PROGRAM, NVCGO_VERSION, nvcgo_program_1) < 0)
                 goto fail;
 
         ret = call_rpc(err, &ctx->rpc, &res, nvcgo_init_1);

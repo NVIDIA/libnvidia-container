@@ -44,12 +44,13 @@ struct rpc {
         pid_t pid;
         SVCXPRT *svc;
         CLIENT *clt;
+        const char *progname;
         unsigned long prognum;
         unsigned long versnum;
         void (*dispatch)(struct svc_req *, SVCXPRT *);
 };
 
-int rpc_init(struct error *, struct rpc *, unsigned long, unsigned long, void (*dispatch)(struct svc_req *, SVCXPRT *));
+int rpc_init(struct error *, struct rpc *, const char *, unsigned long, unsigned long, void (*dispatch)(struct svc_req *, SVCXPRT *));
 int rpc_shutdown(struct error *, struct rpc *, bool force);
 
 #define call_rpc(err, ctx, res, func, ...) __extension__ ({                                            \
@@ -59,7 +60,7 @@ int rpc_shutdown(struct error *, struct rpc *, bool force);
         static_assert(sizeof(ptr_t) >= sizeof(intptr_t), "incompatible types");                        \
         sigaction(SIGPIPE, &sa_, &osa_);                                                               \
         if ((r_ = func((ptr_t)ctx, ##__VA_ARGS__, res, (ctx)->clt)) != RPC_SUCCESS)                    \
-                error_set_rpc(err, r_, "rpc error");                                                   \
+                error_set_rpc(err, r_, "%s rpc error", (ctx)->progname);                               \
         else if ((res)->errcode != 0)                                                                  \
                 error_from_xdr(err, res);                                                              \
         sigaction(SIGPIPE, &osa_, NULL);                                                               \

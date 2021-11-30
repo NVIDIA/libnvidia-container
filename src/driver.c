@@ -87,7 +87,7 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
                         goto fail;
         }
 
-        if (rpc_init(err, &ctx->rpc, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1) < 0)
+        if (rpc_init(err, &ctx->rpc, "driver", DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1) < 0)
                 goto fail;
 
         ret = call_rpc(err, &ctx->rpc, &res, driver_init_1);
