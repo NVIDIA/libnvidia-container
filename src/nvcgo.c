@@ -55,11 +55,19 @@ int
 nvcgo_init(struct error *err)
 {
         int ret;
+        struct rpc_prog rpc_prog = {0};
         struct nvcgo_ext *ctx = (struct nvcgo_ext *)nvcgo_get_context();
         struct nvcgo_init_res res = {0};
 
+        rpc_prog = (struct rpc_prog){
+                .name = "nvcgo",
+                .id = NVCGO_PROGRAM,
+                .version = NVCGO_VERSION,
+                .dispatch = nvcgo_program_1,
+        };
+
         memset(ctx, 0, sizeof(*ctx));
-        if (rpc_init(err, &ctx->rpc, "nvcgo", NVCGO_PROGRAM, NVCGO_VERSION, nvcgo_program_1) < 0)
+        if (rpc_init(err, &ctx->rpc, &rpc_prog) < 0)
                 goto fail;
 
         ret = call_rpc(err, &ctx->rpc, &res, nvcgo_init_1);

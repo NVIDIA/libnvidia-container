@@ -69,8 +69,16 @@ int
 driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, uid_t uid, gid_t gid)
 {
         int ret;
+        struct rpc_prog rpc_prog = {0};;
         struct driver *ctx = driver_get_context();
         struct driver_init_res res = {0};
+
+        rpc_prog = (struct rpc_prog){
+                .name = "driver",
+                .id = DRIVER_PROGRAM,
+                .version = DRIVER_VERSION,
+                .dispatch = driver_program_1,
+        };
 
         *ctx = (struct driver){
                 .rpc = {0},
@@ -88,7 +96,7 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
                         goto fail;
         }
 
-        if (rpc_init(err, &ctx->rpc, "driver", DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1) < 0)
+        if (rpc_init(err, &ctx->rpc, &rpc_prog) < 0)
                 goto fail;
 
         ret = call_rpc(err, &ctx->rpc, &res, driver_init_1);
