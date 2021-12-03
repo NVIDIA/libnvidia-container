@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Fri Dec 03 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.1
+- [placheholder for 1.8.0~rc.1-1]
+
 * Tue Nov 30 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.7.0-1
 - Promote 1.7.0-0.1.rc.1 to 1.7.0-1
 - Add replacement for versions in debian symbol file
