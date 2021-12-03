@@ -68,14 +68,15 @@ LIB_SRCS     := $(SRCS_DIR)/cgroup.c        \
                 $(SRCS_DIR)/nvc_mount.c     \
                 $(SRCS_DIR)/nvc_container.c \
                 $(SRCS_DIR)/options.c       \
+                $(SRCS_DIR)/rpc.c           \
                 $(SRCS_DIR)/utils.c
 
 # Order sensitive (see flags definitions)
-LIB_RPC_SPEC := $(SRCS_DIR)/driver_rpc.x
-LIB_RPC_SRCS := $(SRCS_DIR)/driver_rpc.h \
-                $(SRCS_DIR)/driver_xdr.c \
-                $(SRCS_DIR)/driver_svc.c \
-                $(SRCS_DIR)/driver_clt.c
+LIB_RPC_SPEC := $(SRCS_DIR)/nvc_rpc.x
+LIB_RPC_SRCS := $(SRCS_DIR)/nvc_rpc.h \
+                $(SRCS_DIR)/nvc_xdr.c \
+                $(SRCS_DIR)/nvc_svc.c \
+                $(SRCS_DIR)/nvc_clt.c
 
 BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
                 $(SRCS_DIR)/cli/configure.c \

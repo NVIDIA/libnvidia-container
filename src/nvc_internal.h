@@ -67,7 +67,6 @@ struct nvc_context {
         struct error err;
         struct nvc_config cfg;
         int mnt_ns;
-        struct driver drv;
         bool no_pivot;
         struct dxcore_context dxcore;
 };

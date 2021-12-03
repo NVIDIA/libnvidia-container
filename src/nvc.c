@@ -10,6 +10,7 @@
 #include <elf.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -399,7 +400,7 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
                         goto fail;
         }
 
-        if (driver_init(&ctx->drv, &ctx->err, &ctx->dxcore, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
+        if (driver_init(&ctx->err, &ctx->dxcore, ctx->cfg.root, ctx->cfg.uid, ctx->cfg.gid) < 0)
                 goto fail;
 
         ctx->initialized = true;
@@ -421,7 +422,7 @@ nvc_shutdown(struct nvc_context *ctx)
                 return (0);
 
         log_info("shutting down library context");
-        if (driver_shutdown(&ctx->drv) < 0)
+        if (driver_shutdown(&ctx->err) < 0)
                 return (-1);
         if (ctx->dxcore.initialized)
                 dxcore_deinit_context(&ctx->dxcore);

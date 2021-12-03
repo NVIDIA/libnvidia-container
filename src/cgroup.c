@@ -16,6 +16,8 @@
 
 #include <sys/sysmacros.h>
 
+#include <limits.h>
+
 #include "cgroup.h"
 #include "error.h"
 #include "options.h"
