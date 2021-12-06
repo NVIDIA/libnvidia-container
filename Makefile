@@ -17,6 +17,7 @@
 
 ##### Global variables #####
 
+WITH_NVCGO   ?= no
 WITH_LIBELF  ?= no
 WITH_TIRPC   ?= no
 WITH_SECCOMP ?= yes
@@ -70,6 +71,10 @@ LIB_SRCS     := $(SRCS_DIR)/cgroup.c        \
                 $(SRCS_DIR)/options.c       \
                 $(SRCS_DIR)/rpc.c           \
                 $(SRCS_DIR)/utils.c
+
+ifeq ($(WITH_NVCGO), yes)
+LIB_SRCS += $(SRCS_DIR)/nvcgo.c
+endif
 
 # Order sensitive (see flags definitions)
 LIB_RPC_SPEC := $(SRCS_DIR)/nvc_rpc.x
@@ -142,6 +147,10 @@ LIB_CFLAGS         = -fPIC
 LIB_LDFLAGS        = -L$(DEPS_DIR)$(libdir) -shared -Wl,-soname=$(LIB_SONAME)
 LIB_LDLIBS_STATIC  = -l:libnvidia-modprobe-utils.a
 LIB_LDLIBS_SHARED  = -ldl -lcap
+ifeq ($(WITH_NVCGO), yes)
+LIB_CPPFLAGS       += -DWITH_NVCGO
+LIB_LDLIBS_SHARED  += -lpthread
+endif
 ifeq ($(WITH_LIBELF), yes)
 LIB_CPPFLAGS       += -DWITH_LIBELF
 LIB_LDLIBS_SHARED  += -lelf
@@ -174,6 +183,10 @@ $(word 1,$(LIB_RPC_SRCS)): RPCGENFLAGS=-h
 $(word 2,$(LIB_RPC_SRCS)): RPCGENFLAGS=-c
 $(word 3,$(LIB_RPC_SRCS)): RPCGENFLAGS=-m
 $(word 4,$(LIB_RPC_SRCS)): RPCGENFLAGS=-l
+
+ifeq ($(WITH_NVCGO), yes)
+$(LIB_RPC_SRCS): RPCGENFLAGS+=-DWITH_NVCGO
+endif
 
 ##### Private rules #####
 
@@ -240,6 +253,9 @@ deps: export DESTDIR:=$(DEPS_DIR)
 deps: $(LIB_RPC_SRCS) $(BUILD_DEFS)
 	$(MKDIR) -p $(DEPS_DIR)
 	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk install
+ifeq ($(WITH_NVCGO), yes)
+	$(MAKE) -f $(MAKE_DIR)/nvcgo.mk VERSION=$(VERSION) install
+endif
 ifeq ($(WITH_LIBELF), no)
 	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk install
 endif
@@ -288,6 +304,9 @@ dist: install
 depsclean:
 	$(RM) $(BUILD_DEFS)
 	-$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk clean
+ifeq ($(WITH_NVCGO), yes)
+	-$(MAKE) -f $(MAKE_DIR)/nvcgo.mk clean
+endif
 ifeq ($(WITH_LIBELF), no)
 	-$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk clean
 endif
