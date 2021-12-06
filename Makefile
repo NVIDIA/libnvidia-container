@@ -131,6 +131,11 @@ LIB_SONAME  := $(LIB_NAME).so.$(MAJOR)
 LIB_SYMLINK := $(LIB_NAME).so
 LIB_PKGCFG  := $(LIB_NAME).pc
 
+LIBGO_NAME    := $(LIB_NAME)-go
+LIBGO_SHARED  := $(LIBGO_NAME).so.$(VERSION)
+LIBGO_SONAME  := $(LIBGO_NAME).so.$(MAJOR)
+LIBGO_SYMLINK := $(LIBGO_NAME).so
+
 ##### Flags definitions #####
 
 # Common flags
@@ -255,7 +260,7 @@ deps: $(LIB_RPC_SRCS) $(BUILD_DEFS)
 	$(MKDIR) -p $(DEPS_DIR)
 	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk DESTDIR=$(DEPS_DIR) install
 ifeq ($(WITH_NVCGO), yes)
-	$(MAKE) -f $(MAKE_DIR)/nvcgo.mk DESTDIR=$(DEPS_DIR) VERSION=$(VERSION) install
+	$(MAKE) -f $(MAKE_DIR)/nvcgo.mk DESTDIR=$(DEPS_DIR) MAJOR=$(MAJOR) VERSION=$(VERSION) LIB_NAME=$(LIBGO_NAME) install
 endif
 ifeq ($(WITH_LIBELF), no)
 	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk DESTDIR=$(DEPS_DIR) install
@@ -272,6 +277,10 @@ install: all
 	$(INSTALL) -m 644 $(LIB_STATIC) $(DESTDIR)$(libdir)
 	$(INSTALL) -m 755 $(LIB_SHARED) $(DESTDIR)$(libdir)
 	$(LN) -sf $(LIB_SONAME) $(DESTDIR)$(libdir)/$(LIB_SYMLINK)
+ifeq ($(WITH_NVCGO), yes)
+	$(INSTALL) -m 755 $(DEPS_DIR)$(libdir)/$(LIBGO_SHARED) $(DESTDIR)$(libdir)
+	$(LN) -sf $(LIBGO_SONAME) $(DESTDIR)$(libdir)/$(LIBGO_SYMLINK)
+endif
 	$(LDCONFIG) -n $(DESTDIR)$(libdir)
 	# Install debugging symbols
 	$(INSTALL) -m 644 $(DEBUG_DIR)/$(LIB_SONAME) $(DESTDIR)$(libdbgdir)
@@ -288,6 +297,9 @@ uninstall:
 	$(RM) $(addprefix $(DESTDIR)$(includedir)/,$(notdir $(LIB_INCS)))
 	# Uninstall library files
 	$(RM) $(addprefix $(DESTDIR)$(libdir)/,$(LIB_STATIC) $(LIB_SHARED) $(LIB_SONAME) $(LIB_SYMLINK))
+ifeq ($(WITH_NVCGO), yes)
+	$(RM) $(addprefix $(DESTDIR)$(libdir)/,$(LIBGO_SHARED) $(LIBGO_SONAME) $(LIBGO_SYMLINK))
+endif
 	# Uninstall debugging symbols
 	$(RM) $(DESTDIR)$(libdbgdir)/$(LIB_SONAME)
 	# Uninstall configuration files
