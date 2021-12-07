@@ -99,8 +99,19 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Fri Dec 03 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.1
-- [placheholder for 1.8.0~rc.1-1]
+* Wed Dec 08 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.1
+- Add new cgroup.c file based on nvcgo that supports both cgroupv1 and cgroupv2
+- Move cgroup.c to cgroup_legacy.c in preparation for nvcgo implementation
+- Install libnvidia-container-go.so from deps directory
+- Fix DESTDIR for deps make target
+- Create a go-shared library called nvcgo and wrap it in an RPC service
+- Cleanup the nvc_shutdown() path when there is an error in RPC services
+- Move from an nvc_context specific RPC 'driver' service to a global one
+- Generalize RPC mechanism to be instantated multiple times
+- Split RPC mechanism from 'driver' code into standalone RPC mechanism
+- Add -fplan9-extensions to Makefile to allow structs to be "extended"
+- Cleanup dead code in various components
+- Allow build-all jobs to be triggered earlier for more parallelism in CI
 
 * Tue Nov 30 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.7.0-1
 - Promote 1.7.0-0.1.rc.1 to 1.7.0-1
