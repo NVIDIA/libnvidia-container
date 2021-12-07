@@ -82,23 +82,33 @@ build-all-amd64:
   <<: *build-all-setup
   script:
     - make -f mk/docker.mk docker-amd64
+  needs:
+    - build-one-amd64
 
 build-all-x86_64:
   <<: *build-all-setup
   script:
     - make -f mk/docker.mk docker-x86_64
+  needs:
+    - build-one-amd64
 
 build-all-ppc64le:
   <<: *build-all-setup
   script:
     - make -f mk/docker.mk docker-ppc64le
+  needs:
+    - build-one-ppc64le
 
 build-all-arm64:
   <<: *build-all-setup
   script:
     - make -f mk/docker.mk docker-arm64
+  needs:
+    - build-one-arm64
 
 build-all-aarch64:
   <<: *build-all-setup
   script:
     - make -f mk/docker.mk docker-aarch64
+  needs:
+    - build-one-arm64

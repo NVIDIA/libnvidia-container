@@ -19,33 +19,35 @@ INSTALL ?= install
 
 DESTDIR ?=
 VERSION ?= devel
+MAJOR   ?= 1
 
-PKGNAME := nvcgo
-LIBNAME := libnvidia-container-go
-OBJNAME := $(LIBNAME).so
-HDRNAME := $(LIBNAME).h
-SONAME  := $(LIBNAME).so.1
-DSTNAME := $(LIBNAME).so.$(VERSION)
-CTYPESH := ctypes.h
+PKG_NAME := nvcgo
+
+LIB_NAME    ?= libnvidia-container-go
+LIB_SHARED  ?= $(LIB_NAME).so.$(VERSION)
+LIB_SONAME  ?= $(LIB_NAME).so.$(MAJOR)
+
+OBJ_NAME := $(LIB_NAME).so
+HDR_NAME := $(LIB_NAME).h
+CTYPES_H := ctypes.h
 
 CGO_CFLAGS  := -std=gnu11 -O2
-CGO_LDFLAGS := -Wl,--gc-sections -Wl,-s -Wl,-soname,$(SONAME)
+CGO_LDFLAGS := -Wl,--gc-sections -Wl,-s -Wl,-soname,$(LIB_SONAME)
 
-build: $(OBJNAME)
+build: $(OBJ_NAME)
 
-$(OBJNAME): $(wildcard $(CURDIR)/*.go) $(wildcard */*.go)
+$(OBJ_NAME): $(wildcard $(CURDIR)/*.go) $(wildcard */*.go)
 	export CGO_CFLAGS="$(CGO_CFLAGS)"; \
 	export CGO_LDFLAGS="$(CGO_LDFLAGS)"; \
 	$(GO) build -o $(@) -ldflags "-s -w" -buildmode=c-shared .
 
-install: $(OBJNAME)
-	$(MKDIR) -p $(DESTDIR)/usr/local/lib
-	$(MKDIR) -p $(DESTDIR)/usr/local/include/$(PKGNAME)
-	$(INSTALL) $(OBJNAME) $(DESTDIR)/usr/local/lib/$(DSTNAME)
-	$(INSTALL) $(HDRNAME) $(DESTDIR)/usr/local/include/$(PKGNAME)/$(PKGNAME).h
-	$(INSTALL) $(CTYPESH) $(DESTDIR)/usr/local/include/$(PKGNAME)/$(CTYPESH)
+install: $(OBJ_NAME)
+	$(INSTALL) -d -m 755 $(addprefix $(DESTDIR),$(libdir) $(includedir)/$(PKG_NAME))
+	$(INSTALL) -m 755 $(OBJ_NAME) $(DESTDIR)$(libdir)/$(LIB_SHARED)
+	$(INSTALL) -m 644 $(HDR_NAME) $(DESTDIR)$(includedir)/$(PKG_NAME)/$(PKG_NAME).h
+	$(INSTALL) -m 644 $(CTYPES_H) $(DESTDIR)$(includedir)/$(PKG_NAME)/$(CTYPES_H)
 
 clean:
-	$(RM) -f $(SONAME) $(HDRNAME)
+	$(RM) -f $(OBJ_NAME) $(HDR_NAME)
 
 .PHONY: build clean install

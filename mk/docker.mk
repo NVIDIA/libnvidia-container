@@ -145,7 +145,7 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --verify-rhel%: OS := centos
 --verify-rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 
-docker-build-%:
+docker-build-%: $(ARTIFACTS_DIR)
 	@echo "Building for $(TARGET_PLATFORM)"
 	$(DOCKER) pull --platform=linux/$(ARCH) $(BASEIMAGE)
 	DOCKER_BUILDKIT=1 \
@@ -185,3 +185,6 @@ docker-clean:
 	if [ "$${IMAGES}" != "" ]; then \
 	    docker rmi -f $${IMAGES}; \
 	fi
+
+$(ARTIFACTS_DIR):
+	mkdir -p $(@)
