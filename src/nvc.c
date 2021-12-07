@@ -426,16 +426,24 @@ nvc_shutdown(struct nvc_context *ctx)
 {
         if (ctx == NULL)
                 return (-1);
-        if (!ctx->initialized)
-                return (0);
 
         log_info("shutting down library context");
+
+        int rv = 0;
         #ifdef WITH_NVCGO
-        if (nvcgo_shutdown(&ctx->err) < 0)
-                return (-1);
+        if (nvcgo_shutdown(&ctx->err) < 0) {
+                log_warnf("error shutting down nvcgo rpc service: %s", ctx->err.msg);
+                rv = -1;
+        }
         #endif
-        if (driver_shutdown(&ctx->err) < 0)
-                return (-1);
+        if (driver_shutdown(&ctx->err) < 0) {
+                log_warnf("error shutting down driver rpc service: %s", ctx->err.msg);
+                rv = -1;
+        }
+
+        if (!ctx->initialized)
+                return (rv);
+
         if (ctx->dxcore.initialized)
                 dxcore_deinit_context(&ctx->dxcore);
 
@@ -448,7 +456,7 @@ nvc_shutdown(struct nvc_context *ctx)
 
         log_close();
         ctx->initialized = false;
-        return (0);
+        return (rv);
 }
 
 const char *

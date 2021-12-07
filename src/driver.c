@@ -32,6 +32,7 @@ static struct driver_device {
 
 static struct driver {
         struct rpc rpc;
+        bool initialized;
         char root[PATH_MAX];
         char nvml_path[PATH_MAX];
         uid_t uid;
@@ -68,8 +69,16 @@ int
 driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, uid_t uid, gid_t gid)
 {
         int ret;
+        struct rpc_prog rpc_prog = {0};;
         struct driver *ctx = driver_get_context();
         struct driver_init_res res = {0};
+
+        rpc_prog = (struct rpc_prog){
+                .name = "driver",
+                .id = DRIVER_PROGRAM,
+                .version = DRIVER_VERSION,
+                .dispatch = driver_program_1,
+        };
 
         *ctx = (struct driver){
                 .rpc = {0},
@@ -87,7 +96,7 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
                         goto fail;
         }
 
-        if (rpc_init(err, &ctx->rpc, DRIVER_PROGRAM, DRIVER_VERSION, driver_program_1) < 0)
+        if (rpc_init(err, &ctx->rpc, &rpc_prog) < 0)
                 goto fail;
 
         ret = call_rpc(err, &ctx->rpc, &res, driver_init_1);
@@ -95,6 +104,7 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
         if (ret < 0)
                 goto fail;
 
+        ctx->initialized = true;
         return (0);
 
  fail:
@@ -160,11 +170,15 @@ driver_shutdown(struct error *err)
         struct driver *ctx = driver_get_context();
         struct driver_shutdown_res res = {0};
 
+        if (ctx->initialized == false)
+                return (0);
+
         ret = call_rpc(err, &ctx->rpc, &res, driver_shutdown_1);
         xdr_free((xdrproc_t)xdr_driver_shutdown_res, (caddr_t)&res);
         if (rpc_shutdown(err, &ctx->rpc, (ret < 0)) < 0)
                 return (-1);
 
+        ctx->initialized = false;
         return (0);
 }
 
