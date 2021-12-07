@@ -56,8 +56,7 @@ DOC_FILES    := $(CURDIR)/NOTICE \
 BUILD_DEFS   := $(SRCS_DIR)/build.h
 
 LIB_INCS     := $(SRCS_DIR)/nvc.h
-LIB_SRCS     := $(SRCS_DIR)/cgroup.c        \
-                $(SRCS_DIR)/driver.c        \
+LIB_SRCS     := $(SRCS_DIR)/driver.c        \
                 $(SRCS_DIR)/dxcore.c        \
                 $(SRCS_DIR)/elftool.c       \
                 $(SRCS_DIR)/error_generic.c \
@@ -73,7 +72,10 @@ LIB_SRCS     := $(SRCS_DIR)/cgroup.c        \
                 $(SRCS_DIR)/utils.c
 
 ifeq ($(WITH_NVCGO), yes)
-LIB_SRCS += $(SRCS_DIR)/nvcgo.c
+LIB_SRCS += $(SRCS_DIR)/cgroup.c \
+            $(SRCS_DIR)/nvcgo.c
+else
+LIB_SRCS += $(SRCS_DIR)/cgroup_legacy.c
 endif
 
 # Order sensitive (see flags definitions)
