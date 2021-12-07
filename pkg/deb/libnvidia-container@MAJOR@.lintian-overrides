@@ -1,1 +1,4 @@
 new-package-should-close-itp-bug
+# We suppress the following lintian error due to including libnvidia-container-go in the packages and this being picked up by dh_makeshlibs:
+# E: libnvidia-container1: symbols-file-contains-current-version-with-debian-revision on symbol AddDeviceRules@Base and 46 others
+symbols-file-contains-current-version-with-debian-revision
