@@ -9,7 +9,7 @@ github.com/cilium/ebpf/link
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
-# github.com/opencontainers/runc v1.0.2
+# github.com/opencontainers/runc v1.0.3
 ## explicit; go 1.13
 github.com/opencontainers/runc/libcontainer/cgroups/devices
 github.com/opencontainers/runc/libcontainer/cgroups/ebpf/devicefilter

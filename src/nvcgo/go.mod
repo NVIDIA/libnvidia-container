@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/cilium/ebpf v0.6.2
 	github.com/google/uuid v1.3.0
-	github.com/opencontainers/runc v1.0.2
+	github.com/opencontainers/runc v1.0.3
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
 	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/sys v0.0.0-20210426230700-d19ff857e887
