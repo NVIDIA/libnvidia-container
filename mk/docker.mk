@@ -18,7 +18,7 @@ GOLANG_VERSION := 1.17.1
 
 # Global definitions. These are defined here to allow the docker targets to be
 # invoked directly without the root makefile.
-WITH_NVCGO   ?= no
+WITH_NVCGO   ?= yes
 WITH_LIBELF  ?= no
 WITH_TIRPC   ?= no
 WITH_SECCOMP ?= yes
