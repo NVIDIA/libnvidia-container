@@ -82,13 +82,13 @@ func (c *cgroupv2) GetDeviceCGroupRootPath(procRootPath string, pid int) (string
 			return "", fmt.Errorf("malformed cgroup entry: %v", scanner.Text())
 		}
 		if parts[1] != "" {
-			return "", fmt.Errorf("malformed cgroup entry: %v", scanner.Text())
+			continue
 		}
 		// Return the cgroup root from the 2nd element.
 		return parts[2], nil
 	}
 
-	return "", fmt.Errorf("no lines in cgroup file")
+	return "", fmt.Errorf("no cgroupv2 entries in file")
 }
 
 // AddDeviceRules adds a set of device rules for the device cgroup at cgroupPath
