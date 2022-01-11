@@ -42,7 +42,7 @@ static int find_path(struct error *, const char *, const char *, const char *, c
 static int lookup_paths(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_libraries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
-static int lookup_directories(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_firmware(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_devices(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
@@ -362,7 +362,7 @@ lookup_paths(struct error *err, struct dxcore_context *dxcore, struct nvc_driver
                 return (-1);
         }
 
-        if (lookup_directories(err, dxcore, info, root, flags) < 0) {
+        if (lookup_firmware(err, dxcore, info, root, flags) < 0) {
                 log_err("error looking up additional paths");
                 return (-1);
         }
@@ -427,7 +427,7 @@ lookup_binaries(struct error *err, struct dxcore_context* dxcore, struct nvc_dri
 }
 
 static int
-lookup_directories(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags) {
+lookup_firmware(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags) {
         (void)flags;
         char **ptr;
         int rc = -1;
