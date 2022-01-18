@@ -106,7 +106,9 @@ func (c *cgroupv2) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
 		return fmt.Errorf("unable to find any existing device filters attached to the cgroup: %v", err)
 	}
 
-	// For each existing program that we found...
+	// Generate a new set of eBPF programs by prepending instructions for the
+	// new devices to the instructions of each existing program.
+	var newProgs []*ebpf.Program
 	for _, oldProg := range oldProgs {
 		// Retreive the instructions from the original program.
 		oldInsts, oldLicense, err := (&internal.Program{oldProg}).GetInstructions()
@@ -131,10 +133,32 @@ func (c *cgroupv2) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
 			return fmt.Errorf("unable to create new device filters program: %v", err)
 		}
 
-		// Replace the eBPF program with the merged device filter.
-		_, err = ReplaceCgroupDeviceFilter(newProg, oldProg, dirFD)
+		// Append to the list of new programs.
+		newProgs = append(newProgs, newProg)
+	}
+
+	// Increase `ulimit -l` limit to avoid BPF_PROG_LOAD error below.
+	// This limit is not inherited into the container.
+	memlockLimit := &unix.Rlimit{
+		Cur: unix.RLIM_INFINITY,
+		Max: unix.RLIM_INFINITY,
+	}
+	_ = unix.Setrlimit(unix.RLIMIT_MEMLOCK, memlockLimit)
+
+	// Replace the set of existing eBPF programs with the new ones.
+	// We don't have to worry about atomically replacing each program (i.e. by
+	// using BPF_F_REPLACE) because we know that the code here is always run
+	// strictly *before* a container begins executing.
+	for _, oldProg := range oldProgs {
+		err = DetachCgroupDeviceFilter(oldProg, dirFD)
 		if err != nil {
-			return fmt.Errorf("unable to replace original device filters program with new one: %v", err)
+			return fmt.Errorf("unable to detach original device filters program: %v", err)
+		}
+	}
+	for _, newProg := range newProgs {
+		err = AttachCgroupDeviceFilter(newProg, dirFD)
+		if err != nil {
+			return fmt.Errorf("unable to attach new device filters program: %v", err)
 		}
 	}
 

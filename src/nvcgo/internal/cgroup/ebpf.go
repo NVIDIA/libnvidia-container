@@ -269,37 +269,29 @@ func PrependDeviceFilter(devices []specs.LinuxDeviceCgroup, origInsts asm.Instru
 	return insts, err
 }
 
-// ReplaceCgroupDeviceFilter replaces an existing device filter ebpf program with another one
-func ReplaceCgroupDeviceFilter(newProg *ebpf.Program, oldProg *ebpf.Program, dirFd int) (func() error, error) {
-	// Increase `ulimit -l` limit to avoid BPF_PROG_LOAD error (#2167).
-	// This limit is not inherited into the container.
-	memlockLimit := &unix.Rlimit{
-		Cur: unix.RLIM_INFINITY,
-		Max: unix.RLIM_INFINITY,
-	}
-	_ = unix.Setrlimit(unix.RLIMIT_MEMLOCK, memlockLimit)
-
-	// Replace oldProg with newProg.
-	err := link.RawAttachProgram(link.RawAttachProgramOptions{
+// DetachCgroupDeviceFilter detaches an existing device filter ebpf program from a cgroup.
+func DetachCgroupDeviceFilter(prog *ebpf.Program, dirFd int) error {
+	err := link.RawDetachProgram(link.RawDetachProgramOptions{
 		Target:  dirFd,
-		Program: newProg,
-		Replace: oldProg,
+		Program: prog,
 		Attach:  ebpf.AttachCGroupDevice,
-		Flags:   unix.BPF_F_ALLOW_MULTI | unix.BPF_F_REPLACE,
 	})
 	if err != nil {
-		return nilCloser, fmt.Errorf("failed to call BPF_PROG_ATTACH (BPF_CGROUP_DEVICE, BPF_F_ALLOW_MULTI): %w", err)
+		return fmt.Errorf("failed to call BPF_PROG_DETACH (BPF_CGROUP_DEVICE): %w", err)
 	}
-	closer := func() error {
-		err = link.RawDetachProgram(link.RawDetachProgramOptions{
-			Target:  dirFd,
-			Program: newProg,
-			Attach:  ebpf.AttachCGroupDevice,
-		})
-		if err != nil {
-			return fmt.Errorf("failed to call BPF_PROG_DETACH (BPF_CGROUP_DEVICE): %w", err)
-		}
-		return nil
+	return nil
+}
+
+// AttachCgroupDeviceFilter attaches a new device filter ebpf program to a cgroup.
+func AttachCgroupDeviceFilter(prog *ebpf.Program, dirFd int) error {
+	err := link.RawAttachProgram(link.RawAttachProgramOptions{
+		Target:  dirFd,
+		Program: prog,
+		Attach:  ebpf.AttachCGroupDevice,
+		Flags:   unix.BPF_F_ALLOW_MULTI,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to call BPF_PROG_ATTACH (BPF_CGROUP_DEVICE, BPF_F_ALLOW_MULTI): %w", err)
 	}
-	return closer, nil
+	return nil
 }
