@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Tue Jan 18 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.2
+- Correct GSP firmware mount permissions
+
 * Wed Dec 08 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.1
 - Add new cgroup.c file based on nvcgo that supports both cgroupv1 and cgroupv2
 - Move cgroup.c to cgroup_legacy.c in preparation for nvcgo implementation
