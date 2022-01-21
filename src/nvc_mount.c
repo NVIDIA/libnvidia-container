@@ -716,7 +716,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
                 return (-1);
 
-        nmnt = 2 + info->nbins + info->nlibs + cnt->nlibs + info->nlibs32 + info->nipcs + info->ndevs + info->ndirs;
+        nmnt = 2 + info->nbins + info->nlibs + cnt->nlibs + info->nlibs32 + info->nipcs + info->ndevs + info->nfirmwares;
         mnt = ptr = (const char **)array_new(&ctx->err, nmnt);
         if (mnt == NULL)
                 goto fail;
@@ -774,11 +774,10 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 free(libs);
         }
 
-        /* Directory mounts */
-        // NOTE: This is a misnomer, currently, the only element in the info->dirs list is the GSP firmware.
-        for (size_t i = 0; i < info->ndirs; ++i) {
-                if ((*ptr++ = mount_file(&ctx->err, ctx->cfg.root, cnt, info->dirs[i])) == NULL) {
-                        log_errf("error mounting firmware path %s", info->dirs[i]);
+        /* Firmware mounts */
+        for (size_t i = 0; i < info->nfirmwares; ++i) {
+                if ((*ptr++ = mount_file(&ctx->err, ctx->cfg.root, cnt, info->firmwares[i])) == NULL) {
+                        log_errf("error mounting firmware path %s", info->firmwares[i]);
                         goto fail;
                 }
         }

@@ -42,7 +42,7 @@ static int find_path(struct error *, const char *, const char *, const char *, c
 static int lookup_paths(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_libraries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_binaries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
-static int lookup_firmware(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
+static int lookup_firmwares(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_devices(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t);
 static int lookup_ipcs(struct error *, struct nvc_driver_info *, const char *, int32_t);
 static int fill_mig_device_info(struct nvc_context *, bool mig_enabled, struct driver_device *, struct nvc_device *);
@@ -362,7 +362,7 @@ lookup_paths(struct error *err, struct dxcore_context *dxcore, struct nvc_driver
                 return (-1);
         }
 
-        if (lookup_firmware(err, dxcore, info, root, flags) < 0) {
+        if (lookup_firmwares(err, dxcore, info, root, flags) < 0) {
                 log_err("error looking up additional paths");
                 return (-1);
         }
@@ -427,7 +427,7 @@ lookup_binaries(struct error *err, struct dxcore_context* dxcore, struct nvc_dri
 }
 
 static int
-lookup_firmware(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags) {
+lookup_firmwares(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags) {
         (void)flags;
         char **ptr;
         int rc = -1;
@@ -445,9 +445,9 @@ lookup_firmware(struct error *err, struct dxcore_context *dxcore, struct nvc_dri
                 return (-1);
         }
 
-        info->ndirs = 1;
-        info->dirs = ptr = array_new(err, info->ndirs);
-        if (info->dirs == NULL) {
+        info->nfirmwares = 1;
+        info->firmwares = ptr = array_new(err, info->nfirmwares);
+        if (info->firmwares == NULL) {
                 log_err("error creating path array");
                 goto cleanup;
         }
@@ -455,7 +455,7 @@ lookup_firmware(struct error *err, struct dxcore_context *dxcore, struct nvc_dri
                 log_errf("error finding firmware path %s", firmware_path);
                 goto cleanup;
         }
-        array_pack(info->dirs, &info->ndirs);
+        array_pack(info->firmwares, &info->nfirmwares);
         rc = 0;
 cleanup:
         free(firmware_path);
@@ -787,7 +787,7 @@ nvc_driver_info_free(struct nvc_driver_info *info)
         array_free(info->libs, info->nlibs);
         array_free(info->libs32, info->nlibs32);
         array_free(info->ipcs, info->nipcs);
-        array_free(info->dirs, info->ndirs);
+        array_free(info->firmwares, info->nfirmwares);
         free(info->devs);
         free(info);
 }
