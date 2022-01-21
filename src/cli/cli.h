@@ -49,6 +49,7 @@ struct context {
         bool list_bins;
         bool list_libs;
         bool list_ipcs;
+        bool list_firmwares;
 
         char *devices;
         char *mig_config;
