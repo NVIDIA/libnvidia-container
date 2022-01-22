@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -14,7 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/cilium/ebpf"
-	"github.com/cilium/ebpf/internal"
+	"github.com/cilium/ebpf/internal/sys"
 	"github.com/cilium/ebpf/internal/unix"
 )
 
@@ -83,7 +82,7 @@ type perfEvent struct {
 	// The event type determines the types of programs that can be attached.
 	typ perfEventType
 
-	fd *internal.FD
+	fd *sys.FD
 }
 
 func (pe *perfEvent) isLink() {}
@@ -110,17 +109,16 @@ func (pe *perfEvent) Update(prog *ebpf.Program) error {
 	return fmt.Errorf("can't replace eBPF program in perf event: %w", ErrNotSupported)
 }
 
+func (pe *perfEvent) Info() (*Info, error) {
+	return nil, fmt.Errorf("can't get perf event info: %w", ErrNotSupported)
+}
+
 func (pe *perfEvent) Close() error {
 	if pe.fd == nil {
 		return nil
 	}
 
-	pfd, err := pe.fd.Value()
-	if err != nil {
-		return fmt.Errorf("getting perf event fd: %w", err)
-	}
-
-	err = unix.IoctlSetInt(int(pfd), unix.PERF_EVENT_IOC_DISABLE, 0)
+	err := unix.IoctlSetInt(pe.fd.Int(), unix.PERF_EVENT_IOC_DISABLE, 0)
 	if err != nil {
 		return fmt.Errorf("disabling perf event: %w", err)
 	}
@@ -160,7 +158,7 @@ func (pe *perfEvent) attach(prog *ebpf.Program) error {
 		return errors.New("cannot attach to nil perf event")
 	}
 	if prog.FD() < 0 {
-		return fmt.Errorf("invalid program: %w", internal.ErrClosedFd)
+		return fmt.Errorf("invalid program: %w", sys.ErrClosedFd)
 	}
 	switch pe.typ {
 	case kprobeEvent, kretprobeEvent, uprobeEvent, uretprobeEvent:
@@ -175,8 +173,7 @@ func (pe *perfEvent) attach(prog *ebpf.Program) error {
 		return fmt.Errorf("unknown perf event type: %d", pe.typ)
 	}
 
-	// The ioctl below will fail when the fd is invalid.
-	kfd, _ := pe.fd.Value()
+	kfd := pe.fd.Int()
 
 	// Assign the eBPF program to the perf event.
 	err := unix.IoctlSetInt(int(kfd), unix.PERF_EVENT_IOC_SET_BPF, prog.FD())
@@ -236,7 +233,7 @@ func getPMUEventType(typ probeType) (uint64, error) {
 // openTracepointPerfEvent opens a tracepoint-type perf event. System-wide
 // [k,u]probes created by writing to <tracefs>/[k,u]probe_events are tracepoints
 // behind the scenes, and can be attached to using these perf events.
-func openTracepointPerfEvent(tid uint64) (*internal.FD, error) {
+func openTracepointPerfEvent(tid uint64, pid int) (*sys.FD, error) {
 	attr := unix.PerfEventAttr{
 		Type:        unix.PERF_TYPE_TRACEPOINT,
 		Config:      tid,
@@ -245,12 +242,12 @@ func openTracepointPerfEvent(tid uint64) (*internal.FD, error) {
 		Wakeup:      1,
 	}
 
-	fd, err := unix.PerfEventOpen(&attr, perfAllThreads, 0, -1, unix.PERF_FLAG_FD_CLOEXEC)
+	fd, err := unix.PerfEventOpen(&attr, pid, 0, -1, unix.PERF_FLAG_FD_CLOEXEC)
 	if err != nil {
 		return nil, fmt.Errorf("opening tracepoint perf event: %w", err)
 	}
 
-	return internal.NewFD(uint32(fd)), nil
+	return sys.NewFD(fd)
 }
 
 // uint64FromFile reads a uint64 from a file. All elements of path are sanitized
@@ -263,7 +260,7 @@ func uint64FromFile(base string, path ...string) (uint64, error) {
 		return 0, fmt.Errorf("path '%s' attempts to escape base path '%s': %w", l, base, errInvalidInput)
 	}
 
-	data, err := ioutil.ReadFile(p)
+	data, err := os.ReadFile(p)
 	if err != nil {
 		return 0, fmt.Errorf("reading file %s: %w", p, err)
 	}
