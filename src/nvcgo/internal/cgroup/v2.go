@@ -25,7 +25,10 @@ import (
 
 	"github.com/cilium/ebpf"
 	"golang.org/x/sys/unix"
-	internal "nvcgo/internal/ebpf"
+)
+
+const (
+	BpfProgramLicense = "Apache"
 )
 
 // GetDeviceCGroupMountPath returns the mount path for the device cgroup controller associated with pid
@@ -110,8 +113,14 @@ func (c *cgroupv2) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
 	// new devices to the instructions of each existing program.
 	var newProgs []*ebpf.Program
 	for _, oldProg := range oldProgs {
+		// Retreive Info() from the original program.
+		oldInfo, err := oldProg.Info()
+		if err != nil {
+			return fmt.Errorf("unable to get Info() of the original device filters program: %v", err)
+		}
+
 		// Retreive the instructions from the original program.
-		oldInsts, oldLicense, err := (&internal.Program{oldProg}).GetInstructions()
+		oldInsts, err := oldInfo.Instructions()
 		if err != nil {
 			return fmt.Errorf("unable to get the instructions of the original device filters program: %v", err)
 		}
@@ -126,7 +135,7 @@ func (c *cgroupv2) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
 		spec := &ebpf.ProgramSpec{
 			Type:         oldProg.Type(),
 			Instructions: newInsts,
-			License:      oldLicense,
+			License:      BpfProgramLicense,
 		}
 		newProg, err := ebpf.NewProgram(spec)
 		if err != nil {
