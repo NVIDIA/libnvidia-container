@@ -65,8 +65,8 @@ struct nvc_driver_info {
         size_t nipcs;
         struct nvc_device_node *devs;
         size_t ndevs;
-        char **dirs;
-        size_t ndirs;
+        char **firmwares;
+        size_t nfirmwares;
 };
 
 struct nvc_mig_device {

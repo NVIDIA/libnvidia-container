@@ -17,6 +17,7 @@ const struct argp list_usage = {
                 {"libraries", 'l', NULL, 0, "List driver libraries", -1},
                 {"binaries", 'b', NULL, 0, "List driver binaries", -1},
                 {"ipcs", 'i', NULL, 0, "List driver ipcs", -1},
+                {"firmwares", 'f', NULL, 0, "List driver firmwares", -1},
                 {"compat32", 0x80, NULL, 0, "Enable 32bits compatibility", -1},
                 {"mig-config", 0x81, "ID", 0, "MIG devices to list config capabilities files for", -1},
                 {"mig-monitor", 0x82, "ID", 0, "MIG devices to list monitor capabilities files for", -1},
@@ -50,6 +51,9 @@ list_parser(int key, char *arg, struct argp_state *state)
         case 'i':
                 ctx->list_ipcs = true;
                 break;
+        case 'f':
+                ctx->list_firmwares = true;
+                break;
         case 0x80:
                 ctx->compat32 = true;
                 break;
@@ -71,6 +75,7 @@ list_parser(int key, char *arg, struct argp_state *state)
                         ctx->list_libs = true;
                         ctx->list_bins = true;
                         ctx->list_ipcs = true;
+                        ctx->list_firmwares = true;
                 }
                 break;
         default:
@@ -241,6 +246,10 @@ list_command(const struct context *ctx)
         if (ctx->list_ipcs) {
                 for (size_t i = 0; i < drv->nipcs; ++i)
                         printf("%s\n", drv->ipcs[i]);
+        }
+        if (ctx->list_firmwares) {
+                for (size_t i = 0; i < drv->nfirmwares; ++i)
+                        printf("%s\n", drv->firmwares[i]);
         }
 
         if (run_as_root && perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_SHUTDOWN], ecaps_size(NVC_SHUTDOWN)) < 0) {

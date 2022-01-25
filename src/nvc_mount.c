@@ -27,6 +27,8 @@
 static char **mount_files(struct error *, const char *, const struct nvc_container *, const char *, char *[], size_t);
 static char **mount_driverstore_files(struct error *, const char *, const struct nvc_container *, const char *, const char *[], size_t);
 static char *mount_directory(struct error *, const char *, const struct nvc_container *, const char *);
+static char *mount_file(struct error *, const char *, const struct nvc_container *, const char *);
+static char *mount_with_flags(struct error *, const char *, const struct nvc_container *, const char *, unsigned long);
 static char *mount_device(struct error *, const char *, const struct nvc_container *, const struct nvc_device_node *);
 static char *mount_ipc(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_procfs(struct error *, const char *, const struct nvc_container *);
@@ -46,24 +48,37 @@ static int  setup_mig_minor_cgroups(struct error *, const struct nvc_container *
 static char *
 mount_directory(struct error *err, const char *root, const struct nvc_container *cnt, const char *dir)
 {
+        return mount_with_flags(err, root, cnt, dir, MS_NOSUID|MS_NOEXEC);
+}
+
+// mount_file mounts the specified `file` at the specified `root`
+static char *
+mount_file(struct error *err, const char *root, const struct nvc_container *cnt, const char *file)
+{
+        return mount_with_flags(err, root, cnt, file, MS_RDONLY|MS_NODEV|MS_NOSUID);
+}
+
+// mount_with_flags mounts the specified `path` at the specified `root` with the specified `mountflags`
+static char *
+mount_with_flags(struct error *err, const char *root, const struct nvc_container *cnt, const char *path, unsigned long mountflags) {
         char src[PATH_MAX];
         char dst[PATH_MAX];
         mode_t mode;
         char *mnt;
 
-        if (path_join(err, src, root, dir) < 0)
+        if (path_join(err, src, root, path) < 0)
                 return (NULL);
-        if (path_resolve_full(err, dst, cnt->cfg.rootfs, dir) < 0)
+        if (path_resolve_full(err, dst, cnt->cfg.rootfs, path) < 0)
                 return (NULL);
         if (file_mode(err, src, &mode) < 0)
                 goto fail;
         if (file_create(err, dst, NULL, cnt->uid, cnt->gid, mode) < 0)
                 goto fail;
 
-        log_infof("mounting %s at %s", src, dst);
+        log_infof("mounting %s at %s with flags 0x%lx", src, dst, mountflags);
         if (xmount(err, src, dst, NULL, MS_BIND, NULL) < 0)
                 goto fail;
-        if (xmount(err, NULL, dst, NULL, MS_BIND|MS_REMOUNT | MS_NOSUID|MS_NOEXEC, NULL) < 0)
+        if (xmount(err, NULL, dst, NULL, MS_BIND|MS_REMOUNT | mountflags, NULL) < 0)
                 goto fail;
         if ((mnt = xstrdup(err, dst)) == NULL)
                 goto fail;
@@ -701,7 +716,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
         if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
                 return (-1);
 
-        nmnt = 2 + info->nbins + info->nlibs + cnt->nlibs + info->nlibs32 + info->nipcs + info->ndevs + info->ndirs;
+        nmnt = 2 + info->nbins + info->nlibs + cnt->nlibs + info->nlibs32 + info->nipcs + info->ndevs + info->nfirmwares;
         mnt = ptr = (const char **)array_new(&ctx->err, nmnt);
         if (mnt == NULL)
                 goto fail;
@@ -759,14 +774,10 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 free(libs);
         }
 
-        /* Directory mounts */
-        for (size_t i = 0; i < info->ndirs; ++i) {
-                if (str_has_prefix(NV_FIRMWARE_PATH, info->dirs[i])) {
-                        if (!(cnt->flags & OPT_UTILITY_LIBS))
-                                continue;
-                }
-                if ((*ptr++ = mount_directory(&ctx->err, ctx->cfg.root, cnt, info->dirs[i])) == NULL) {
-                        log_errf("error mounting directory %s", info->dirs[i]);
+        /* Firmware mounts */
+        for (size_t i = 0; i < info->nfirmwares; ++i) {
+                if ((*ptr++ = mount_file(&ctx->err, ctx->cfg.root, cnt, info->firmwares[i])) == NULL) {
+                        log_errf("error mounting firmware path %s", info->firmwares[i]);
                         goto fail;
                 }
         }
