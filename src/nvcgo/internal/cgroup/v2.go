@@ -24,6 +24,7 @@ import (
 	"strings"
 
 	"github.com/cilium/ebpf"
+	"github.com/cilium/ebpf/asm"
 	"golang.org/x/sys/unix"
 )
 
@@ -111,38 +112,34 @@ func (c *cgroupv2) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
 
 	// Generate a new set of eBPF programs by prepending instructions for the
 	// new devices to the instructions of each existing program.
+	// If no existing programs found, create a new program with just our device filter.
 	var newProgs []*ebpf.Program
+	if len(oldProgs) == 0 {
+		oldInsts := asm.Instructions{asm.Return()}
+
+		newProg, err := generateNewProgram(rules, oldInsts)
+		if err != nil {
+			return fmt.Errorf("unable to generate new device filter program with no existing programs: %v", err)
+		}
+
+		newProgs = append(newProgs, newProg)
+	}
 	for _, oldProg := range oldProgs {
-		// Retreive Info() from the original program.
 		oldInfo, err := oldProg.Info()
 		if err != nil {
 			return fmt.Errorf("unable to get Info() of the original device filters program: %v", err)
 		}
 
-		// Retreive the instructions from the original program.
 		oldInsts, err := oldInfo.Instructions()
 		if err != nil {
 			return fmt.Errorf("unable to get the instructions of the original device filters program: %v", err)
 		}
 
-		// Prepend instructions for the new devices to the original set of instructions.
-		newInsts, err := PrependDeviceFilter(rules, oldInsts)
+		newProg, err := generateNewProgram(rules, oldInsts)
 		if err != nil {
-			return fmt.Errorf("unable to prepend new device filters to the original device filters program: %v", err)
+			return fmt.Errorf("unable to generate new device filter program from existing programs: %v", err)
 		}
 
-		// Generate new eBPF program for the merged device filter instructions.
-		spec := &ebpf.ProgramSpec{
-			Type:         oldProg.Type(),
-			Instructions: newInsts,
-			License:      BpfProgramLicense,
-		}
-		newProg, err := ebpf.NewProgram(spec)
-		if err != nil {
-			return fmt.Errorf("unable to create new device filters program: %v", err)
-		}
-
-		// Append to the list of new programs.
 		newProgs = append(newProgs, newProg)
 	}
 
@@ -172,4 +169,25 @@ func (c *cgroupv2) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
 	}
 
 	return nil
+}
+
+func generateNewProgram(rules []DeviceRule, oldInsts asm.Instructions) (*ebpf.Program, error) {
+	// Prepend instructions for the new devices to the original set of instructions.
+	newInsts, err := PrependDeviceFilter(rules, oldInsts)
+	if err != nil {
+		return nil, fmt.Errorf("unable to prepend new device filters to the original device filters program: %v", err)
+	}
+
+	// Generate new eBPF program for the merged device filter instructions.
+	spec := &ebpf.ProgramSpec{
+		Type:         ebpf.CGroupDevice,
+		Instructions: newInsts,
+		License:      BpfProgramLicense,
+	}
+	newProg, err := ebpf.NewProgram(spec)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create new device filters program: %v", err)
+	}
+
+	return newProg, nil
 }
