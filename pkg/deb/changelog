@@ -1,8 +1,9 @@
 libnvidia-container (1.8.0~rc.2-1) experimental; urgency=medium
 
+  * Include libnvidia-pkcs11.so in compute libraries
   * Correct GSP firmware mount permissions
 
- -- NVIDIA CORPORATION <cudatools@nvidia.com> Tue, 18 Jan 2022 11:20:38 +0100
+ -- NVIDIA CORPORATION <cudatools@nvidia.com> Thu, 27 Jan 2022 11:20:38 +0100
 
 libnvidia-container (1.8.0~rc.1-1) experimental; urgency=medium
 

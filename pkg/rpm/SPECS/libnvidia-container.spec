@@ -99,7 +99,8 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Tue Jan 18 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.2
+* Thu Jan 27 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.2
+- Include libnvidia-pkcs11.so in compute libraries
 - Correct GSP firmware mount permissions
 
 * Wed Dec 08 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.1
