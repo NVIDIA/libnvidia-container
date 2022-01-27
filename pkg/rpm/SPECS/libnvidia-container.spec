@@ -101,7 +101,10 @@ This package contains command-line tools that facilitate using the library.
 %changelog
 * Thu Jan 27 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.2
 - Include libnvidia-pkcs11.so in compute libraries
+- Include firmware paths in list command
 - Correct GSP firmware mount permissions
+- Fix bug to support cgroupv2 on linux kernels < 5.5
+- Fix bug in cgroupv2 logic when in mixed v1 / v2 environment
 
 * Wed Dec 08 2021 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.1
 - Add new cgroup.c file based on nvcgo that supports both cgroupv1 and cgroupv2

@@ -1,7 +1,10 @@
 libnvidia-container (1.8.0~rc.2-1) experimental; urgency=medium
 
   * Include libnvidia-pkcs11.so in compute libraries
+  * Include firmware paths in list command
   * Correct GSP firmware mount permissions
+  * Fix bug to support cgroupv2 on linux kernels < 5.5
+  * Fix bug in cgroupv2 logic when in mixed v1 / v2 environment
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com> Thu, 27 Jan 2022 11:20:38 +0100
 
