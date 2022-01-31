@@ -1,6 +1,6 @@
 libnvidia-container (1.8.0~rc.3-1) experimental; urgency=medium
 
-  * Placeholder for 1.8.0-rc.3 release
+  * Remove amazonlinux1 build targets
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com> Mon, 31 Jan 2022 13:44:35 +0100
 

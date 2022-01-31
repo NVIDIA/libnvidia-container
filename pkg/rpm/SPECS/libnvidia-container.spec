@@ -100,7 +100,7 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Mon Jan 31 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.3
-- Placeholder for 1.8.0-rc.3 release
+- Remove amazonlinux1 build targets
 
 * Thu Jan 27 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-0.1.rc.2
 - Include libnvidia-pkcs11.so in compute libraries
