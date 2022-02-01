@@ -150,6 +150,7 @@ docker-build-%: $(ARTIFACTS_DIR)
 	$(DOCKER) pull --platform=linux/$(ARCH) $(BASEIMAGE)
 	DOCKER_BUILDKIT=1 \
 	$(DOCKER) build \
+	    --platform=linux/$(ARCH) \
 	    --progress=plain \
 	    --build-arg BASEIMAGE="$(BASEIMAGE)" \
 	    --build-arg OS_VERSION="$(VERSION)" \
@@ -167,6 +168,7 @@ docker-build-%: $(ARTIFACTS_DIR)
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
 	$(DOCKER) run \
+	    --platform=linux/$(ARCH) \
 	    -e TAG \
 	    -v $(ARTIFACTS_DIR):/dist \
 	    $(BUILDIMAGE)
