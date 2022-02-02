@@ -1,3 +1,9 @@
+libnvidia-container (1.8.0~rc.3-1) experimental; urgency=medium
+
+  * Remove amazonlinux1 build targets
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com> Mon, 31 Jan 2022 13:44:35 +0100
+
 libnvidia-container (1.8.0~rc.2-1) experimental; urgency=medium
 
   * Include libnvidia-pkcs11.so in compute libraries
