@@ -111,9 +111,9 @@ static const cap_value_t pcaps[] = {
 };
 
 static const cap_value_t ecaps[][nitems(pcaps) + 1] = {
-        [NVC_INIT]       = {CAP_KILL, CAP_SETUID, CAP_SETGID, CAP_SYS_CHROOT, -1},
+        [NVC_INIT]       = {CAP_KILL, CAP_SETUID, CAP_SETGID, CAP_SYS_CHROOT, CAP_SYS_PTRACE, -1},
 
-        [NVC_INIT_KMODS] = {CAP_KILL,  CAP_SETUID, CAP_SETGID, CAP_SYS_CHROOT,
+        [NVC_INIT_KMODS] = {CAP_KILL,  CAP_SETUID, CAP_SETGID, CAP_SYS_CHROOT, CAP_SYS_PTRACE,
                             CAP_CHOWN, CAP_FOWNER, CAP_MKNOD, CAP_SETPCAP, -1},
 
         [NVC_SHUTDOWN]   = {CAP_KILL, -1},
