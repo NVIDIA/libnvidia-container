@@ -54,6 +54,17 @@ nvcgo_get_device_cgroup_version_1_svc(ptr_t ctxptr, char *proc_root, pid_t pid, 
 
         memset(res, 0, sizeof(*res));
 
+        // Explicitly set CAP_EFFECTIVE to NVC_CONTAINER across the
+        // 'GetDeviceCGroupVersion()' call.  This is only done because we
+        // happen to know these are the effective capabilities set by the
+        // nvidia-container-cli (i.e. the only known user of this library)
+        // anytime this RPC handler is invoked. In the future we should
+        // consider setting effective capabilities on the server to match
+        // whatever capabilities were in effect in the client when the RPC call
+        // was made.
+        if (perm_set_capabilities(err, CAP_EFFECTIVE, ecaps[NVC_CONTAINER], ecaps_size(NVC_CONTAINER)) < 0)
+                goto fail;
+
         if ((rv = nvcgo->api.GetDeviceCGroupVersion(proc_root, pid, &version, &rerr) < 0)) {
                 error_setx(err, "failed to get device cgroup version: %s", rerr);
                 goto fail;
@@ -64,6 +75,8 @@ nvcgo_get_device_cgroup_version_1_svc(ptr_t ctxptr, char *proc_root, pid_t pid, 
 
  fail:
         free(rerr);
+        if (perm_set_capabilities(err, CAP_EFFECTIVE, NULL, 0) < 0)
+                rv = -1;
         if (rv < 0)
                 error_to_xdr(err, res);
         return (true);
@@ -103,6 +116,17 @@ nvcgo_find_device_cgroup_path_1_svc(ptr_t ctxptr, int dev_cg_version, char *proc
 
         memset(res, 0, sizeof(*res));
 
+        // Explicitly set CAP_EFFECTIVE to NVC_CONTAINER across the
+        // 'GetDeviceCGroupMountPath()' and 'GetDeviceCGroupRootPath()' calls.
+        // This is only done because we happen to know these are the effective
+        // capabilities set by the nvidia-container-cli (i.e. the only known
+        // user of this library) anytime this RPC handler is invoked. In the
+        // future we should consider setting effective capabilities on the
+        // server to match whatever capabilities were in effect in the client
+        // when the RPC call was made.
+        if (perm_set_capabilities(err, CAP_EFFECTIVE, ecaps[NVC_CONTAINER], ecaps_size(NVC_CONTAINER)) < 0)
+                goto fail;
+
         if ((rv = nvcgo->api.GetDeviceCGroupMountPath(dev_cg_version, proc_root, mp_pid, &cgroup_mount, &rerr)) < 0) {
                 error_setx(err, "failed to get device cgroup mount path: %s", rerr);
                 goto fail;
@@ -130,6 +154,8 @@ nvcgo_find_device_cgroup_path_1_svc(ptr_t ctxptr, int dev_cg_version, char *proc
         free(rerr);
         free(cgroup_mount);
         free(cgroup_root);
+        if (perm_set_capabilities(err, CAP_EFFECTIVE, NULL, 0) < 0)
+                rv = -1;
         if (rv < 0)
                 error_to_xdr(err, res);
         return (true);
@@ -192,14 +218,12 @@ nvcgo_setup_device_cgroup_1_svc(ptr_t ctxptr, int dev_cg_version, char *dev_cg, 
                 goto fail;
         }
 
-        // Reset the effective capabilities to NULL.
-        if (perm_set_capabilities(err, CAP_EFFECTIVE, NULL, 0) < 0)
-                goto fail;
-
         rv = 0;
 
 fail:
         free(rerr);
+        if (perm_set_capabilities(err, CAP_EFFECTIVE, NULL, 0) < 0)
+                rv = -1;
         if (rv < 0)
                 error_to_xdr(err, res);
         return (true);
