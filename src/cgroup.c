@@ -108,9 +108,10 @@ nvcgo_find_device_cgroup_path_1_svc(ptr_t ctxptr, int dev_cg_version, char *proc
         struct error *err = (struct error[]){0};
         struct nvcgo *nvcgo = (struct nvcgo *)ctxptr;
         char path[PATH_MAX] = {};
-        char *cgroup_path = NULL;
+        char *cgroup_mount_prefix = NULL;
         char *cgroup_mount = NULL;
         char *cgroup_root = NULL;
+        char *cgroup_path = NULL;
         char *rerr = NULL;
         int rv = -1;
 
@@ -127,12 +128,12 @@ nvcgo_find_device_cgroup_path_1_svc(ptr_t ctxptr, int dev_cg_version, char *proc
         if (perm_set_capabilities(err, CAP_EFFECTIVE, ecaps[NVC_CONTAINER], ecaps_size(NVC_CONTAINER)) < 0)
                 goto fail;
 
-        if ((rv = nvcgo->api.GetDeviceCGroupMountPath(dev_cg_version, proc_root, mp_pid, &cgroup_mount, &rerr)) < 0) {
+        if ((rv = nvcgo->api.GetDeviceCGroupMountPath(dev_cg_version, proc_root, mp_pid, &cgroup_mount_prefix, &cgroup_mount, &rerr)) < 0) {
                 error_setx(err, "failed to get device cgroup mount path: %s", rerr);
                 goto fail;
         }
 
-        if ((rv = nvcgo->api.GetDeviceCGroupRootPath(dev_cg_version, proc_root, rp_pid, &cgroup_root, &rerr)) < 0) {
+        if ((rv = nvcgo->api.GetDeviceCGroupRootPath(dev_cg_version, proc_root, cgroup_mount_prefix, rp_pid, &cgroup_root, &rerr)) < 0) {
                 error_setx(err, "failed to get device cgroup root path: %s", rerr);
                 goto fail;
         }

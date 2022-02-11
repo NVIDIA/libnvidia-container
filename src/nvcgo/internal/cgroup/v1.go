@@ -24,13 +24,13 @@ import (
 	"strings"
 )
 
-// GetDeviceCGroupMountPath returns the mount path for the device cgroup controller associated with pid
-func (c *cgroupv1) GetDeviceCGroupMountPath(procRootPath string, pid int) (string, error) {
+// GetDeviceCGroupMountPath returns the mount path (and its prefix) for the device cgroup controller associated with pid
+func (c *cgroupv1) GetDeviceCGroupMountPath(procRootPath string, pid int) (string, string, error) {
 	// Open the pid's mountinfo file in /proc.
 	path := fmt.Sprintf(filepath.Join(procRootPath, "proc", "%v", "mountinfo"), pid)
 	file, err := os.Open(path)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer file.Close()
 
@@ -43,7 +43,7 @@ func (c *cgroupv1) GetDeviceCGroupMountPath(procRootPath string, pid int) (strin
 		// Split each entry by '[space]'
 		parts := strings.Split(scanner.Text(), " ")
 		if len(parts) < 5 {
-			return "", fmt.Errorf("malformed mountinfo entry: %v", scanner.Text())
+			return "", "", fmt.Errorf("malformed mountinfo entry: %v", scanner.Text())
 		}
 		// Look for an entry with cgroup as the mount type.
 		if parts[len(parts)-3] != "cgroup" {
@@ -53,15 +53,21 @@ func (c *cgroupv1) GetDeviceCGroupMountPath(procRootPath string, pid int) (strin
 		if filepath.Base(parts[4]) != "devices" {
 			continue
 		}
-		// Return the 4th element as the mount point of the devices cgroup.
-		return parts[4], nil
+		// Make sure the mount prefix is not a relative path.
+		if strings.HasPrefix(parts[3], "/..") {
+			return "", "", fmt.Errorf("relative path in mount prefix: %v", parts[3])
+		}
+		// Return the 3rd element as the prefix of the mount point for
+		// the devices cgroup and the 4th element as the mount point of
+		// the devices cgroup itself.
+		return parts[3], parts[4], nil
 	}
 
-	return "", fmt.Errorf("no cgroup filesystem mounted for the devices subsytem in mountinfo file")
+	return "", "", fmt.Errorf("no cgroup filesystem mounted for the devices subsytem in mountinfo file")
 }
 
-// GetDeviceCGroupMountPath returns the root path for the device cgroup controller associated with pid
-func (c *cgroupv1) GetDeviceCGroupRootPath(procRootPath string, pid int) (string, error) {
+// GetDeviceCGroupRootPath returns the root path for the device cgroup controller associated with pid
+func (c *cgroupv1) GetDeviceCGroupRootPath(procRootPath string, prefix string, pid int) (string, error) {
 	// Open the pid's cgroup file in /proc.
 	path := fmt.Sprintf(filepath.Join(procRootPath, "proc", "%v", "cgroup"), pid)
 	file, err := os.Open(path)
@@ -81,12 +87,16 @@ func (c *cgroupv1) GetDeviceCGroupRootPath(procRootPath string, pid int) (string
 		if len(parts) != 3 {
 			return "", fmt.Errorf("malformed cgroup entry: %v", scanner.Text())
 		}
-		// Look for the devices subsystem in the 2st element.
+		// Look for the devices subsystem in the 1st element.
 		if parts[1] != "devices" {
 			continue
 		}
-		// Return the cgroup root from the 2nd element.
-		return parts[2], nil
+		// Return the cgroup root from the 2nd element
+		// (with the prefix possibly stripped off).
+		if prefix == "/" {
+			return parts[2], nil
+		}
+		return strings.TrimPrefix(parts[2], prefix), nil
 	}
 
 	return "", fmt.Errorf("no devices cgroup entries found")
@@ -96,17 +106,17 @@ func (c *cgroupv1) GetDeviceCGroupRootPath(procRootPath string, pid int) (string
 func (c *cgroupv1) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
 	// Loop through all rules in the set of device rules and add that rule to the device.
 	for _, rule := range rules {
-                err := c.addDeviceRule(cgroupPath, &rule)
-                if err != nil {
-                        return err
-                }
+		err := c.addDeviceRule(cgroupPath, &rule)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 func (c *cgroupv1) addDeviceRule(cgroupPath string, rule *DeviceRule) error {
-        // Check the major/minor numbers of the device in the device rule.
+	// Check the major/minor numbers of the device in the device rule.
 	if rule.Major == nil {
 		return fmt.Errorf("no major set in device rule")
 	}
@@ -126,7 +136,7 @@ func (c *cgroupv1) addDeviceRule(cgroupPath string, rule *DeviceRule) error {
 	if err != nil {
 		return err
 	}
-        defer file.Close()
+	defer file.Close()
 
 	// Write the device rule into the file.
 	_, err = file.WriteString(fmt.Sprintf("%s %d:%d %s", rule.Type, *rule.Major, *rule.Minor, rule.Access))

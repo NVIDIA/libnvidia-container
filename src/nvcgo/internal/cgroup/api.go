@@ -29,8 +29,8 @@ import (
 type DeviceRule = specs.LinuxDeviceCgroup
 
 type Interface interface {
-	GetDeviceCGroupMountPath(procRootPath string, pid int) (string, error)
-	GetDeviceCGroupRootPath(procRootPath string, pid int) (string, error)
+	GetDeviceCGroupMountPath(procRootPath string, pid int) (string, string, error)
+	GetDeviceCGroupRootPath(procRootPath string, prefix string, pid int) (string, error)
 	AddDeviceRules(cgroupPath string, devices []DeviceRule) error
 }
 

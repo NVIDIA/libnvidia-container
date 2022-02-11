@@ -32,13 +32,13 @@ const (
 	BpfProgramLicense = "Apache"
 )
 
-// GetDeviceCGroupMountPath returns the mount path for the device cgroup controller associated with pid
-func (c *cgroupv2) GetDeviceCGroupMountPath(procRootPath string, pid int) (string, error) {
+// GetDeviceCGroupMountPath returns the mount path (and its prefix) for the device cgroup controller associated with pid
+func (c *cgroupv2) GetDeviceCGroupMountPath(procRootPath string, pid int) (string, string, error) {
 	// Open the pid's mountinfo file in /proc.
 	path := fmt.Sprintf(filepath.Join(procRootPath, "proc", "%v", "mountinfo"), pid)
 	file, err := os.Open(path)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer file.Close()
 
@@ -51,21 +51,27 @@ func (c *cgroupv2) GetDeviceCGroupMountPath(procRootPath string, pid int) (strin
 		// Split each entry by '[space]'
 		parts := strings.Split(scanner.Text(), " ")
 		if len(parts) < 5 {
-			return "", fmt.Errorf("malformed mountinfo entry: %v", scanner.Text())
+			return "", "", fmt.Errorf("malformed mountinfo entry: %v", scanner.Text())
 		}
 		// Look for an entry with cgroup2 as the mount type.
 		if parts[len(parts)-3] != "cgroup2" {
 			continue
 		}
-		// Return the 4th element as the moint point of the devices cgroup.
-		return parts[4], nil
+		// Make sure the mount prefix is not a relative path.
+		if strings.HasPrefix(parts[3], "/..") {
+			return "", "", fmt.Errorf("relative path in mount prefix: %v", parts[3])
+		}
+		// Return the 3rd element as the prefix of the mount point for
+		// the devices cgroup and the 4th element as the mount point of
+		// the devices cgroup itself.
+		return parts[3], parts[4], nil
 	}
 
-	return "", fmt.Errorf("no cgroup2 filesystem in mountinfo file")
+	return "", "", fmt.Errorf("no cgroup2 filesystem in mountinfo file")
 }
 
-// GetDeviceCGroupMountPath returns the root path for the device cgroup controller associated with pid
-func (c *cgroupv2) GetDeviceCGroupRootPath(procRootPath string, pid int) (string, error) {
+// GetDeviceCGroupRootPath returns the root path for the device cgroup controller associated with pid
+func (c *cgroupv2) GetDeviceCGroupRootPath(procRootPath string, prefix string, pid int) (string, error) {
 	// Open the pid's cgroup file in /proc.
 	path := fmt.Sprintf(filepath.Join(procRootPath, "proc", "%v", "cgroup"), pid)
 	file, err := os.Open(path)
@@ -85,11 +91,16 @@ func (c *cgroupv2) GetDeviceCGroupRootPath(procRootPath string, pid int) (string
 		if len(parts) != 3 {
 			return "", fmt.Errorf("malformed cgroup entry: %v", scanner.Text())
 		}
+		// Look for the (empty) subsystem in the 1st element.
 		if parts[1] != "" {
 			continue
 		}
-		// Return the cgroup root from the 2nd element.
-		return parts[2], nil
+		// Return the cgroup root from the 2nd element
+		// (with the prefix possibly stripped off).
+		if prefix == "/" {
+			return parts[2], nil
+		}
+		return strings.TrimPrefix(parts[2], prefix), nil
 	}
 
 	return "", fmt.Errorf("no cgroupv2 entries in file")
