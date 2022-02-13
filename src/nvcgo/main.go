@@ -54,32 +54,33 @@ func GetDeviceCGroupVersion(rootPath *C.char, pid C.pid_t, version *C.int, rerr 
 }
 
 //export GetDeviceCGroupMountPath
-func GetDeviceCGroupMountPath(version C.int, procRootPath *C.char, pid C.pid_t, cgroupMountPath **C.char, rerr **C.char) C.int {
+func GetDeviceCGroupMountPath(version C.int, procRootPath *C.char, pid C.pid_t, cgroupMountPath **C.char, cgroupRootPrefix **C.char, rerr **C.char) C.int {
 	api, err := cgroup.New(int(version))
 	if err != nil {
 		*rerr = C.CString(fmt.Sprintf("unable to create cgroupv%v interface: %v", version, err))
 		return -1
 	}
 
-	p, err := api.GetDeviceCGroupMountPath(C.GoString(procRootPath), int(pid))
+	p, r, err := api.GetDeviceCGroupMountPath(C.GoString(procRootPath), int(pid))
 	if err != nil {
 		*rerr = C.CString(err.Error())
 		return -1
 	}
 	*cgroupMountPath = C.CString(p)
+	*cgroupRootPrefix= C.CString(r)
 
 	return 0
 }
 
 //export GetDeviceCGroupRootPath
-func GetDeviceCGroupRootPath(version C.int, procRootPath *C.char, pid C.int, cgroupRootPath **C.char, rerr **C.char) C.int {
+func GetDeviceCGroupRootPath(version C.int, procRootPath *C.char, cgroupRootPrefix *C.char, pid C.int, cgroupRootPath **C.char, rerr **C.char) C.int {
 	api, err := cgroup.New(int(version))
 	if err != nil {
 		*rerr = C.CString(fmt.Sprintf("unable to create cgroupv%v interface: %v", version, err))
 		return -1
 	}
 
-	p, err := api.GetDeviceCGroupRootPath(C.GoString(procRootPath), int(pid))
+	p, err := api.GetDeviceCGroupRootPath(C.GoString(procRootPath), C.GoString(cgroupRootPrefix), int(pid))
 	if err != nil {
 		*rerr = C.CString(err.Error())
 		return -1
