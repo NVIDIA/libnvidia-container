@@ -99,7 +99,8 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Wed Feb 09 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.1-1
+* Mon Feb 14 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.1-1
+- Fix bug in determining cgroup root when running in nested containers
 - Fix permission issue when determining cgroup version
 
 * Fri Feb 04 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.8.0-1
