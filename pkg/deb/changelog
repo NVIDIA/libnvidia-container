@@ -1,3 +1,9 @@
+libnvidia-container (1.8.2-1) UNRELEASED; urgency=medium
+
+  * Fix long-standing issue with running ldconfig on Debian systems
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com> Fri, 18 Feb 2022 09:16:25 +0100
+
 libnvidia-container (1.8.1-1) UNRELEASED; urgency=medium
 
   * Fix bug in determining cgroup root when running in nested containers

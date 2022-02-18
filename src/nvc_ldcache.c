@@ -31,7 +31,7 @@
 
 static inline bool secure_mode(void);
 static pid_t create_process(struct error *, int);
-static int   change_rootfs(struct error *, const char *, bool, bool, bool *);
+static int   change_rootfs(struct error *, const char *, bool, bool, uid_t, gid_t, bool *);
 static int   adjust_capabilities(struct error *, uid_t, bool);
 static int   adjust_privileges(struct error *, uid_t, gid_t, bool);
 static int   limit_resources(struct error *);
@@ -89,7 +89,7 @@ create_process(struct error *err, int flags)
 }
 
 static int
-change_rootfs(struct error *err, const char *rootfs, bool no_pivot, bool mount_proc, bool *drop_groups)
+change_rootfs(struct error *err, const char *rootfs, bool no_pivot, bool mount_proc, uid_t uid, gid_t gid, bool *drop_groups)
 {
         int rv = -1;
         int oldroot = -1;
@@ -146,6 +146,16 @@ change_rootfs(struct error *err, const char *rootfs, bool no_pivot, bool mount_p
                 if (xmount(err, NULL, mounts[i], "tmpfs", MS_RDONLY, NULL) < 0)
                         goto fail;
         }
+
+        /* Temporarily remount /dev with write permissions to create a
+         * /dev/fd --> /proc/self/fd symlink. */
+        if (xmount(err, NULL, "/dev", "tmpfs", MS_REMOUNT, NULL) < 0)
+                goto fail;
+        if (file_create(err, "/dev/fd", "/proc/self/fd", uid, gid, MODE_LNK(0777)) < 0)
+                goto fail;
+        if (xmount(err, NULL, "/dev", "tmpfs", MS_REMOUNT|MS_RDONLY, NULL) < 0)
+                goto fail;
+
         rv = 0;
 
  fail:
@@ -375,7 +385,7 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
                         goto fail;
                 if (adjust_capabilities(&ctx->err, cnt->uid, host_ldconfig) < 0)
                         goto fail;
-                if (change_rootfs(&ctx->err, cnt->cfg.rootfs, ctx->no_pivot, host_ldconfig, &drop_groups) < 0)
+                if (change_rootfs(&ctx->err, cnt->cfg.rootfs, ctx->no_pivot, host_ldconfig, cnt->uid, cnt->gid, &drop_groups) < 0)
                         goto fail;
                 if (limit_resources(&ctx->err) < 0)
                         goto fail;
