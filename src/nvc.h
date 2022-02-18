@@ -1,5 +1,17 @@
 /*
- * Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
+ * Copyright (c) 2017-2022, NVIDIA CORPORATION.  All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 #ifndef HEADER_NVC_H
@@ -14,15 +26,15 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define NVC_MAJOR   1
-#define NVC_MINOR   8
-#define NVC_PATCH   1
+#define NVC_MINOR   9
+#define NVC_PATCH   0
 
 // Specify the release tag.
 // For stable releases, this should be defined as empty.
 // For release candidates, this should be defined with the format "rc.1"
 // The version string should also be updated accordingly, using a ~ separator where applicable.
-#define NVC_TAG
-#define NVC_VERSION "1.8.1"
+#define NVC_TAG "rc.1"
+#define NVC_VERSION "1.9.0~rc.1"
 
 #define NVC_ARG_MAX 256
 
