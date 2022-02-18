@@ -1,3 +1,9 @@
+libnvidia-container (0.11.0+jetpack) UNRELEASED; urgency=medium
+
+  * Placeholder for next release
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 18 Feb 2022 15:34:45 +0000
+
 libnvidia-container (0.10.0+jetpack) UNRELEASED; urgency=medium
 
   * Add logic to get 'jetpack-base-only' option set through reqs flag

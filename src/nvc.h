@@ -14,7 +14,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define NVC_MAJOR   0
-#define NVC_MINOR   10
+#define NVC_MINOR   11
 #define NVC_PATCH   0
 #define NVC_BUILD   "jetpack"
 
@@ -23,7 +23,7 @@ extern "C" {
 // For release candidates, this should be defined with the format "rc.1"
 // The version string should also be updated accordingly, using a ~ separator where applicable.
 #define NVC_TAG
-#define NVC_VERSION "0.10.0+jetpack"
+#define NVC_VERSION "0.11.0+jetpack"
 
 #define NVC_ARG_MAX 256
 
