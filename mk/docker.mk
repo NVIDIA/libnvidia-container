@@ -13,8 +13,12 @@
 # limitations under the License.
 #
 
+# Version of golang to use in docker specific builds.
+GOLANG_VERSION := 1.17.1
+
 # Global definitions. These are defined here to allow the docker targets to be
 # invoked directly without the root makefile.
+WITH_NVCGO   ?= yes
 WITH_LIBELF  ?= no
 WITH_TIRPC   ?= no
 WITH_SECCOMP ?= yes
@@ -25,13 +29,14 @@ PLATFORM     ?= $(shell uname -m)
 
 DIST_DIR     ?= $(CURDIR)/dist
 MAKE_DIR     ?= $(CURDIR)/mk
+REVISION 	 ?= $(shell git rev-parse HEAD)
 
 # Supported OSs by architecture
 AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
-X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux1 amazonlinux2 opensuse-leap15.1
+X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1
 PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7 centos8 rhel7 rhel8
 ARM64_TARGETS := ubuntu18.04
-AARCH64_TARGETS := centos8 rhel8
+AARCH64_TARGETS := centos8 rhel8 amazonlinux2
 
 # Define top-level build targets
 docker%: SHELL:=/bin/bash
@@ -118,6 +123,9 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --debian%: OS := debian
 --amazonlinux%: OS := amazonlinux
 
+# For the ubuntu18.04 arm64 target we add a dependency on libnvidia-container0 to ensure that libnvidia-container-tools also supports Jetson devices
+--ubuntu18.04-arm64: LIBNVIDIA_CONTAINER0_DEPENDENCY = libnvidia-container0 (= 0.9.0~beta.1) | libnvidia-container0 (>= 0.10.0+jetpack)
+
 # private centos target with overrides
 --centos%: OS := centos
 --centos8%: CFLAGS := -I/usr/include/tirpc
@@ -137,28 +145,30 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --verify-rhel%: OS := centos
 --verify-rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 
-ifneq ($(strip $(ADD_DOCKER_PLATFORM_ARGS)),)
-DOCKER_PLATFORM_ARGS = --platform=linux/$(ARCH)
-endif
-
-docker-build-%:
+docker-build-%: $(ARTIFACTS_DIR)
 	@echo "Building for $(TARGET_PLATFORM)"
 	$(DOCKER) pull --platform=linux/$(ARCH) $(BASEIMAGE)
 	DOCKER_BUILDKIT=1 \
-	$(DOCKER) build $(DOCKER_PLATFORM_ARGS) \
+	$(DOCKER) build \
+	    --platform=linux/$(ARCH) \
 	    --progress=plain \
 	    --build-arg BASEIMAGE="$(BASEIMAGE)" \
 	    --build-arg OS_VERSION="$(VERSION)" \
 	    --build-arg OS_ARCH="$(ARCH)" \
+	    --build-arg GOLANG_VERSION="$(GOLANG_VERSION)" \
+	    --build-arg WITH_NVCGO="$(WITH_NVCGO)" \
 	    --build-arg WITH_LIBELF="$(WITH_LIBELF)" \
 	    --build-arg WITH_TIRPC="$(WITH_TIRPC)" \
 	    --build-arg WITH_SECCOMP="$(WITH_SECCOMP)" \
 	    --build-arg CFLAGS="$(CFLAGS)" \
 	    --build-arg LDLIBS="$(LDLIBS)" \
+	    --build-arg REVISION="$(REVISION)" \
+	    --build-arg LIBNVIDIA_CONTAINER0_DEPENDENCY="$(LIBNVIDIA_CONTAINER0_DEPENDENCY)" \
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
-	$(DOCKER) run $(DOCKER_PLATFORM_ARGS) \
+	$(DOCKER) run \
+	    --platform=linux/$(ARCH) \
 	    -e TAG \
 	    -v $(ARTIFACTS_DIR):/dist \
 	    $(BUILDIMAGE)
@@ -177,3 +187,6 @@ docker-clean:
 	if [ "$${IMAGES}" != "" ]; then \
 	    docker rmi -f $${IMAGES}; \
 	fi
+
+$(ARTIFACTS_DIR):
+	mkdir -p $(@)

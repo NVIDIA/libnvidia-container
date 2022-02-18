@@ -1,12 +1,23 @@
+# Copyright (c) 2017-2021, NVIDIA CORPORATION.  All rights reserved.
 #
-# Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean test
+.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean
 .DEFAULT_GOAL := all
 
 ##### Global variables #####
 
+WITH_NVCGO   ?= yes
 WITH_LIBELF  ?= no
 WITH_TIRPC   ?= no
 WITH_SECCOMP ?= yes
@@ -23,18 +34,17 @@ export includedir  = $(prefix)/include
 export pkgconfdir  = $(libdir)/pkgconfig
 
 export PKG_DIR     ?= $(CURDIR)/pkg
-export TESTS_DIR   ?= $(CURDIR)/test
 export SRCS_DIR    ?= $(CURDIR)/src
 export DEPS_DIR    ?= $(CURDIR)/deps
 export DIST_DIR    ?= $(CURDIR)/dist
 export MAKE_DIR    ?= $(CURDIR)/mk
 export DEBUG_DIR   ?= $(CURDIR)/.debug
 
-#export TAG        ?=
 #export DISTRIB    ?=
 #export SECTION    ?=
 
 include $(MAKE_DIR)/common.mk
+include $(MAKE_DIR)/docker.mk
 
 ##### File definitions #####
 
@@ -47,6 +57,7 @@ BUILD_DEFS   := $(SRCS_DIR)/build.h
 
 LIB_INCS     := $(SRCS_DIR)/nvc.h
 LIB_SRCS     := $(SRCS_DIR)/driver.c        \
+                $(SRCS_DIR)/dxcore.c        \
                 $(SRCS_DIR)/elftool.c       \
                 $(SRCS_DIR)/error_generic.c \
                 $(SRCS_DIR)/error.c         \
@@ -57,17 +68,22 @@ LIB_SRCS     := $(SRCS_DIR)/driver.c        \
                 $(SRCS_DIR)/nvc_mount.c     \
                 $(SRCS_DIR)/nvc_container.c \
                 $(SRCS_DIR)/options.c       \
-                $(SRCS_DIR)/csv.c           \
-                $(SRCS_DIR)/jetson_info.c   \
-                $(SRCS_DIR)/jetson_mount.c  \
+                $(SRCS_DIR)/rpc.c           \
                 $(SRCS_DIR)/utils.c
 
+ifeq ($(WITH_NVCGO), yes)
+LIB_SRCS += $(SRCS_DIR)/cgroup.c \
+            $(SRCS_DIR)/nvcgo.c
+else
+LIB_SRCS += $(SRCS_DIR)/cgroup_legacy.c
+endif
+
 # Order sensitive (see flags definitions)
-LIB_RPC_SPEC := $(SRCS_DIR)/driver_rpc.x
-LIB_RPC_SRCS := $(SRCS_DIR)/driver_rpc.h \
-                $(SRCS_DIR)/driver_xdr.c \
-                $(SRCS_DIR)/driver_svc.c \
-                $(SRCS_DIR)/driver_clt.c
+LIB_RPC_SPEC := $(SRCS_DIR)/nvc_rpc.x
+LIB_RPC_SRCS := $(SRCS_DIR)/nvc_rpc.h \
+                $(SRCS_DIR)/nvc_xdr.c \
+                $(SRCS_DIR)/nvc_svc.c \
+                $(SRCS_DIR)/nvc_clt.c
 
 BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
                 $(SRCS_DIR)/cli/configure.c \
@@ -75,11 +91,9 @@ BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
                 $(SRCS_DIR)/cli/info.c      \
                 $(SRCS_DIR)/cli/list.c      \
                 $(SRCS_DIR)/cli/main.c      \
+                $(SRCS_DIR)/cli/libnvc.c    \
                 $(SRCS_DIR)/error_generic.c \
                 $(SRCS_DIR)/utils.c
-
-TESTS_SRCS   := $(TESTS_DIR)/csv_test.c      \
-                $(TESTS_DIR)/symlinks_test.c
 
 LIB_SCRIPT   = $(SRCS_DIR)/$(LIB_NAME).lds
 BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds
@@ -90,6 +104,9 @@ ARCH    ?= $(call getarch)
 MAJOR   := $(call getdef,NVC_MAJOR,$(LIB_INCS))
 MINOR   := $(call getdef,NVC_MINOR,$(LIB_INCS))
 PATCH   := $(call getdef,NVC_PATCH,$(LIB_INCS))
+# Extract the VERSION and TAG from the version header file. We strip quotes.
+VERSION_STRING := $(subst ",,$(call getdef,NVC_VERSION,$(LIB_INCS)))
+TAG     := $(subst ",,$(call getdef,NVC_TAG,$(LIB_INCS)))
 VERSION := $(MAJOR).$(MINOR).$(PATCH)
 
 ifeq ($(MAJOR),)
@@ -102,6 +119,10 @@ ifeq ($(PATCH),)
 $(error Invalid patch version)
 endif
 
+ifneq ($(VERSION_STRING),$(VERSION)$(if $(TAG),~$(TAG),))
+$(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(TAG),~$(TAG),))
+endif
+
 BIN_NAME    := nvidia-container-cli
 LIB_NAME    := libnvidia-container
 LIB_STATIC  := $(LIB_NAME).a
@@ -110,11 +131,16 @@ LIB_SONAME  := $(LIB_NAME).so.$(MAJOR)
 LIB_SYMLINK := $(LIB_NAME).so
 LIB_PKGCFG  := $(LIB_NAME).pc
 
+LIBGO_NAME    := $(LIB_NAME)-go
+LIBGO_SHARED  := $(LIBGO_NAME).so.$(VERSION)
+LIBGO_SONAME  := $(LIBGO_NAME).so.$(MAJOR)
+LIBGO_SYMLINK := $(LIBGO_NAME).so
+
 ##### Flags definitions #####
 
 # Common flags
-CPPFLAGS := -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -g3 -D JETSON=$(JETSON) $(CPPFLAGS)
-CFLAGS   := -std=gnu11 -O0 -g3 -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
+CPPFLAGS := -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 $(CPPFLAGS)
+CFLAGS   := -std=gnu11 -O2 -g -fdata-sections -ffunction-sections -fplan9-extensions -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
             -Wall -Wextra -Wcast-align -Wpointer-arith -Wmissing-prototypes -Wnonnull \
             -Wwrite-strings -Wlogical-op -Wformat=2 -Wmissing-format-attribute -Winit-self -Wshadow \
             -Wstrict-prototypes -Wunreachable-code -Wconversion -Wsign-conversion \
@@ -128,6 +154,10 @@ LIB_CFLAGS         = -fPIC
 LIB_LDFLAGS        = -L$(DEPS_DIR)$(libdir) -shared -Wl,-soname=$(LIB_SONAME)
 LIB_LDLIBS_STATIC  = -l:libnvidia-modprobe-utils.a
 LIB_LDLIBS_SHARED  = -ldl -lcap
+ifeq ($(WITH_NVCGO), yes)
+LIB_CPPFLAGS       += -DWITH_NVCGO
+LIB_LDLIBS_SHARED  += -lpthread
+endif
 ifeq ($(WITH_LIBELF), yes)
 LIB_CPPFLAGS       += -DWITH_LIBELF
 LIB_LDLIBS_SHARED  += -lelf
@@ -140,8 +170,8 @@ LIB_LDLIBS_STATIC  += -l:libtirpc.a
 LIB_LDLIBS_SHARED  += -lpthread
 endif
 ifeq ($(WITH_SECCOMP), yes)
-LIB_CPPFLAGS       += -DWITH_SECCOMP
-LIB_LDLIBS_SHARED  += -lseccomp
+LIB_CPPFLAGS       += -DWITH_SECCOMP $(shell pkg-config --cflags libseccomp)
+LIB_LDLIBS_SHARED  += $(shell pkg-config --libs libseccomp)
 endif
 LIB_CPPFLAGS       += $(CPPFLAGS)
 LIB_CFLAGS         += $(CFLAGS)
@@ -154,12 +184,16 @@ LIB_LDLIBS         = $(LIB_LDLIBS_STATIC) $(LIB_LDLIBS_SHARED)
 BIN_CPPFLAGS       = -include $(BUILD_DEFS) $(CPPFLAGS)
 BIN_CFLAGS         = -I$(SRCS_DIR) -fPIE -flto $(CFLAGS)
 BIN_LDFLAGS        = -L. -pie $(LDFLAGS) -Wl,-rpath='$$ORIGIN/../$$LIB'
-BIN_LDLIBS         = -l:$(LIB_SHARED) -lcap $(LDLIBS)
+BIN_LDLIBS         = -l:$(LIB_SHARED) -ldl -lcap $(LDLIBS)
 
 $(word 1,$(LIB_RPC_SRCS)): RPCGENFLAGS=-h
 $(word 2,$(LIB_RPC_SRCS)): RPCGENFLAGS=-c
 $(word 3,$(LIB_RPC_SRCS)): RPCGENFLAGS=-m
 $(word 4,$(LIB_RPC_SRCS)): RPCGENFLAGS=-l
+
+ifeq ($(WITH_NVCGO), yes)
+$(LIB_RPC_SRCS): RPCGENFLAGS+=-DWITH_NVCGO
+endif
 
 ##### Private rules #####
 
@@ -208,7 +242,6 @@ $(BIN_NAME): $(BIN_OBJS)
 ##### Public rules #####
 
 all: CPPFLAGS += -DNDEBUG
-all: STRIP  := @echo skipping: strip
 all: shared static tools
 
 # Run with ASAN_OPTIONS="protect_shadow_gap=0" to avoid CUDA OOM errors
@@ -223,15 +256,17 @@ shared: $(LIB_SHARED)
 
 static: $(LIB_STATIC)($(LIB_STATIC_OBJ))
 
-deps: export DESTDIR:=$(DEPS_DIR)
 deps: $(LIB_RPC_SRCS) $(BUILD_DEFS)
 	$(MKDIR) -p $(DEPS_DIR)
-	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk install
+	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk DESTDIR=$(DEPS_DIR) install
+ifeq ($(WITH_NVCGO), yes)
+	$(MAKE) -f $(MAKE_DIR)/nvcgo.mk DESTDIR=$(DEPS_DIR) MAJOR=$(MAJOR) VERSION=$(VERSION) LIB_NAME=$(LIBGO_NAME) install
+endif
 ifeq ($(WITH_LIBELF), no)
-	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk install
+	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk DESTDIR=$(DEPS_DIR) install
 endif
 ifeq ($(WITH_TIRPC), yes)
-	$(MAKE) -f $(MAKE_DIR)/libtirpc.mk install
+	$(MAKE) -f $(MAKE_DIR)/libtirpc.mk DESTDIR=$(DEPS_DIR) install
 endif
 
 install: all
@@ -242,6 +277,10 @@ install: all
 	$(INSTALL) -m 644 $(LIB_STATIC) $(DESTDIR)$(libdir)
 	$(INSTALL) -m 755 $(LIB_SHARED) $(DESTDIR)$(libdir)
 	$(LN) -sf $(LIB_SONAME) $(DESTDIR)$(libdir)/$(LIB_SYMLINK)
+ifeq ($(WITH_NVCGO), yes)
+	$(INSTALL) -m 755 $(DEPS_DIR)$(libdir)/$(LIBGO_SHARED) $(DESTDIR)$(libdir)
+	$(LN) -sf $(LIBGO_SONAME) $(DESTDIR)$(libdir)/$(LIBGO_SYMLINK)
+endif
 	$(LDCONFIG) -n $(DESTDIR)$(libdir)
 	# Install debugging symbols
 	$(INSTALL) -m 644 $(DEBUG_DIR)/$(LIB_SONAME) $(DESTDIR)$(libdbgdir)
@@ -258,6 +297,9 @@ uninstall:
 	$(RM) $(addprefix $(DESTDIR)$(includedir)/,$(notdir $(LIB_INCS)))
 	# Uninstall library files
 	$(RM) $(addprefix $(DESTDIR)$(libdir)/,$(LIB_STATIC) $(LIB_SHARED) $(LIB_SONAME) $(LIB_SYMLINK))
+ifeq ($(WITH_NVCGO), yes)
+	$(RM) $(addprefix $(DESTDIR)$(libdir)/,$(LIBGO_SHARED) $(LIBGO_SONAME) $(LIBGO_SYMLINK))
+endif
 	# Uninstall debugging symbols
 	$(RM) $(DESTDIR)$(libdbgdir)/$(LIB_SONAME)
 	# Uninstall configuration files
@@ -275,6 +317,9 @@ dist: install
 depsclean:
 	$(RM) $(BUILD_DEFS)
 	-$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk clean
+ifeq ($(WITH_NVCGO), yes)
+	-$(MAKE) -f $(MAKE_DIR)/nvcgo.mk clean
+endif
 ifeq ($(WITH_LIBELF), no)
 	-$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk clean
 endif
@@ -296,7 +341,7 @@ deb: prefix:=/usr
 deb: libdir:=/usr/lib/@DEB_HOST_MULTIARCH@
 deb: install
 	$(CP) -T $(PKG_DIR)/deb $(DESTDIR)/debian
-	cd $(DESTDIR) && debuild -eDISTRIB -eSECTION --dpkg-buildpackage-hook='debian/prepare %v' -a$(ARCH) -us -uc -B
+	cd $(DESTDIR) && debuild -eDISTRIB -eSECTION -eLIBNVIDIA_CONTAINER0_DEPENDENCY --dpkg-buildpackage-hook='debian/prepare %v' -a$(ARCH) -us -uc -B
 	cd $(DESTDIR) && (yes | debuild clean || yes | debuild -- clean)
 
 rpm: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)_$(ARCH)
@@ -305,45 +350,5 @@ rpm: all
 	$(CP) -T $(PKG_DIR)/rpm $(DESTDIR)
 	$(LN) -nsf $(CURDIR) $(DESTDIR)/BUILD
 	$(MKDIR) -p $(DESTDIR)/RPMS && $(LN) -nsf $(DIST_DIR) $(DESTDIR)/RPMS/$(ARCH)
-	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" -D"_tag $(TAG)" -D"_major $(MAJOR)" SPECS/*
+	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" $(and $(TAG),-D"_tag $(TAG)") -D"_major $(MAJOR)" SPECS/*
 	-cd $(DESTDIR) && rpmlint RPMS/*
-
-
-docker-%: SHELL:=/bin/bash
-docker-%:
-	image=$* ;\
-	$(MKDIR) -p $(DIST_DIR)/$${image/:} ;\
-	$(DOCKER) build --network=host \
-                    --build-arg IMAGESPEC=$* \
-                    --build-arg USERSPEC=$(UID):$(GID) \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -f $(MAKE_DIR)/Dockerfile.$${image%%:*} -t $(LIB_NAME):$${image/:} . ;\
-	$(DOCKER) run --rm -v $(DIST_DIR)/$${image/:}:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):$${image/:}
-
-podman: SHELL:=/bin/bash
-podman:
-	$(MKDIR) -p $(DIST_DIR)/arm/ubuntu ;\
-	podman build --network=host \
-                    -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static \
-                    -v $(CURDIR)/nv_tegra_release:/etc/nv_tegra_release \
-                    --build-arg IMAGESPEC=docker://arm64v8/ubuntu:latest \
-                    --build-arg USERSPEC=$(UID):$(GID) \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -f $(MAKE_DIR)/Dockerfile.ubuntu -t $(LIB_NAME):arm64-ubuntu . ;\
-	podman run --rm -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static \
-	            -v $(DIST_DIR)/arm/ubuntu:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):arm64-ubuntu
-
-comma := ,
-.SILENT:
-test: LIB_CFLAGS += -D TESTING=TRUE
-test: LIB_CFLAGS := $(filter-out -O2, $(LIB_CFLAGS))
-test: LIB_CFLAGS := $(filter-out -Wl$(comma)--gc-sections, $(LIB_CFLAGS))
-test: LIB_LDFLAGS := $(filter-out -Wl$(comma)--gc-sections, $(LIB_LDFLAGS))
-test: LIB_LDFLAGS := $(filter-out -shared, $(LIB_LDFLAGS))
-test: $(LIB_OBJS)
-	$(CC) -o $(DIST_DIR)/nvidia-container-tests -I$(SRCS_DIR) -L$(DEPS_DIR)$(libdir) $(LIB_CFLAGS) $(LIB_CPPFLAGS) $(LIB_LDFLAGS) $^ $(LIB_LDLIBS) $(TESTS_SRCS) -lcriterion
-	$(DIST_DIR)/nvidia-container-tests --verbose -j1
