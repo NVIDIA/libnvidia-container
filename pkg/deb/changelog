@@ -1,6 +1,7 @@
 libnvidia-container (0.11.0+jetpack) UNRELEASED; urgency=medium
 
-  * Placeholder for next release
+  * Invert logic to change OPT_JETPACK_BASE_ONLY into OPT_JETPACK_MOUNT_ALL
+  * Remove building of the CLI and packaging of libnvidia-container-tools
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 18 Feb 2022 15:34:45 +0000
 
