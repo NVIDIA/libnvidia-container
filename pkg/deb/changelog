@@ -1,5 +1,6 @@
 libnvidia-container (1.9.0~rc.1-1) experimental; urgency=medium
 
+  * Update jetpack-specific CLI option to only load Base CSV files by default
   * Fix bug (from 1.8.0) when mounting GSP firmware into containers without /lib to /usr/lib symlinks
   * Update nvml.h to CUDA 11.6.1 nvML_DEV 11.6.55
   * Update switch statement to include new brands from latest nvml.h

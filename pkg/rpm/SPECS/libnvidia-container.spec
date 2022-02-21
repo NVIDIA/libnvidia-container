@@ -100,6 +100,7 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Fri Feb 25 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.9.0-0.1.rc.1
+- Update jetpack-specific CLI option to only load Base CSV files by default
 - Fix bug (from 1.8.0) when mounting GSP firmware into containers without /lib to /usr/lib symlinks
 - Update nvml.h to CUDA 11.6.1 nvML_DEV 11.6.55
 - Update switch statement to include new brands from latest nvml.h
