@@ -1,8 +1,18 @@
+# Copyright (c) 2017-2021, NVIDIA CORPORATION.  All rights reserved.
 #
-# Copyright (c) 2017-2018, NVIDIA CORPORATION. All rights reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean test
+.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean
 .DEFAULT_GOAL := all
 
 ##### Global variables #####
@@ -30,11 +40,11 @@ export DIST_DIR    ?= $(CURDIR)/dist
 export MAKE_DIR    ?= $(CURDIR)/mk
 export DEBUG_DIR   ?= $(CURDIR)/.debug
 
-#export TAG        ?=
 #export DISTRIB    ?=
 #export SECTION    ?=
 
 include $(MAKE_DIR)/common.mk
+include $(MAKE_DIR)/docker.mk
 
 ##### File definitions #####
 
@@ -90,6 +100,10 @@ ARCH    ?= $(call getarch)
 MAJOR   := $(call getdef,NVC_MAJOR,$(LIB_INCS))
 MINOR   := $(call getdef,NVC_MINOR,$(LIB_INCS))
 PATCH   := $(call getdef,NVC_PATCH,$(LIB_INCS))
+# Extract the VERSION, BUILD, and TAG from the version header file. We strip quotes.
+VERSION_STRING := $(subst ",,$(call getdef,NVC_VERSION,$(LIB_INCS)))
+BUILD   := $(subst ",,$(call getdef,NVC_BUILD,$(LIB_INCS)))
+TAG     := $(subst ",,$(call getdef,NVC_TAG,$(LIB_INCS)))
 VERSION := $(MAJOR).$(MINOR).$(PATCH)
 
 ifeq ($(MAJOR),)
@@ -100,6 +114,10 @@ $(error Invalid minor version)
 endif
 ifeq ($(PATCH),)
 $(error Invalid patch version)
+endif
+
+ifneq ($(VERSION_STRING),$(VERSION)$(if $(BUILD),+$(BUILD),)$(if $(TAG),~$(TAG),))
+$(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(BUILD),+$(BUILD),)$(if $(TAG),~$(TAG),))
 endif
 
 BIN_NAME    := nvidia-container-cli
@@ -223,15 +241,14 @@ shared: $(LIB_SHARED)
 
 static: $(LIB_STATIC)($(LIB_STATIC_OBJ))
 
-deps: export DESTDIR:=$(DEPS_DIR)
 deps: $(LIB_RPC_SRCS) $(BUILD_DEFS)
 	$(MKDIR) -p $(DEPS_DIR)
-	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk install
+	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk DESTDIR=$(DEPS_DIR) install
 ifeq ($(WITH_LIBELF), no)
-	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk install
+	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk DESTDIR=$(DEPS_DIR) install
 endif
 ifeq ($(WITH_TIRPC), yes)
-	$(MAKE) -f $(MAKE_DIR)/libtirpc.mk install
+	$(MAKE) -f $(MAKE_DIR)/libtirpc.mk DESTDIR=$(DEPS_DIR) install
 endif
 
 install: all
@@ -267,7 +284,7 @@ uninstall:
 	# Uninstall documentation files
 	$(RM) -r $(DESTDIR)$(docdir)/$(LIB_NAME)-$(VERSION)
 
-dist: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)$(addprefix -,$(TAG))
+dist: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)$(addprefix +,$(BUILD))$(addprefix -,$(TAG))
 dist: install
 	$(TAR) --numeric-owner --owner=0 --group=0 -C $(dir $(DESTDIR)) -caf $(DESTDIR)_$(ARCH).tar.xz $(notdir $(DESTDIR))
 	$(RM) -r $(DESTDIR)
@@ -296,7 +313,7 @@ deb: prefix:=/usr
 deb: libdir:=/usr/lib/@DEB_HOST_MULTIARCH@
 deb: install
 	$(CP) -T $(PKG_DIR)/deb $(DESTDIR)/debian
-	cd $(DESTDIR) && debuild -eDISTRIB -eSECTION --dpkg-buildpackage-hook='debian/prepare %v' -a$(ARCH) -us -uc -B
+	cd $(DESTDIR) && debuild -eDISTRIB -eSECTION -eLIBNVIDIA_CONTAINER0_DEPENDENCY --dpkg-buildpackage-hook='debian/prepare %v' -a$(ARCH) -us -uc -B
 	cd $(DESTDIR) && (yes | debuild clean || yes | debuild -- clean)
 
 rpm: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)_$(ARCH)
@@ -305,37 +322,8 @@ rpm: all
 	$(CP) -T $(PKG_DIR)/rpm $(DESTDIR)
 	$(LN) -nsf $(CURDIR) $(DESTDIR)/BUILD
 	$(MKDIR) -p $(DESTDIR)/RPMS && $(LN) -nsf $(DIST_DIR) $(DESTDIR)/RPMS/$(ARCH)
-	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" -D"_tag $(TAG)" -D"_major $(MAJOR)" SPECS/*
+	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)$(and $(BUILD),+$(BUILD))" $(and $(TAG),-D"_tag $(TAG)") -D"_major $(MAJOR)" SPECS/*
 	-cd $(DESTDIR) && rpmlint RPMS/*
-
-
-docker-%: SHELL:=/bin/bash
-docker-%:
-	image=$* ;\
-	$(MKDIR) -p $(DIST_DIR)/$${image/:} ;\
-	$(DOCKER) build --network=host \
-                    --build-arg IMAGESPEC=$* \
-                    --build-arg USERSPEC=$(UID):$(GID) \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -f $(MAKE_DIR)/Dockerfile.$${image%%:*} -t $(LIB_NAME):$${image/:} . ;\
-	$(DOCKER) run --rm -v $(DIST_DIR)/$${image/:}:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):$${image/:}
-
-podman: SHELL:=/bin/bash
-podman:
-	$(MKDIR) -p $(DIST_DIR)/arm/ubuntu ;\
-	podman build --network=host \
-                    -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static \
-                    -v $(CURDIR)/nv_tegra_release:/etc/nv_tegra_release \
-                    --build-arg IMAGESPEC=docker://arm64v8/ubuntu:latest \
-                    --build-arg USERSPEC=$(UID):$(GID) \
-                    --build-arg WITH_LIBELF=$(WITH_LIBELF) \
-                    --build-arg WITH_TIRPC=$(WITH_TIRPC) \
-                    --build-arg WITH_SECCOMP=$(WITH_SECCOMP) \
-                    -f $(MAKE_DIR)/Dockerfile.ubuntu -t $(LIB_NAME):arm64-ubuntu . ;\
-	podman run --rm -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static \
-	            -v $(DIST_DIR)/arm/ubuntu:/mnt:Z -e TAG -e DISTRIB -e SECTION $(LIB_NAME):arm64-ubuntu
 
 comma := ,
 .SILENT:
@@ -345,5 +333,6 @@ test: LIB_CFLAGS := $(filter-out -Wl$(comma)--gc-sections, $(LIB_CFLAGS))
 test: LIB_LDFLAGS := $(filter-out -Wl$(comma)--gc-sections, $(LIB_LDFLAGS))
 test: LIB_LDFLAGS := $(filter-out -shared, $(LIB_LDFLAGS))
 test: $(LIB_OBJS)
+	mkdir -p $(DIST_DIR)
 	$(CC) -o $(DIST_DIR)/nvidia-container-tests -I$(SRCS_DIR) -L$(DEPS_DIR)$(libdir) $(LIB_CFLAGS) $(LIB_CPPFLAGS) $(LIB_LDFLAGS) $^ $(LIB_LDLIBS) $(TESTS_SRCS) -lcriterion
 	$(DIST_DIR)/nvidia-container-tests --verbose -j1
