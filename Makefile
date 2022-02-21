@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean
+.PHONY: all shared static deps install uninstall dist depsclean mostlyclean clean distclean
 .DEFAULT_GOAL := all
 
 ##### Global variables #####
@@ -25,7 +25,6 @@ WITH_SECCOMP ?= yes
 
 export prefix      = /usr/local
 export exec_prefix = $(prefix)
-export bindir      = $(exec_prefix)/bin
 export libdir      = $(exec_prefix)/lib
 export docdir      = $(prefix)/share/doc
 export libdbgdir   = $(prefix)/lib/debug$(libdir)
@@ -79,20 +78,10 @@ LIB_RPC_SRCS := $(SRCS_DIR)/driver_rpc.h \
                 $(SRCS_DIR)/driver_svc.c \
                 $(SRCS_DIR)/driver_clt.c
 
-BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
-                $(SRCS_DIR)/cli/configure.c \
-                $(SRCS_DIR)/cli/dsl.c       \
-                $(SRCS_DIR)/cli/info.c      \
-                $(SRCS_DIR)/cli/list.c      \
-                $(SRCS_DIR)/cli/main.c      \
-                $(SRCS_DIR)/error_generic.c \
-                $(SRCS_DIR)/utils.c
-
 TESTS_SRCS   := $(TESTS_DIR)/csv_test.c      \
                 $(TESTS_DIR)/symlinks_test.c
 
 LIB_SCRIPT   = $(SRCS_DIR)/$(LIB_NAME).lds
-BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds
 
 ##### Target definitions #####
 
@@ -120,7 +109,6 @@ ifneq ($(VERSION_STRING),$(VERSION)$(if $(BUILD),+$(BUILD),)$(if $(TAG),~$(TAG),
 $(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(BUILD),+$(BUILD),)$(if $(TAG),~$(TAG),))
 endif
 
-BIN_NAME    := nvidia-container-cli
 LIB_NAME    := libnvidia-container
 LIB_STATIC  := $(LIB_NAME).a
 LIB_SHARED  := $(LIB_NAME).so.$(VERSION)
@@ -168,12 +156,6 @@ LIB_LDLIBS_STATIC  +=
 LIB_LDLIBS_SHARED  += $(LDLIBS)
 LIB_LDLIBS         = $(LIB_LDLIBS_STATIC) $(LIB_LDLIBS_SHARED)
 
-# Binary flags (recursively expanded to handle target-specific flags)
-BIN_CPPFLAGS       = -include $(BUILD_DEFS) $(CPPFLAGS)
-BIN_CFLAGS         = -I$(SRCS_DIR) -fPIE -flto $(CFLAGS)
-BIN_LDFLAGS        = -L. -pie $(LDFLAGS) -Wl,-rpath='$$ORIGIN/../$$LIB'
-BIN_LDLIBS         = -l:$(LIB_SHARED) -lcap $(LDLIBS)
-
 $(word 1,$(LIB_RPC_SRCS)): RPCGENFLAGS=-h
 $(word 2,$(LIB_RPC_SRCS)): RPCGENFLAGS=-c
 $(word 3,$(LIB_RPC_SRCS)): RPCGENFLAGS=-m
@@ -181,10 +163,9 @@ $(word 4,$(LIB_RPC_SRCS)): RPCGENFLAGS=-l
 
 ##### Private rules #####
 
-BIN_OBJS       := $(BIN_SRCS:.c=.o)
 LIB_OBJS       := $(LIB_SRCS:.c=.lo) $(patsubst %.c,%.lo,$(filter %.c,$(LIB_RPC_SRCS)))
 LIB_STATIC_OBJ := $(SRCS_DIR)/$(LIB_STATIC:.a=.lo)
-DEPENDENCIES   := $(BIN_OBJS:%.o=%.d) $(LIB_OBJS:%.lo=%.d)
+DEPENDENCIES   := $(LIB_OBJS:%.lo=%.d)
 
 $(BUILD_DEFS):
 	@printf '#define BUILD_DATE     "%s"\n' '$(strip $(DATE))' >$(BUILD_DEFS)
@@ -199,9 +180,6 @@ $(LIB_RPC_SRCS): $(LIB_RPC_SPEC)
 
 $(LIB_OBJS): %.lo: %.c | deps
 	$(CC) $(LIB_CFLAGS) $(LIB_CPPFLAGS) -MMD -MF $*.d -c $(OUTPUT_OPTION) $<
-
-$(BIN_OBJS): %.o: %.c | shared
-	$(CC) $(BIN_CFLAGS) $(BIN_CPPFLAGS) -MMD -MF $*.d -c $(OUTPUT_OPTION) $<
 
 -include $(DEPENDENCIES)
 
@@ -219,23 +197,17 @@ $(LIB_STATIC_OBJ): $(LIB_OBJS)
 	$(OBJCPY) --localize-hidden $@
 	$(STRIP) --strip-unneeded -R .comment $@
 
-$(BIN_NAME): $(BIN_OBJS)
-	$(CC) $(BIN_CFLAGS) $(BIN_CPPFLAGS) $(BIN_LDFLAGS) $(OUTPUT_OPTION) $^ $(BIN_SCRIPT) $(BIN_LDLIBS)
-	$(STRIP) --strip-unneeded -R .comment $@
-
 ##### Public rules #####
 
 all: CPPFLAGS += -DNDEBUG
 all: STRIP  := @echo skipping: strip
-all: shared static tools
+all: shared static
 
 # Run with ASAN_OPTIONS="protect_shadow_gap=0" to avoid CUDA OOM errors
 debug: CFLAGS += -pedantic -fsanitize=undefined -fno-omit-frame-pointer -fno-common -fsanitize=address
 debug: LDLIBS += -lubsan
 debug: STRIP  := @echo skipping: strip
-debug: shared static tools
-
-tools: $(BIN_NAME)
+debug: shared static
 
 shared: $(LIB_SHARED)
 
@@ -252,7 +224,7 @@ ifeq ($(WITH_TIRPC), yes)
 endif
 
 install: all
-	$(INSTALL) -d -m 755 $(addprefix $(DESTDIR),$(includedir) $(bindir) $(libdir) $(docdir) $(libdbgdir) $(pkgconfdir))
+	$(INSTALL) -d -m 755 $(addprefix $(DESTDIR),$(includedir) $(libdir) $(docdir) $(libdbgdir) $(pkgconfdir))
 	# Install header files
 	$(INSTALL) -m 644 $(LIB_INCS) $(DESTDIR)$(includedir)
 	# Install library files
@@ -264,8 +236,6 @@ install: all
 	$(INSTALL) -m 644 $(DEBUG_DIR)/$(LIB_SONAME) $(DESTDIR)$(libdbgdir)
 	# Install configuration files
 	$(MAKE_DIR)/$(LIB_PKGCFG).in "$(strip $(VERSION))" "$(strip $(LIB_LDLIBS_SHARED))" > $(DESTDIR)$(pkgconfdir)/$(LIB_PKGCFG)
-	# Install binary files
-	$(INSTALL) -m 755 $(BIN_NAME) $(DESTDIR)$(bindir)
 	# Install documentation files
 	$(INSTALL) -d -m 755 $(DESTDIR)$(docdir)/$(LIB_NAME)-$(VERSION)
 	$(INSTALL) -m 644 $(DOC_FILES) $(DESTDIR)$(docdir)/$(LIB_NAME)-$(VERSION)
@@ -279,8 +249,6 @@ uninstall:
 	$(RM) $(DESTDIR)$(libdbgdir)/$(LIB_SONAME)
 	# Uninstall configuration files
 	$(RM) $(DESTDIR)$(pkgconfdir)/$(LIB_PKGCFG)
-	# Uninstall binary files
-	$(RM) $(DESTDIR)$(bindir)/$(BIN_NAME)
 	# Uninstall documentation files
 	$(RM) -r $(DESTDIR)$(docdir)/$(LIB_NAME)-$(VERSION)
 
@@ -300,20 +268,20 @@ ifeq ($(WITH_TIRPC), yes)
 endif
 
 mostlyclean:
-	$(RM) $(LIB_OBJS) $(LIB_STATIC_OBJ) $(BIN_OBJS) $(DEPENDENCIES)
+	$(RM) $(LIB_OBJS) $(LIB_STATIC_OBJ) $(DEPENDENCIES)
 
 clean: mostlyclean depsclean
 
 distclean: clean
 	$(RM) -r $(DEPS_DIR) $(DIST_DIR) $(DEBUG_DIR)
-	$(RM) $(LIB_RPC_SRCS) $(LIB_STATIC) $(LIB_SHARED) $(BIN_NAME)
+	$(RM) $(LIB_RPC_SRCS) $(LIB_STATIC) $(LIB_SHARED)
 
 deb: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)_$(ARCH)
 deb: prefix:=/usr
 deb: libdir:=/usr/lib/@DEB_HOST_MULTIARCH@
 deb: install
 	$(CP) -T $(PKG_DIR)/deb $(DESTDIR)/debian
-	cd $(DESTDIR) && debuild -eDISTRIB -eSECTION -eLIBNVIDIA_CONTAINER0_DEPENDENCY --dpkg-buildpackage-hook='debian/prepare %v' -a$(ARCH) -us -uc -B
+	cd $(DESTDIR) && debuild -eDISTRIB -eSECTION --dpkg-buildpackage-hook='debian/prepare %v' -a$(ARCH) -us -uc -B
 	cd $(DESTDIR) && (yes | debuild clean || yes | debuild -- clean)
 
 rpm: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)_$(ARCH)
