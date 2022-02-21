@@ -54,7 +54,7 @@ enum {
         OPT_NOOP               = 1 << 0,
         OPT_SUPERVISED         = 1 << 1,
         OPT_STANDALONE         = 1 << 2,
-        OPT_JETPACK_BASE_ONLY  = 1 << 3,
+        OPT_JETPACK_MOUNT_ALL  = 1 << 3,
         OPT_NO_CGROUPS         = 1 << 4,
         OPT_NO_DEVBIND         = 1 << 5,
         OPT_NO_CNTLIBS         = 1 << 6,
@@ -75,7 +75,8 @@ enum {
 static const struct option container_opts[] = {
         {"supervised", OPT_SUPERVISED},
         {"standalone", OPT_STANDALONE},
-        {"jetpack-base-only", OPT_JETPACK_BASE_ONLY},
+        {"jetpack-base-only", OPT_NOOP},
+        {"jetpack-mount-all", OPT_JETPACK_MOUNT_ALL},
         {"no-cgroups", OPT_NO_CGROUPS},
         {"no-devbind", OPT_NO_DEVBIND},
         {"no-cntlibs", OPT_NO_CNTLIBS},

@@ -124,7 +124,7 @@ static const char * const graphics_libs_compat[] = {
  *
  * There are a set of "base" CSV files, whose paths should *always* be
  * injected into a container. The paths in all other CSV files should only be
- * optionally injected based on the setting of the OPT_JETPACK_BASE_ONLY flag.
+ * optionally injected based on the setting of the OPT_JETPACK_MOUNT_ALL flag.
  */
 static const char * const jetson_base_csv_files[] = {
         "l4t.csv",
@@ -641,7 +641,7 @@ in_jetson_base_csv_file(const char *path, const char *csv_type)
 bool
 match_jetson_library_flags(const char *path, int32_t flags)
 {
-        if (!(flags & OPT_JETPACK_BASE_ONLY))
+        if (flags & OPT_JETPACK_MOUNT_ALL)
                 return (true);
 
         if (in_jetson_base_csv_file(path, CSV_TOKEN_LIB))
@@ -653,7 +653,7 @@ match_jetson_library_flags(const char *path, int32_t flags)
 bool
 match_jetson_directory_flags(const char *path, int32_t flags)
 {
-        if (!(flags & OPT_JETPACK_BASE_ONLY))
+        if (flags & OPT_JETPACK_MOUNT_ALL)
                 return (true);
 
         if (in_jetson_base_csv_file(path, CSV_TOKEN_DIR))
@@ -665,7 +665,7 @@ match_jetson_directory_flags(const char *path, int32_t flags)
 bool
 match_jetson_device_flags(const char *path, int32_t flags)
 {
-        if (!(flags & OPT_JETPACK_BASE_ONLY))
+        if (flags & OPT_JETPACK_MOUNT_ALL)
                 return (true);
 
         if (in_jetson_base_csv_file(path, CSV_TOKEN_DEV))
@@ -677,7 +677,7 @@ match_jetson_device_flags(const char *path, int32_t flags)
 bool
 match_jetson_symlink_flags(const char *path, int32_t flags)
 {
-        if (!(flags & OPT_JETPACK_BASE_ONLY))
+        if (flags & OPT_JETPACK_MOUNT_ALL)
                 return (true);
 
         if (in_jetson_base_csv_file(path, CSV_TOKEN_SYM))
