@@ -28,7 +28,8 @@ static char **mount_files(struct error *, const char *, const struct nvc_contain
 static char **mount_driverstore_files(struct error *, const char *, const struct nvc_container *, const char *, const char *[], size_t);
 static char *mount_directory(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_file(struct error *, const char *, const struct nvc_container *, const char *);
-static char *mount_with_flags(struct error *, const char *, const struct nvc_container *, const char *, unsigned long);
+static char *mount_to_container_with_flags(struct error *, const char *, const struct nvc_container *, const char *, const char *, unsigned long);
+static char *mount_with_flags(struct error *, const char *, const char *,  uid_t, uid_t, unsigned long);
 static char *mount_device(struct error *, const char *, const struct nvc_container *, const struct nvc_device_node *);
 static char *mount_ipc(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_procfs(struct error *, const char *, const struct nvc_container *);
@@ -48,31 +49,38 @@ static int  setup_mig_minor_cgroups(struct error *, const struct nvc_container *
 static char *
 mount_directory(struct error *err, const char *root, const struct nvc_container *cnt, const char *dir)
 {
-        return mount_with_flags(err, root, cnt, dir, MS_NOSUID|MS_NOEXEC);
+        return mount_to_container_with_flags(err, root, cnt, dir, dir, MS_NOSUID|MS_NOEXEC);
 }
 
 // mount_file mounts the specified `file` at the specified `root`
 static char *
 mount_file(struct error *err, const char *root, const struct nvc_container *cnt, const char *file)
 {
-        return mount_with_flags(err, root, cnt, file, MS_RDONLY|MS_NODEV|MS_NOSUID);
+        return mount_to_container_with_flags(err, root, cnt, file, file, MS_RDONLY|MS_NODEV|MS_NOSUID);
 }
 
-// mount_with_flags mounts the specified `path` at the specified `root` with the specified `mountflags`
+// mount_to_container_with_flags bind mounts the specified `host` at the specified `root` to the specified `container` path with the specified `mountflags`.
+// The container root is prepended.
 static char *
-mount_with_flags(struct error *err, const char *root, const struct nvc_container *cnt, const char *path, unsigned long mountflags) {
+mount_to_container_with_flags(struct error *err, const char *root, const struct nvc_container *cnt, const char *host, const char *container, unsigned long mountflags) {
         char src[PATH_MAX];
         char dst[PATH_MAX];
+        if (path_join(err, src, root, host) < 0)
+                return (NULL);
+        if (path_resolve_full(err, dst, cnt->cfg.rootfs, container) < 0)
+                return (NULL);
+        return mount_with_flags(err, src, dst, cnt->uid, cnt->gid, mountflags);
+}
+
+// mount_with_flags bind mounts the specified src to the the specified dst with the specified mount flags
+static char *
+mount_with_flags(struct error *err, const char *src, const char *dst, uid_t uid, uid_t gid, unsigned long mountflags) {
         mode_t mode;
         char *mnt;
 
-        if (path_join(err, src, root, path) < 0)
-                return (NULL);
-        if (path_resolve_full(err, dst, cnt->cfg.rootfs, path) < 0)
-                return (NULL);
         if (file_mode(err, src, &mode) < 0)
                 goto fail;
-        if (file_create(err, dst, NULL, cnt->uid, cnt->gid, mode) < 0)
+        if (file_create(err, dst, NULL, uid, gid, mode) < 0)
                 goto fail;
 
         log_infof("mounting %s at %s with flags 0x%lx", src, dst, mountflags);
