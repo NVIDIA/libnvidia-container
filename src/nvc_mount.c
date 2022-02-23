@@ -27,8 +27,7 @@
 static char **mount_files(struct error *, const char *, const struct nvc_container *, const char *, char *[], size_t);
 static char **mount_driverstore_files(struct error *, const char *, const struct nvc_container *, const char *, const char *[], size_t);
 static char *mount_directory(struct error *, const char *, const struct nvc_container *, const char *);
-static char *mount_file(struct error *, const char *, const struct nvc_container *, const char *);
-static char *mount_to_container_with_flags(struct error *, const char *, const struct nvc_container *, const char *, const char *, unsigned long);
+static char *mount_firmware(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_with_flags(struct error *, const char *, const char *,  uid_t, uid_t, unsigned long);
 static char *mount_device(struct error *, const char *, const struct nvc_container *, const struct nvc_device_node *);
 static char *mount_ipc(struct error *, const char *, const struct nvc_container *, const char *);
@@ -49,27 +48,27 @@ static int  setup_mig_minor_cgroups(struct error *, const struct nvc_container *
 static char *
 mount_directory(struct error *err, const char *root, const struct nvc_container *cnt, const char *dir)
 {
-        return mount_to_container_with_flags(err, root, cnt, dir, dir, MS_NOSUID|MS_NOEXEC);
-}
-
-// mount_file mounts the specified `file` at the specified `root`
-static char *
-mount_file(struct error *err, const char *root, const struct nvc_container *cnt, const char *file)
-{
-        return mount_to_container_with_flags(err, root, cnt, file, file, MS_RDONLY|MS_NODEV|MS_NOSUID);
-}
-
-// mount_to_container_with_flags bind mounts the specified `host` at the specified `root` to the specified `container` path with the specified `mountflags`.
-// The container root is prepended.
-static char *
-mount_to_container_with_flags(struct error *err, const char *root, const struct nvc_container *cnt, const char *host, const char *container, unsigned long mountflags) {
         char src[PATH_MAX];
         char dst[PATH_MAX];
-        if (path_join(err, src, root, host) < 0)
+        if (path_join(err, src, root, dir) < 0)
                 return (NULL);
-        if (path_resolve_full(err, dst, cnt->cfg.rootfs, container) < 0)
+        if (path_resolve_full(err, dst, cnt->cfg.rootfs, dir) < 0)
                 return (NULL);
-        return mount_with_flags(err, src, dst, cnt->uid, cnt->gid, mountflags);
+        return mount_with_flags(err, src, dst, cnt->uid, cnt->gid, MS_NOSUID|MS_NOEXEC);
+}
+
+// mount_firmware mounts the specified firmware file. The path specified is the container path and is resolved
+// on the host before mounting.
+static char *
+mount_firmware(struct error *err, const char *root, const struct nvc_container *cnt, const char *container_path)
+{
+        char src[PATH_MAX];
+        char dst[PATH_MAX];
+        if (path_resolve_full(err, src, root, container_path) < 0)
+                return (NULL);
+        if (path_join(err, dst, cnt->cfg.rootfs, container_path) < 0)
+                return (NULL);
+        return mount_with_flags(err, src, dst, cnt->uid, cnt->gid, MS_RDONLY|MS_NODEV|MS_NOSUID);
 }
 
 // mount_with_flags bind mounts the specified src to the the specified dst with the specified mount flags
@@ -784,7 +783,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
 
         /* Firmware mounts */
         for (size_t i = 0; i < info->nfirmwares; ++i) {
-                if ((*ptr++ = mount_file(&ctx->err, ctx->cfg.root, cnt, info->firmwares[i])) == NULL) {
+                if ((*ptr++ = mount_firmware(&ctx->err, ctx->cfg.root, cnt, info->firmwares[i])) == NULL) {
                         log_errf("error mounting firmware path %s", info->firmwares[i]);
                         goto fail;
                 }
