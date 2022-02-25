@@ -551,6 +551,40 @@ driver_get_device_brand_1_svc(ptr_t ctxptr, ptr_t dev, driver_get_device_brand_r
         case NVML_BRAND_TITAN:
                 buf = "TITAN";
                 break;
+        case NVML_BRAND_NVIDIA_VAPPS:
+                buf = "VApps";
+                break;
+        case NVML_BRAND_NVIDIA_VPC:
+                buf = "VPC";
+                break;
+        case NVML_BRAND_NVIDIA_VCS:
+                buf = "VCS";
+                break;
+        case NVML_BRAND_NVIDIA_VWS:
+                buf = "VWS";
+                break;
+        case NVML_BRAND_NVIDIA_CLOUD_GAMING:
+                buf = "CloudGaming";
+                break;
+        // Deprecated in favor of NVML_BRAND_NVIDIA_CLOUD_GAMING
+        //case NVML_BRAND_NVIDIA_VGAMING:
+        //        buf = "VGaming";
+        //        break;
+        case NVML_BRAND_QUADRO_RTX:
+                buf = "QuadroRTX";
+                break;
+        case NVML_BRAND_NVIDIA_RTX:
+                buf = "NvidiaRTX";
+                break;
+        case NVML_BRAND_NVIDIA:
+                buf = "Nvidia";
+                break;
+        case NVML_BRAND_GEFORCE_RTX:
+                buf = "GeForceRTX";
+                break;
+        case NVML_BRAND_TITAN_RTX:
+                buf = "TitanRTX";
+                break;
         default:
                 buf = "Unknown";
         }
