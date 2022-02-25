@@ -71,19 +71,6 @@ This package contains the debugging symbols for the library.
 %license %{_licensedir}/*
 %{_prefix}/lib/debug%{_libdir}/lib*.so.*
 
-%package tools
-Requires: %{name}%{_major}%{?_isa} >= %{version}-1, %{name}%{_major}%{?_isa} >= %{version}-%{release}
-Summary: NVIDIA container runtime library (command-line tools)
-%description tools
-The nvidia-container library provides an interface to configure GNU/Linux
-containers leveraging NVIDIA hardware. The implementation relies on several
-kernel subsystems and is designed to be agnostic of the container runtime.
-
-This package contains command-line tools that facilitate using the library.
-%files tools
-%license %{_licensedir}/*
-%{_bindir}/*
-
 %changelog
 * Mon Jan 14 2019 NVIDIA CORPORATION <cudatools@nvidia.com> 1.0.1-1
 - deccb28 Allow yet more syscalls in ldconfig

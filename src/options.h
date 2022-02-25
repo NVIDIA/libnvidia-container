@@ -51,30 +51,32 @@ static const char * const default_device_opts = "";
 
 /* Container options */
 enum {
-        OPT_SUPERVISED         = 1 << 0,
-        OPT_STANDALONE         = 1 << 1,
-        OPT_JETPACK_BASE_ONLY  = 1 << 2,
-        OPT_NO_CGROUPS         = 1 << 3,
-        OPT_NO_DEVBIND         = 1 << 4,
-        OPT_NO_CNTLIBS         = 1 << 5,
-        OPT_UTILITY_LIBS       = 1 << 6,
-        OPT_COMPUTE_LIBS       = 1 << 7,
-        OPT_VIDEO_LIBS         = 1 << 8,
-        OPT_GRAPHICS_LIBS      = 1 << 9,
-        OPT_DISPLAY            = 1 << 10,
-        OPT_UTILITY_BINS       = 1 << 11,
-        OPT_COMPUTE_BINS       = 1 << 12,
+        OPT_NOOP               = 1 << 0,
+        OPT_SUPERVISED         = 1 << 1,
+        OPT_STANDALONE         = 1 << 2,
+        OPT_JETPACK_MOUNT_ALL  = 1 << 3,
+        OPT_NO_CGROUPS         = 1 << 4,
+        OPT_NO_DEVBIND         = 1 << 5,
+        OPT_NO_CNTLIBS         = 1 << 6,
+        OPT_UTILITY_LIBS       = 1 << 7,
+        OPT_COMPUTE_LIBS       = 1 << 8,
+        OPT_VIDEO_LIBS         = 1 << 9,
+        OPT_GRAPHICS_LIBS      = 1 << 10,
+        OPT_DISPLAY            = 1 << 11,
+        OPT_UTILITY_BINS       = 1 << 12,
+        OPT_COMPUTE_BINS       = 1 << 13,
 #if defined(__powerpc64__) /* ppc64le doesn't support compat32. */
-        OPT_COMPAT32           = 1 << 0,
+        OPT_COMPAT32           = OPT_NOOP,
 #else
-        OPT_COMPAT32           = 1 << 13,
+        OPT_COMPAT32           = 1 << 14,
 #endif /* defined(__powerpc64__) */
 };
 
 static const struct option container_opts[] = {
         {"supervised", OPT_SUPERVISED},
         {"standalone", OPT_STANDALONE},
-        {"jetpack-base-only", OPT_JETPACK_BASE_ONLY},
+        {"jetpack-base-only", OPT_NOOP},
+        {"jetpack-mount-all", OPT_JETPACK_MOUNT_ALL},
         {"no-cgroups", OPT_NO_CGROUPS},
         {"no-devbind", OPT_NO_DEVBIND},
         {"no-cntlibs", OPT_NO_CNTLIBS},
