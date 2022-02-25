@@ -28,7 +28,8 @@
 
 struct libnvc libnvc = {0};
 
-static const char *tegra_file = "/etc/nv_tegra_release";
+static const char *tegra_release_file = "/etc/nv_tegra_release";
+static const char *tegra_family_file = "/sys/devices/soc0/family";
 static const char *libnvc_v0_soname= "libnvidia-container.so.0";
 static const char *libnvml_soname= "libnvidia-ml.so.1";
 
@@ -168,14 +169,40 @@ static bool
 is_tegra(void)
 {
         static int is_tegra = -1;
+        int release_exists = false;
+        char *family_contents = NULL;
+        struct error err = {};
+
         if (is_tegra != -1)
             return is_tegra;
 
-        is_tegra = false;
-        if (file_exists(NULL, tegra_file))
-            is_tegra = true;
+        release_exists = file_exists(&err, tegra_release_file);
+        if (release_exists < 0) {
+                log_errf("%s", err.msg);
+                goto error;
+        }
+        if (release_exists) {
+                is_tegra = true;
+                goto success;
+        }
 
+        if (file_read_text(&err, tegra_family_file, &family_contents) < 0) {
+                log_errf("%s", err.msg);
+                goto error;
+        }
+        if (!strncasecmp(family_contents, "tegra", 5)) {
+                is_tegra = true;
+                goto success;
+        }
+
+        is_tegra = false;
+
+success:
+        free(family_contents);
         return (is_tegra);
+error:
+        error_reset(&err);
+        return false;
 }
 
 static bool
