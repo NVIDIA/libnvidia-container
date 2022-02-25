@@ -100,6 +100,8 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Mon Feb 21 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.9.0-0.1.rc.1
+- Update nvml.h to CUDA 11.6.1 nvML_DEV 11.6.55
+- Update switch statement to include new brands from latest nvml.h
 - Process all --require flags on Jetson platforms
 - Fix long-standing issue with running ldconfig on Debian systems
 
