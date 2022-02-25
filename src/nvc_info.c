@@ -434,6 +434,7 @@ lookup_firmwares(struct error *err, struct dxcore_context *dxcore, struct nvc_dr
         int rc = -1;
 
         char *firmware_path = NULL;
+        char *resolved_path = NULL;
 
         if (dxcore->initialized) {
                 log_info("skipping path lookup for dxcore");
@@ -445,6 +446,14 @@ lookup_firmwares(struct error *err, struct dxcore_context *dxcore, struct nvc_dr
                 log_errf("error constructing firmware path for %s", info->nvrm_version);
                 return (-1);
         }
+        if (find_path(err, "firmware", root, firmware_path, &resolved_path) < 0) {
+                log_errf("error finding firmware path %s", firmware_path);
+                goto cleanup;
+        }
+        if (resolved_path == NULL) {
+                rc = 0;
+                goto cleanup;
+        }
 
         info->nfirmwares = 1;
         info->firmwares = ptr = array_new(err, info->nfirmwares);
@@ -452,12 +461,9 @@ lookup_firmwares(struct error *err, struct dxcore_context *dxcore, struct nvc_dr
                 log_err("error creating path array");
                 goto cleanup;
         }
-        if (find_path(err, "firmware", root, firmware_path, ptr++) < 0) {
-                log_errf("error finding firmware path %s", firmware_path);
-                goto cleanup;
-        }
-        array_pack(info->firmwares, &info->nfirmwares);
-        rc = 0;
+        info->firmwares[0] = firmware_path;
+        return (0);
+
 cleanup:
         free(firmware_path);
         return (rc);

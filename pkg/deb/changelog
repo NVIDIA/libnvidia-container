@@ -1,11 +1,12 @@
 libnvidia-container (1.9.0~rc.1-1) experimental; urgency=medium
 
+  * Fix bug (from 1.8.0) when mounting GSP firmware into containers without /lib to /usr/lib symlinks
   * Update nvml.h to CUDA 11.6.1 nvML_DEV 11.6.55
   * Update switch statement to include new brands from latest nvml.h
   * Process all --require flags on Jetson platforms
   * Fix long-standing issue with running ldconfig on Debian systems
 
- -- NVIDIA CORPORATION <cudatools@nvidia.com> Mon, 21 Feb 2022 15:22:52 +0200
+ -- NVIDIA CORPORATION <cudatools@nvidia.com> Fri, 25 Feb 2022 15:29:17 +0200
 
 libnvidia-container (1.8.1-1) UNRELEASED; urgency=medium
 

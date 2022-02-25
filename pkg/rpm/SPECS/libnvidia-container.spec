@@ -99,7 +99,8 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Mon Feb 21 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.9.0-0.1.rc.1
+* Fri Feb 25 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.9.0-0.1.rc.1
+- Fix bug (from 1.8.0) when mounting GSP firmware into containers without /lib to /usr/lib symlinks
 - Update nvml.h to CUDA 11.6.1 nvML_DEV 11.6.55
 - Update switch statement to include new brands from latest nvml.h
 - Process all --require flags on Jetson platforms
