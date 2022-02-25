@@ -1,5 +1,7 @@
 libnvidia-container (1.9.0~rc.1-1) experimental; urgency=medium
 
+  * Update nvml.h to CUDA 11.6.1 nvML_DEV 11.6.55
+  * Update switch statement to include new brands from latest nvml.h
   * Process all --require flags on Jetson platforms
   * Fix long-standing issue with running ldconfig on Debian systems
 
