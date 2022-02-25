@@ -68,7 +68,22 @@ configure_parser(int key, char *arg, struct argp_state *state)
                         goto fatal;
                 break;
         case 'r':
+                // Check for some special-purpose "requires" flags on tegra devices.
                 if (libnvc.version()->major == 0) {
+                        // If there is a special-purpose "requires" for
+                        // 'csv-mounts=all', then add the 'jetpack-mount-all'
+                        // container flag to tell the library to mount all CSV
+                        // files included in the jetpack release, instead of
+                        // just the base files.
+                        if (strncmp(arg, "csv-mounts=all", 14) == 0) {
+                                if (str_join(&err, &ctx->container_flags, "jetpack-mount-all", " ") < 0)
+                                        goto fatal;
+                                break;
+                        }
+                        // The 'base-only' setting is now the default for
+                        // tegra devices, but we need to keep this case here to
+                        // make sure we skip over it if encountered while
+                        // parsing the other "requires" arguments.
                         if (strncmp(arg, "base-only", 9) == 0) {
                                 if (str_join(&err, &ctx->container_flags, "jetpack-base-only", " ") < 0)
                                         goto fatal;
