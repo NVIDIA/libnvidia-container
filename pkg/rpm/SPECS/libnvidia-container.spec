@@ -99,7 +99,7 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Fri Feb 25 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.9.0-0.1.rc.1
+* Fri Mar 18 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.9.0-1
 - Add additional check for Tegra in /sys/.../family file in CLI
 - Update jetpack-specific CLI option to only load Base CSV files by default
 - Fix bug (from 1.8.0) when mounting GSP firmware into containers without /lib to /usr/lib symlinks
