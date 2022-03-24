@@ -803,12 +803,15 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
 
         /* Device mounts */
         for (size_t i = 0; i < info->ndevs; ++i) {
-                /* XXX Only compute libraries require specific devices (e.g. UVM). */
-                if (!(cnt->flags & OPT_COMPUTE_LIBS) && major(info->devs[i].id) != NV_DEVICE_MAJOR)
-                        continue;
-                /* XXX Only display capability requires the modeset device. */
-                if (!(cnt->flags & OPT_DISPLAY) && minor(info->devs[i].id) == NV_MODESET_DEVICE_MINOR)
-                        continue;
+                /* On WSL2 we only mount the /dev/dgx device and as such these checks are not applicable. */
+                if (!ctx->dxcore.initialized) {
+                        /* XXX Only compute libraries require specific devices (e.g. UVM). */
+                        if (!(cnt->flags & OPT_COMPUTE_LIBS) && major(info->devs[i].id) != NV_DEVICE_MAJOR)
+                                continue;
+                        /* XXX Only display capability requires the modeset device. */
+                        if (!(cnt->flags & OPT_DISPLAY) && minor(info->devs[i].id) == NV_MODESET_DEVICE_MINOR)
+                                continue;
+                }
                 if (!(cnt->flags & OPT_NO_DEVBIND)) {
                         if ((*ptr++ = mount_device(&ctx->err, ctx->cfg.root, cnt, &info->devs[i])) == NULL)
                                 goto fail;
