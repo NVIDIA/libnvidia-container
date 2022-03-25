@@ -643,7 +643,7 @@ driver_get_device_mig_enabled(struct error *err, struct driver_device *dev, bool
         // Initialize local variables.
         struct driver *ctx = driver_get_context();
         struct driver_get_device_mig_mode_res res = {0};
-        unsigned int current, pending;
+        unsigned int current;
         int rv = -1;
 
         // Initialize return values.
@@ -657,8 +657,7 @@ driver_get_device_mig_enabled(struct error *err, struct driver_device *dev, bool
                 // to determine if MIG mode is enabled or not.
                 case NVML_SUCCESS:
                         current = res.driver_get_device_mig_mode_res_u.mode.current;
-                        pending = res.driver_get_device_mig_mode_res_u.mode.pending;
-                        *enabled = (current == NVML_DEVICE_MIG_ENABLE) && (current == pending);
+                        *enabled = (current == NVML_DEVICE_MIG_ENABLE);
                         break;
                 // If the error indicates that the function wasn't found, then
                 // we are on an older version of NVML that doesn't support MIG.
