@@ -100,8 +100,8 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Thu Mar 24 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.1
-- [WSL2] Fix bug where /dev/dgx is not mounted when NVIDIA_DRIVER_CAPABILITIES does not include "compute"
-- [WSL2] Fix segmentation fault on WSL2s system with no adpaters present (e.g. /dev/dgx missing)
+- [WSL2] Fix bug where /dev/dxg is not mounted when NVIDIA_DRIVER_CAPABILITIES does not include "compute"
+- [WSL2] Fix segmentation fault on WSL2s system with no adpaters present (e.g. /dev/dxg missing)
 
 * Fri Mar 18 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.9.0-1
 - Add additional check for Tegra in /sys/.../family file in CLI
