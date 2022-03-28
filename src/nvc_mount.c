@@ -803,7 +803,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
 
         /* Device mounts */
         for (size_t i = 0; i < info->ndevs; ++i) {
-                /* On WSL2 we only mount the /dev/dgx device and as such these checks are not applicable. */
+                /* On WSL2 we only mount the /dev/dxg device and as such these checks are not applicable. */
                 if (!ctx->dxcore.initialized) {
                         /* XXX Only compute libraries require specific devices (e.g. UVM). */
                         if (!(cnt->flags & OPT_COMPUTE_LIBS) && major(info->devs[i].id) != NV_DEVICE_MAJOR)
