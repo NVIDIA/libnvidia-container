@@ -1,114 +1,273 @@
-# Build packages for all supported OS / ARCH combinations
+# Copyright (c) 2022, NVIDIA CORPORATION.  All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-stages:
-  - build-one
-  - build-all
-
-.build-setup: &build-setup
-  image: docker:19.03.8
-
+default:
+  image: docker:stable
   services:
-    - name: docker:19.03.8-dind
+    - name: docker:stable-dind
       command: ["--experimental"]
 
+stages:
+  - package-build
+
+# Define the package build helpers
+.multi-arch-build:
   before_script:
-  - apk update
-  - apk upgrade
-  - apk add coreutils build-base sed git bash make
-  - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes -c yes
+    - apk add --no-cache coreutils build-base sed git bash make
+    - '[[ -n "${SKIP_QEMU_SETUP}" ]] || docker run --rm --privileged multiarch/qemu-user-static --reset -p yes -c yes'
 
-# build-one jobs build packages for a single OS / ARCH combination.
-#
-# They are run during the first stage of the pipeline as a smoke test to ensure
-# that we can successfully build packages on all of our architectures for a
-# single OS. They are triggered on any change to an MR. No artifacts are
-# produced as part of build-one jobs.
-.build-one-setup: &build-one-setup
-  <<: *build-setup
-  stage: build-one
-  only:
-    - merge_requests
-
-# build-all jobs build packages for every OS / ARCH combination we support.
-#
-# They are run under two conditions:
-# 1) Automatically whenever a new tag is pushed to the repo (e.g. v1.1.0)
-# 2) Manually by a reviewer just before merging a MR.
-#
-# Unlike build-one jobs, it takes a long time to build the full suite
-# OS / ARCH combinations, so this is optimized to only run once per MR
-# (assuming it all passes). A full set of artifacts including the packages
-# built for each OS / ARCH are produced as a result of these jobs.
-.build-all-setup: &build-all-setup
-  <<: *build-setup
-  stage: build-all
-  timeout: 2h 30m
-  rules:
-    - if: $CI_COMMIT_TAG
-      when: always
-    - if: $CI_MERGE_REQUEST_ID
-      when: manual
-
+.package-artifacts:
   variables:
-    ARTIFACTS_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}-${CI_JOB_NAME}-artifacts-${CI_PIPELINE_ID}"
-    ARTIFACTS_DIR: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}-artifacts-${CI_PIPELINE_ID}"
-    DIST_DIR: "${CI_PROJECT_DIR}/${ARTIFACTS_DIR}"
+    ARTIFACTS_NAME: "libnvidia-container-${CI_PIPELINE_ID}"
+    ARTIFACTS_ROOT: "libnvidia-container-${CI_PIPELINE_ID}"
+    DIST_DIR: ${CI_PROJECT_DIR}/${ARTIFACTS_ROOT}
 
-  artifacts:
-    name: ${ARTIFACTS_NAME}
-    paths:
-      - ${ARTIFACTS_DIR}
-
-# The full set of build-one jobs organizes to build
-# ubuntu18.04 in parallel on each of our supported ARCHs.
-build-one-amd64:
-  <<: *build-one-setup
+.package-build:
+  extends:
+    - .multi-arch-build
+    - .package-artifacts
+  stage: package-build
+  timeout: 2h 30m
   script:
-    - make -f mk/docker.mk ubuntu18.04-amd64
+    - make -f mk/docker.mk ${DIST}-${ARCH}
 
-build-one-ppc64le:
-  <<: *build-one-setup
-  script:
-    - make -f mk/docker.mk ubuntu18.04-ppc64le
 
-build-one-arm64:
-  <<: *build-one-setup
-  script:
-    - make -f mk/docker.mk ubuntu18.04-arm64
+# Define the distribution targets
+.dist-amazonlinux2:
+  variables:
+    DIST: amazonlinux2
 
-# The full set of build-all jobs organized to
-# have builds for each ARCH run in parallel.
-build-all-amd64:
-  <<: *build-all-setup
-  script:
-    - make -f mk/docker.mk docker-amd64
+.dist-centos7:
+  variables:
+    DIST: centos7
+
+.dist-centos8:
+  variables:
+    DIST: centos8
+
+.dist-debian10:
+  variables:
+    DIST: debian10
+
+.dist-debian9:
+  variables:
+    DIST: debian9
+
+.dist-opensuse-leap15.1:
+  variables:
+    DIST: opensuse-leap15.1
+
+.dist-rhel7:
+  variables:
+    DIST: rhel7
+
+.dist-rhel8:
+  variables:
+    DIST: rhel8
+
+.dist-ubuntu16.04:
+  variables:
+    DIST: ubuntu16.04
+
+.dist-ubuntu18.04:
+  variables:
+    DIST: ubuntu18.04
+
+.dist-ubuntu20.04:
+  variables:
+    DIST: ubuntu20.04
+
+# Define architecture targets
+.arch-aarch64:
+  variables:
+    ARCH: aarch64
+
+.arch-amd64:
+  variables:
+    ARCH: amd64
+
+.arch-arm64:
+  variables:
+    ARCH: arm64
+
+.arch-ppc64le:
+  variables:
+    ARCH: ppc64le
+
+.arch-x86_64:
+  variables:
+    ARCH: x86_64
+
+# Define the package build targets
+package-amazonlinux2-aarch64:
+  extends:
+    - .package-build
+    - .dist-amazonlinux2
+    - .arch-aarch64
   needs:
-    - build-one-amd64
+    - package-ubuntu18.04-arm64
 
-build-all-x86_64:
-  <<: *build-all-setup
-  script:
-    - make -f mk/docker.mk docker-x86_64
+package-amazonlinux2-x86_64:
+  extends:
+    - .package-build
+    - .dist-amazonlinux2
+    - .arch-x86_64
   needs:
-    - build-one-amd64
+    - package-ubuntu18.04-amd64
 
-build-all-ppc64le:
-  <<: *build-all-setup
-  script:
-    - make -f mk/docker.mk docker-ppc64le
+package-centos7-ppc64le:
+  extends:
+    - .package-build
+    - .dist-centos7
+    - .arch-ppc64le
   needs:
-    - build-one-ppc64le
+    - package-ubuntu18.04-ppc64le
 
-build-all-arm64:
-  <<: *build-all-setup
-  script:
-    - make -f mk/docker.mk docker-arm64
+package-centos7-x86_64:
+  extends:
+    - .package-build
+    - .dist-centos7
+    - .arch-x86_64
   needs:
-    - build-one-arm64
+    - package-ubuntu18.04-amd64
 
-build-all-aarch64:
-  <<: *build-all-setup
-  script:
-    - make -f mk/docker.mk docker-aarch64
+package-centos8-aarch64:
+  extends:
+    - .package-build
+    - .dist-centos8
+    - .arch-aarch64
   needs:
-    - build-one-arm64
+    - package-ubuntu18.04-arm64
+
+package-centos8-ppc64le:
+  extends:
+    - .package-build
+    - .dist-centos8
+    - .arch-ppc64le
+  needs:
+    - package-ubuntu18.04-ppc64le
+
+package-centos8-x86_64:
+  extends:
+    - .package-build
+    - .dist-centos8
+    - .arch-x86_64
+  needs:
+    - package-ubuntu18.04-amd64
+
+package-debian10-amd64:
+  extends:
+    - .package-build
+    - .dist-debian10
+    - .arch-amd64
+  needs:
+    - package-ubuntu18.04-amd64
+
+package-debian9-amd64:
+  extends:
+    - .package-build
+    - .dist-debian9
+    - .arch-amd64
+  needs:
+    - package-ubuntu18.04-amd64
+
+package-opensuse-leap15.1-x86_64:
+  extends:
+    - .package-build
+    - .dist-opensuse-leap15.1
+    - .arch-x86_64
+  needs:
+    - package-ubuntu18.04-amd64
+
+package-rhel7-ppc64le:
+  extends:
+    - .package-build
+    - .dist-rhel7
+    - .arch-ppc64le
+  needs:
+    - package-ubuntu18.04-ppc64le
+
+package-rhel7-x86_64:
+  extends:
+    - .package-build
+    - .dist-rhel7
+    - .arch-x86_64
+  needs:
+    - package-ubuntu18.04-amd64
+
+package-rhel8-aarch64:
+  extends:
+    - .package-build
+    - .dist-rhel8
+    - .arch-aarch64
+  needs:
+    - package-ubuntu18.04-arm64
+
+package-rhel8-ppc64le:
+  extends:
+    - .package-build
+    - .dist-rhel8
+    - .arch-ppc64le
+  needs:
+    - package-ubuntu18.04-ppc64le
+
+package-rhel8-x86_64:
+  extends:
+    - .package-build
+    - .dist-rhel8
+    - .arch-x86_64
+  needs:
+    - package-ubuntu18.04-amd64
+
+package-ubuntu16.04-amd64:
+  extends:
+    - .package-build
+    - .dist-ubuntu16.04
+    - .arch-amd64
+  needs:
+    - package-ubuntu18.04-amd64
+
+package-ubuntu16.04-ppc64le:
+  extends:
+    - .package-build
+    - .dist-ubuntu16.04
+    - .arch-ppc64le
+  needs:
+    - package-ubuntu18.04-ppc64le
+
+package-ubuntu18.04-amd64:
+  extends:
+    - .package-build
+    - .dist-ubuntu18.04
+    - .arch-amd64
+
+package-ubuntu18.04-arm64:
+  extends:
+    - .package-build
+    - .dist-ubuntu18.04
+    - .arch-arm64
+
+package-ubuntu18.04-ppc64le:
+  extends:
+    - .package-build
+    - .dist-ubuntu18.04
+    - .arch-ppc64le
+
+package-ubuntu20.04-amd64:
+  extends:
+    - .package-build
+    - .dist-ubuntu20.04
+    - .arch-amd64
+  needs:
+    - package-ubuntu18.04-amd64
