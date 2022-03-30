@@ -322,10 +322,6 @@ int dxcore_init_context(struct dxcore_context* pCtx)
 
         dxcore_enum_adapters(pCtx, &lib);
 
-        if (pCtx->adapterCount == 0) {
-                log_err("dxcore library is present but no adapters were found");
-                goto error;
-        }
 
         log_info("dxcore layer initialized successfully");
         pCtx->initialized = 1;
