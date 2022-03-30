@@ -322,7 +322,6 @@ int dxcore_init_context(struct dxcore_context* pCtx)
 
         dxcore_enum_adapters(pCtx, &lib);
 
-
         log_info("dxcore layer initialized successfully");
         pCtx->initialized = 1;
 
