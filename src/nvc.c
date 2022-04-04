@@ -394,6 +394,10 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
         if (dxcore_init_context(&ctx->dxcore) < 0) {
                 log_info("dxcore initialization failed, continuing assuming a non-WSL environment");
                 ctx->dxcore.initialized = 0;
+        } else if (ctx->dxcore.adapterCount == 0) {
+                log_err("dxcore initialization succeeded but no adapters were found");
+                error_setx(&ctx->err, "WSL environment detected but no adapters were found");
+                goto fail;
         }
 
         if (flags & OPT_LOAD_KMODS) {
