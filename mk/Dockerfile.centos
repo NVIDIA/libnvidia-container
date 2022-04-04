@@ -25,7 +25,6 @@ RUN yum install -y \
         redhat-lsb-core \
         libtirpc-devel \
         rpm-build \
-        rpm-sign \
         rpmlint \
         which && \
     rm -rf /var/cache/yum/*
