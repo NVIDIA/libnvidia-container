@@ -4,6 +4,7 @@ FROM ${BASEIMAGE}
 SHELL ["/bin/bash", "-c"]
 
 RUN yum install -y \
+        --setopt=best=0 \
         bzip2 \
         createrepo \
         elfutils-libelf-devel \

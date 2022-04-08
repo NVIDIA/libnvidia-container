@@ -14,6 +14,7 @@ RUN if [ "${OS_VERSION}" = "8" ]; then \
     fi
 
 RUN yum install -y \
+        --setopt=best=0 \
         bzip2 \
         createrepo \
         elfutils-libelf-devel \
