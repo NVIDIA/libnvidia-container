@@ -50,13 +50,13 @@ sudo apt-get update
 
 For pre-releases, you need to enable the experimental repos:
 ```bash
-sudo sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/libnvidia-container.list
+sudo sed -i -e '/experimental/ s/^#//g' /etc/apt/sources.list.d/nvidia-container-toolkit.list
 sudo apt-get update
 ```
 
 To later disable the experimental repos, you can run:
 ```bash
-sudo sed -i -e '/experimental/ s/^/#/g' /etc/apt/sources.list.d/libnvidia-container.list
+sudo sed -i -e '/experimental/ s/^/#/g' /etc/apt/sources.list.d/nvidia-container-toolkit.list
 sudo apt-get update
 ```
 
