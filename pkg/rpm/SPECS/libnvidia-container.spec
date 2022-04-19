@@ -3,15 +3,15 @@ License:        BSD-3-Clause AND Apache-2.0 AND GPL-3.0-or-later AND LGPL-3.0-or
 # elftoolchain is licensed under BSD-3-Clause
 #  https://github.com/elftoolchain/elftoolchain#copyright-and-license
 # libnvidia-container is licensed under apache-2.0
-#  https://github.com/NVIDIA/libnvidia-container/blob/master/LICENSE
+#  https://github.com/NVIDIA/libnvidia-container/blob/main/LICENSE
 # libnvidia-container includes the GPLv3 license
-#  https://github.com/NVIDIA/libnvidia-container/blob/master/COPYING
+#  https://github.com/NVIDIA/libnvidia-container/blob/main/COPYING
 # libnvidia-container includes the LGPLv3 license
-#  https://github.com/NVIDIA/libnvidia-container/blob/master/COPYING.LESSER
+#  https://github.com/NVIDIA/libnvidia-container/blob/main/COPYING.LESSER
 # nvidia-modprobe is licensed under GPLv2
-#  https://github.com/NVIDIA/nvidia-modprobe/blob/master/COPYING
+#  https://github.com/NVIDIA/nvidia-modprobe/blob/main/COPYING
 # several nvidia-modprobe files contain the MIT license header
-#  https://github.com/NVIDIA/nvidia-modprobe/blob/master/utils.mk
+#  https://github.com/NVIDIA/nvidia-modprobe/blob/main/utils.mk
 Vendor: NVIDIA CORPORATION
 Packager: NVIDIA CORPORATION <cudatools@nvidia.com>
 URL: https://github.com/NVIDIA/libnvidia-container

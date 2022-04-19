@@ -1,6 +1,6 @@
 # libnvidia-container
 
-[![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg?style=flat-square)](https://raw.githubusercontent.com/NVIDIA/libnvidia-container/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-New%20BSD-blue.svg?style=flat-square)](https://raw.githubusercontent.com/NVIDIA/libnvidia-container/main/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/NVIDIA/libnvidia-container/all.svg?style=flat-square)](https://github.com/NVIDIA/libnvidia-container/releases)
 [![Package repository](https://img.shields.io/badge/packages-repository-b956e8.svg?style=flat-square)](https://nvidia.github.io/libnvidia-container)
 [![Travis](https://img.shields.io/travis/NVIDIA/libnvidia-container.svg?style=flat-square)](https://travis-ci.org/NVIDIA/libnvidia-container)
@@ -78,10 +78,10 @@ nvidia-smi -L
 
 ## Copyright and License
 
-This project is released under the [BSD 3-clause license](https://github.com/NVIDIA/libnvidia-container/blob/master/LICENSE).
+This project is released under the [BSD 3-clause license](https://github.com/NVIDIA/libnvidia-container/blob/main/LICENSE).
 
 Additionally, this project can be dynamically linked with libelf from the elfutils package (https://sourceware.org/elfutils), in which case additional terms apply.\
-Refer to [NOTICE](https://github.com/NVIDIA/libnvidia-container/blob/master/NOTICE) for more information.
+Refer to [NOTICE](https://github.com/NVIDIA/libnvidia-container/blob/main/NOTICE) for more information.
 
 ## Issues and Contributing
 
