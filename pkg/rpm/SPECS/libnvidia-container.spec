@@ -99,9 +99,10 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Wed May 11 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.2
+* Fri May 13 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.2
 - Bump libtirpc to 1.3.2
 - Fix bug when running host ldconfig using glibc compiled with a non-standard prefix
+- Add libcudadebugger.so to list of compute libraries
 
 * Thu Mar 24 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.1
 - [WSL2] Fix segmentation fault on WSL2s system with no adpaters present (e.g. /dev/dxg missing)
