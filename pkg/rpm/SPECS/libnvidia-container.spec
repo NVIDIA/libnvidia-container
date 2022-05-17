@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Tue May 17 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.3
+- Dummy entry
+
 * Fri May 13 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.2
 - Bump libtirpc to 1.3.2
 - Fix bug when running host ldconfig using glibc compiled with a non-standard prefix
