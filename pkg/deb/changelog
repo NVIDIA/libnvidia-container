@@ -1,3 +1,9 @@
+libnvidia-container (1.10.0~rc.3-1) experimental; urgency=medium
+
+  * Fix bug introduced when adding libcudadebugger.so to list of libraries
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 17 May 2022 13:21:50 +0200
+
 libnvidia-container (1.10.0~rc.2-1) experimental; urgency=medium
 
   * Bump libtirpc to 1.3.2
