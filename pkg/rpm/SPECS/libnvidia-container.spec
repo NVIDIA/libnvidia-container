@@ -99,8 +99,8 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Wed Jun 01 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.4
-- Dummy entry
+* Mon Jun 13 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-1
+- Promote 1.10.0-0.1.rc.3 to 1.10.0-1
 
 * Tue May 17 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.3
 - Fix bug introduced when adding libcudadebugger.so to list of libraries
