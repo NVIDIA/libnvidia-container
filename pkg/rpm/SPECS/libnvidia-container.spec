@@ -3,15 +3,15 @@ License:        BSD-3-Clause AND Apache-2.0 AND GPL-3.0-or-later AND LGPL-3.0-or
 # elftoolchain is licensed under BSD-3-Clause
 #  https://github.com/elftoolchain/elftoolchain#copyright-and-license
 # libnvidia-container is licensed under apache-2.0
-#  https://github.com/NVIDIA/libnvidia-container/blob/master/LICENSE
+#  https://github.com/NVIDIA/libnvidia-container/blob/main/LICENSE
 # libnvidia-container includes the GPLv3 license
-#  https://github.com/NVIDIA/libnvidia-container/blob/master/COPYING
+#  https://github.com/NVIDIA/libnvidia-container/blob/main/COPYING
 # libnvidia-container includes the LGPLv3 license
-#  https://github.com/NVIDIA/libnvidia-container/blob/master/COPYING.LESSER
+#  https://github.com/NVIDIA/libnvidia-container/blob/main/COPYING.LESSER
 # nvidia-modprobe is licensed under GPLv2
-#  https://github.com/NVIDIA/nvidia-modprobe/blob/master/COPYING
+#  https://github.com/NVIDIA/nvidia-modprobe/blob/main/COPYING
 # several nvidia-modprobe files contain the MIT license header
-#  https://github.com/NVIDIA/nvidia-modprobe/blob/master/utils.mk
+#  https://github.com/NVIDIA/nvidia-modprobe/blob/main/utils.mk
 Vendor: NVIDIA CORPORATION
 Packager: NVIDIA CORPORATION <cudatools@nvidia.com>
 URL: https://github.com/NVIDIA/libnvidia-container
@@ -99,6 +99,22 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Mon Jun 13 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-1
+- Promote 1.10.0-0.1.rc.3 to 1.10.0-1
+
+* Tue May 17 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.3
+- Fix bug introduced when adding libcudadebugger.so to list of libraries
+
+* Fri May 13 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.2
+- Bump libtirpc to 1.3.2
+- Fix bug when running host ldconfig using glibc compiled with a non-standard prefix
+- Add libcudadebugger.so to list of compute libraries
+
+* Thu Mar 24 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.10.0-0.1.rc.1
+- [WSL2] Fix segmentation fault on WSL2s system with no adpaters present (e.g. /dev/dxg missing)
+- Ignore pending MIG mode when checking if a device is MIG enabled
+- [WSL2] Fix bug where /dev/dxg is not mounted when NVIDIA_DRIVER_CAPABILITIES does not include "compute"
+
 * Fri Mar 18 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.9.0-1
 - Add additional check for Tegra in /sys/.../family file in CLI
 - Update jetpack-specific CLI option to only load Base CSV files by default

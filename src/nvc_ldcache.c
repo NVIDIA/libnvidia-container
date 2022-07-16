@@ -359,7 +359,7 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
         if (validate_args(ctx, cnt != NULL) < 0)
                 return (-1);
 
-        argv = (char * []){cnt->cfg.ldconfig, cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
+        argv = (char * []){cnt->cfg.ldconfig, "-f", "/etc/ld.so.conf", "-C", "/etc/ld.so.cache", cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
         if (*argv[0] == '@') {
                 /*
                  * We treat this path specially to be relative to the host filesystem.

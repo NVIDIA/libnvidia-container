@@ -28,7 +28,7 @@ addons:
         notification_email: kklues@nvidia.com
         build_command_prepend: "make clean"
         build_command: "make"
-        branch_pattern: master
+        branch_pattern: main
 
 install:
     - sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub
