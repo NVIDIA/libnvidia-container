@@ -1846,6 +1846,26 @@ Description: NVIDIA container runtime hook
 
 Package: nvidia-container-toolkit
 Architecture: amd64
+Version: 1.11.0~rc.1-1
+Priority: optional
+Section: utils
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 9441
+Depends: libnvidia-container-tools (>= 1.10.0-1), libnvidia-container-tools (<< 2.0.0), libseccomp2
+Breaks: nvidia-container-runtime (<= 3.5.0-1), nvidia-container-runtime-hook
+Replaces: nvidia-container-runtime (<= 3.5.0-1), nvidia-container-runtime-hook
+Filename: ./nvidia-container-toolkit_1.11.0~rc.1-1_amd64.deb
+Size: 2084548
+MD5sum: 63c53faf71bbedd2e2937fa090f2b8e0
+SHA1: c7b4798ef2994e81b4d3ff8b543a9a8f858312ac
+SHA256: fc8f5b686ebe5e9c05fc337dfe2dbbbecd96657989509b967f79bc244dd3605b
+SHA512: eae9803a11df0e36d12b924eae70247a10d487366302e5daf82cafe05f7c7a038a52e0ee2bb8f1b8d245afe7597f06e028bf429f9b6632e3a11c8784d3655bf5
+Homepage: https://github.com/NVIDIA/nvidia-container-toolkit
+Description: NVIDIA Container toolkit
+ Provides tools and utilities to enable GPU support in containers.
+
+Package: nvidia-container-toolkit
+Architecture: amd64
 Version: 1.6.0~rc.1-1
 Priority: optional
 Section: utils
