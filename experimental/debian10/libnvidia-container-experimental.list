@@ -1,1 +1,2 @@
 deb https://nvidia.github.io/libnvidia-container/experimental/debian10/$(ARCH) /
+deb https://nvidia.github.io/libnvidia-container/stable/debian10/$(ARCH) /
