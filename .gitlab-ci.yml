@@ -13,9 +13,9 @@
 # limitations under the License.
 
 default:
-  image: docker:stable
+  image: docker
   services:
-    - name: docker:stable-dind
+    - name: docker:dind
       command: ["--experimental"]
 
 stages:

@@ -1,3 +1,15 @@
+libnvidia-container (1.11.0~rc.2-1) experimental; urgency=medium
+
+  * Dummy entry
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 26 Jul 2022 14:59:03 +0200
+
+libnvidia-container (1.11.0~rc.1-1) experimental; urgency=medium
+
+  * Dummy entry
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Wed, 13 Jul 2022 13:11:01 +0200
+
 libnvidia-container (1.10.0-1) UNRELEASED; urgency=medium
 
   * Promote 1.10.0~rc.3-1 to 1.10.0-1
