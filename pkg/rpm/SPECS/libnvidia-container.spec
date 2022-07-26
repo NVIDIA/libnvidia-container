@@ -100,7 +100,7 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Tue Jul 26 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.11.0-0.1.rc.2
-- Dummy entry
+- Ensure that no-pivot-root option also updates LDCache
 
 * Wed Jul 13 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.11.0-0.1.rc.1
 - Dummy entry

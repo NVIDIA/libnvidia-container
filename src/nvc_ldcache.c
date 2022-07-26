@@ -112,6 +112,14 @@ change_rootfs(struct error *err, const char *rootfs, bool no_pivot, bool mount_p
                 if (xmount(err, rootfs, "/", NULL, MS_MOVE, NULL) < 0) {
                         goto fail;
                 }
+                if ((newroot = xopen(err, rootfs, O_PATH|O_DIRECTORY)) < 0) {
+                        log_errf("failed calling xopen %s", rootfs);
+                        goto fail;
+                }
+                if (fchdir(newroot) < 0) {
+                        log_errf("failed calling fchdir %s", newroot);
+                        goto fail;
+                }
         } else {
                 if ((oldroot = xopen(err, "/", O_PATH|O_DIRECTORY)) < 0)
                         goto fail;

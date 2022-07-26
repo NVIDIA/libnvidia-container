@@ -1,6 +1,6 @@
 libnvidia-container (1.11.0~rc.2-1) experimental; urgency=medium
 
-  * Dummy entry
+  * Ensure that no-pivot-root option also updates LDCache
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 26 Jul 2022 14:59:03 +0200
 
