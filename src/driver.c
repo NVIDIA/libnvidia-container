@@ -128,6 +128,14 @@ driver_init_1_svc(ptr_t ctxptr, driver_init_res *res, maybe_unused struct svc_re
                         goto fail;
                 if (xdlopen(err, "libpthread.so.0", RTLD_NOW) == NULL)
                         goto fail;
+#if defined(__aarch64__)
+                /* libnvidia-ml.so.1 depends on libgcc_s.so.1 in its arm64 build. Not
+                 * preloading here will cause unresolved symbols when chrooting into the
+                 * container environment
+                 */
+                if (xdlopen(err, "libgcc_s.so.1", RTLD_NOW) == NULL)
+                        goto fail;
+#endif
 
                 if (chroot(ctx->root) < 0 || chdir("/") < 0) {
                         error_set(err, "change root failed");
