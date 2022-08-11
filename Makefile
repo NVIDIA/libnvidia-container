@@ -184,7 +184,7 @@ LIB_LDLIBS         = $(LIB_LDLIBS_STATIC) $(LIB_LDLIBS_SHARED)
 BIN_CPPFLAGS       = -include $(BUILD_DEFS) $(CPPFLAGS)
 BIN_CFLAGS         = -I$(SRCS_DIR) -fPIE -flto $(CFLAGS)
 BIN_LDFLAGS        = -L. -pie $(LDFLAGS) -Wl,-rpath='$$ORIGIN/../$$LIB'
-BIN_LDLIBS         = -l:$(LIB_SHARED) -ldl -lcap $(LDLIBS)
+BIN_LDLIBS         = -l:$(LIB_STATIC) -lseccomp -lcap -ldl
 
 $(word 1,$(LIB_RPC_SRCS)): RPCGENFLAGS=-h
 $(word 2,$(LIB_RPC_SRCS)): RPCGENFLAGS=-c
