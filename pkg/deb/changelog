@@ -1,8 +1,8 @@
 libnvidia-container (1.11.0~rc.3-1) experimental; urgency=medium
 
-  * Dummy entry
+  * Preload libgcc_s.so.1 on arm64 systems
 
- -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 08 Aug 2022 15:48:44 +0200
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 22 Aug 2022 17:11:32 +0200
 
 libnvidia-container (1.11.0~rc.2-1) experimental; urgency=medium
 
