@@ -142,6 +142,7 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --fedora35%: OS := centos
 # We need to specify this version to ensure that the correct packages are installed in the centos8 build image
 --fedora35%: VERSION := 8
+--fedora35%: ARTIFACTS_DIR = $(DIST_DIR)/fedora35/$(ARCH)
 
 # private opensuse-leap target with overrides
 --opensuse-leap%: OS := opensuse-leap
