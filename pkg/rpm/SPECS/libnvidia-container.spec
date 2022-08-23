@@ -99,7 +99,7 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Mon Aug 22 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.11.0-0.1.rc.3
+* Tue Aug 23 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.11.0-0.1.rc.3
 - Preload libgcc_s.so.1 on arm64 systems
 
 * Tue Jul 26 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.11.0-0.1.rc.2
