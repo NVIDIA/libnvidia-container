@@ -117,7 +117,7 @@ change_rootfs(struct error *err, const char *rootfs, bool no_pivot, bool mount_p
                         goto fail;
                 }
                 if (fchdir(newroot) < 0) {
-                        log_errf("failed calling fchdir %s", newroot);
+                        log_errf("failed calling fchdir %d", newroot);
                         goto fail;
                 }
         } else {
