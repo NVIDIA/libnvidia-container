@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repomd xmlns="http://linux.duke.edu/metadata/repo" xmlns:rpm="http://linux.duke.edu/metadata/rpm">
+  <revision>1.0</revision>
+  <data type="primary">
+    <checksum type="sha512">9ba421c9c559f42815083779dbe8ccc9645cdf6fcff651a7e103752f1745ca11ac3c0cab404ae0399688008f70ea71c74b581971e9d6a1941ddef38028d51a47</checksum>
+    <open-checksum type="sha512">121eb0df5c97774a4f6c5b99a1dc2803051cc5b6bb7a7bc3dff756a7caba6a12be78b475e7e80e8116a0bc95f08e93be830fc321ac06b0626349983b2ba2712f</open-checksum>
+    <location href="repodata/9ba421c9c559f42815083779dbe8ccc9645cdf6fcff651a7e103752f1745ca11ac3c0cab404ae0399688008f70ea71c74b581971e9d6a1941ddef38028d51a47-primary.xml.gz"/>
+    <timestamp>1661341910</timestamp>
+    <size>2509</size>
+    <open-size>16074</open-size>
+  </data>
+  <data type="filelists">
+    <checksum type="sha512">fa38ad7441544164257d76ab413745c4c5903a0b06ebb5986d87d6a2f0bf171b842caee653a107aa3fb63ba59cc0d558553ef088cf77292cd3a6c0e9eedb2809</checksum>
+    <open-checksum type="sha512">54ae4656644e3244ca8d9d1c741ee88745b3604dd18a7f8d2c8978c5cbe1ef84dcae7d25a4a0b7358bd0684f678f07c490122d8a2cef6fc92d13f69db2366893</open-checksum>
+    <location href="repodata/fa38ad7441544164257d76ab413745c4c5903a0b06ebb5986d87d6a2f0bf171b842caee653a107aa3fb63ba59cc0d558553ef088cf77292cd3a6c0e9eedb2809-filelists.xml.gz"/>
+    <timestamp>1661341910</timestamp>
+    <size>1353</size>
+    <open-size>6096</open-size>
+  </data>
+  <data type="other">
+    <checksum type="sha512">546c0618a4989cc629818a804f2f6df2d1c06cc6fabb69e47f37470689a5f7e54aae35bfaed0d621643fdfc35986ab7f80787f61dae6ec75c68558286b192855</checksum>
+    <open-checksum type="sha512">c2fa854738c4e291bab01e7d7947f9187a4f6770c0681a59cd122a148b25b3e3f6b616285e8ee1a3cc9ee08584a1021a684b9aa5535531e2958ee1cedd318169</open-checksum>
+    <location href="repodata/546c0618a4989cc629818a804f2f6df2d1c06cc6fabb69e47f37470689a5f7e54aae35bfaed0d621643fdfc35986ab7f80787f61dae6ec75c68558286b192855-other.xml.gz"/>
+    <timestamp>1661341910</timestamp>
+    <size>1928</size>
+    <open-size>14789</open-size>
+  </data>
+</repomd>
