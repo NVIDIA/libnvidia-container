@@ -100,7 +100,7 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Wed Sep 28 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.12.0-0.1.rc.1
-- Dummy entry
+- Include NVVM compiler library in compute libs
 
 * Mon Sep 05 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.11.0-1
 - Promote 1.11.0-0.1.rc.3 to 1.11.0-1

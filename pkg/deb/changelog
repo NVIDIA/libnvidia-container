@@ -1,6 +1,6 @@
 libnvidia-container (1.12.0~rc.1-1) experimental; urgency=medium
 
-  * Dummy entry
+  * Include NVVM compiler library in compute libs
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Wed, 28 Sep 2022 10:52:27 +0200
 
