@@ -33,7 +33,7 @@ REVISION 	 ?= $(shell git rev-parse HEAD)
 
 # Supported OSs by architecture
 AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
-X86_64_TARGETS := fedora35 centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1
+X86_64_TARGETS := fedora35 centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.3 opensuse-leap15.4
 PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7 centos8 rhel7 rhel8
 ARM64_TARGETS := ubuntu18.04
 AARCH64_TARGETS := fedora35 centos8 rhel8 amazonlinux2
