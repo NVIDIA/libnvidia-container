@@ -68,9 +68,13 @@ stages:
   variables:
     DIST: fedora35
 
-.dist-opensuse-leap15.1:
+.dist-opensuse-leap15.3:
   variables:
-    DIST: opensuse-leap15.1
+    DIST: opensuse-leap15.3
+
+.dist-opensuse-leap15.4:
+  variables:
+    DIST: opensuse-leap15.4
 
 .dist-rhel7:
   variables:
@@ -202,10 +206,18 @@ package-fedora35-x86_64:
   needs:
     - package-ubuntu18.04-amd64
 
-package-opensuse-leap15.1-x86_64:
+package-opensuse-leap15.3-x86_64:
   extends:
     - .package-build
-    - .dist-opensuse-leap15.1
+    - .dist-opensuse-leap15.3
+    - .arch-x86_64
+  needs:
+    - package-ubuntu18.04-amd64
+
+package-opensuse-leap15.4-x86_64:
+  extends:
+    - .package-build
+    - .dist-opensuse-leap15.4
     - .arch-x86_64
   needs:
     - package-ubuntu18.04-amd64
