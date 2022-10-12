@@ -1,6 +1,6 @@
 libnvidia-container (1.12.0~rc.2-1) experimental; urgency=medium
 
-  * Dummy entry
+  * Skip creation of existing files when mounting them from the host
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 10 Oct 2022 17:14:12 +0200
 

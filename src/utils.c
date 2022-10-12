@@ -523,6 +523,14 @@ file_create(struct error *err, const char *path, const char *data, uid_t uid, gi
         int flags = O_NOFOLLOW|O_CREAT;
         int rv = -1;
 
+        // We check whether the file already exists with the required mode and skip the creation.
+        if (file_mode(err, path, &perm) == 0) {
+                if (perm == mode) {
+                        log_errf("The path %s alreay exists with the required mode; skipping create", path);
+                        return (0);
+                }
+        }
+
         if ((p = xstrdup(err, path)) == NULL)
                 return (-1);
 
