@@ -21,6 +21,13 @@ default:
 stages:
   - package-build
 
+.main-or-manual:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG && $CI_COMMIT_TAG != ""
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: manual
+
 # Define the package build helpers
 .multi-arch-build:
   before_script:
@@ -45,10 +52,14 @@ stages:
 
 # Define the distribution targets
 .dist-amazonlinux2:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: amazonlinux2
 
 .dist-centos7:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: centos7
 
@@ -57,30 +68,44 @@ stages:
     DIST: centos8
 
 .dist-debian10:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: debian10
 
 .dist-debian9:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: debian9
 
 .dist-fedora35:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: fedora35
 
 .dist-opensuse-leap15.1:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: opensuse-leap15.1
 
 .dist-rhel7:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: rhel7
 
 .dist-rhel8:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: rhel8
 
 .dist-ubuntu16.04:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: ubuntu16.04
 
@@ -89,6 +114,8 @@ stages:
     DIST: ubuntu18.04
 
 .dist-ubuntu20.04:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     DIST: ubuntu20.04
 
@@ -106,6 +133,8 @@ stages:
     ARCH: arm64
 
 .arch-ppc64le:
+  rules:
+    - !reference [.main-or-manual, rules]
   variables:
     ARCH: ppc64le
 
