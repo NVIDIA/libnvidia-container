@@ -31,6 +31,8 @@ DIST_DIR     ?= $(CURDIR)/dist
 MAKE_DIR     ?= $(CURDIR)/mk
 REVISION 	 ?= $(shell git rev-parse HEAD)
 
+include $(CURDIR)/versions.mk
+
 # Supported OSs by architecture
 AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
 X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1
@@ -161,11 +163,14 @@ docker-build-%: $(ARTIFACTS_DIR)
 	    --build-arg CFLAGS="$(CFLAGS)" \
 	    --build-arg LDLIBS="$(LDLIBS)" \
 	    --build-arg REVISION="$(REVISION)" \
+	    --build-arg LIB_VERSION="$(LIB_VERSION)" \
+	    --build-arg LIB_TAG="$(LIB_TAG)" \
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
 	$(DOCKER) run \
 	    --platform=linux/$(ARCH) \
+	    --rm \
 	    -e TAG \
 	    -v $(ARTIFACTS_DIR):/dist \
 	    $(BUILDIMAGE)

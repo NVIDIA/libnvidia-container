@@ -101,13 +101,6 @@ BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds
 ##### Target definitions #####
 
 ARCH    ?= $(call getarch)
-MAJOR   := $(call getdef,NVC_MAJOR,$(LIB_INCS))
-MINOR   := $(call getdef,NVC_MINOR,$(LIB_INCS))
-PATCH   := $(call getdef,NVC_PATCH,$(LIB_INCS))
-# Extract the VERSION and TAG from the version header file. We strip quotes.
-VERSION_STRING := $(subst ",,$(call getdef,NVC_VERSION,$(LIB_INCS)))
-TAG     := $(subst ",,$(call getdef,NVC_TAG,$(LIB_INCS)))
-VERSION := $(MAJOR).$(MINOR).$(PATCH)
 
 ifeq ($(MAJOR),)
 $(error Invalid major version)
@@ -122,6 +115,14 @@ endif
 ifneq ($(VERSION_STRING),$(VERSION)$(if $(TAG),-$(TAG),))
 $(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(TAG),-$(TAG),))
 endif
+
+$(SRCS_DIR)/nvc.h: $(SRCS_DIR)/nvc.h.template
+	cat $< | \
+	sed -e 's/{{NVC_MAJOR}}/$(MAJOR)/g' | \
+	sed -e 's/{{NVC_MINOR}}/$(MINOR)/g' | \
+	sed -e 's/{{NVC_PATCH}}/$(PATCH)/g' | \
+	sed -e 's/{{NVC_TAG}}/$(if $(TAG),"$(TAG)",)/g' | \
+	sed -e 's/{{NVC_VERSION}}/"$(VERSION_STRING)"/g' > $@
 
 BIN_NAME    := nvidia-container-cli
 LIB_NAME    := libnvidia-container
@@ -213,7 +214,7 @@ $(LIB_RPC_SRCS): $(LIB_RPC_SPEC)
 	$(RM) $@
 	cd $(dir $@) && $(RPCGEN) $(RPCGENFLAGS) -C -M -N -o $(notdir $@) $(LIB_RPC_SPEC)
 
-$(LIB_OBJS): %.lo: %.c | deps
+$(LIB_OBJS): %.lo: %.c | deps $(SRCS_DIR)/nvc.h
 	$(CC) $(LIB_CFLAGS) $(LIB_CPPFLAGS) -MMD -MF $*.d -c $(OUTPUT_OPTION) $<
 
 $(BIN_OBJS): %.o: %.c | shared
@@ -335,6 +336,7 @@ clean: mostlyclean depsclean
 distclean: clean
 	$(RM) -r $(DEPS_DIR) $(DIST_DIR) $(DEBUG_DIR)
 	$(RM) $(LIB_RPC_SRCS) $(LIB_STATIC) $(LIB_SHARED) $(BIN_NAME)
+	$(RM) -f $(SRCS_DIR)/nvc.h
 
 deb: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)_$(ARCH)
 deb: prefix:=/usr
