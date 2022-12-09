@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Fri Dec 09 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.12.0-0.1.rc.3
+- Bump version to 1.12.0-rc.3
+
 * Mon Oct 10 2022 NVIDIA CORPORATION <cudatools@nvidia.com> 1.12.0-0.1.rc.2
 - Skip creation of existing files when mounting them from the host
 
