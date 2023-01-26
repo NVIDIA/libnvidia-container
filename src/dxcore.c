@@ -18,6 +18,7 @@ static const char * const dxcore_nvidia_driver_store_components[] = {
         "libnvidia-ml.so.1",                /* Core library for nvml */
         "libnvidia-ml_loader.so",           /* Core library for nvml on WSL */
         "nvidia-smi",                       /* nvidia-smi binary*/
+        "nvcubins.bin",                     /* Binary containing GPU code for cuda */
 };
 
 
