@@ -19,12 +19,16 @@ if [[ ! -d ${source} ]]; then
 fi
 
 
-repofile=$(basename $(find ${source} -maxdepth 1 -iname '*.repo' -o -iname '*.list'))
+set -x
+repofiles=$(find ${source} -maxdepth 1 -iname '*.repo' -o -iname '*.list')
 
-if [[ -z ${repofile} ]]; then
+if [[ -z ${repofiles} ]]; then
     echo "Repo definition not found"
     exit 1
 fi
 
 mkdir -p ${target}
-cd ${target} && ln -s ../${source}/${repofile} ${repofile}
+for r in ${repofiles}; do
+    repofile=$(basename ${r})
+    ( cd ${target} && ln -s ../${source}/${repofile} ${repofile} )
+done
