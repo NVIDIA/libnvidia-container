@@ -79,12 +79,6 @@ stages:
   variables:
     DIST: debian9
 
-.dist-fedora35:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: fedora35
-
 .dist-opensuse-leap15.1:
   rules:
     - !reference [.main-or-manual, rules]
@@ -212,22 +206,6 @@ package-debian9-amd64:
     - .package-build
     - .dist-debian9
     - .arch-amd64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-fedora35-aarch64:
-  extends:
-    - .package-build
-    - .dist-fedora35
-    - .arch-aarch64
-  needs:
-    - package-ubuntu18.04-arm64
-
-package-fedora35-x86_64:
-  extends:
-    - .package-build
-    - .dist-fedora35
-    - .arch-x86_64
   needs:
     - package-ubuntu18.04-amd64
 
