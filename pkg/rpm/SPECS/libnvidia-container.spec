@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Wed Feb 01 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.12.0-0.1.rc.5
+- Bump version to 1.12.0-rc.5
+
 * Wed Jan 18 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.12.0-0.1.rc.4
 - Fix bug when checking whether files exist on file creation from 1.12.0-rc.2
 

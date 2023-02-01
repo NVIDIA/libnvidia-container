@@ -1,3 +1,9 @@
+libnvidia-container (1.12.0~rc.5-1) experimental; urgency=medium
+
+  * Bump version to 1.12.0-rc.5
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com> Wed, 01 Feb 2023 04:05:08 +0100
+
 libnvidia-container (1.12.0~rc.4-1) experimental; urgency=medium
 
   * Fix bug when checking whether files exist on file creation from 1.12.0-rc.2
