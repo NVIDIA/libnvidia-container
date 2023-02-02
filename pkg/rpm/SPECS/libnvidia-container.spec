@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Thu Feb 02 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.12.0-0.1.rc.6
+- Add nvcubins.bin to DriverStore components under WSL2
+
 * Wed Feb 01 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.12.0-0.1.rc.5
 - Bump version to 1.12.0-rc.5
 
