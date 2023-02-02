@@ -1,3 +1,9 @@
+libnvidia-container (1.12.0~rc.6-1) experimental; urgency=medium
+
+  * Add nvcubins.bin to DriverStore components under WSL2
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com> Thu, 02 Feb 2023 11:47:55 +0100
+
 libnvidia-container (1.12.0~rc.5-1) experimental; urgency=medium
 
   * Bump version to 1.12.0-rc.5
