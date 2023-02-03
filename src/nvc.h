@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2022, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright (c) NVIDIA CORPORATION.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,8 @@ extern "C" {
 // For stable releases, this should be defined as empty.
 // For release candidates, this should be defined with the format "rc.1"
 // The version string should also be updated accordingly, using a ~ separator where applicable.
-#define NVC_TAG "rc.6"
-#define NVC_VERSION "1.12.0~rc.6"
+#define NVC_TAG
+#define NVC_VERSION "1.12.0"
 
 #define NVC_ARG_MAX 256
 
