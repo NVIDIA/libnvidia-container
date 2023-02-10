@@ -1,3 +1,9 @@
+libnvidia-container (1.13.0~rc.1-1) experimental; urgency=medium
+
+  * Bump version to 1.13-rc.1-1
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 10 Feb 2023 14:37:16 +0100
+
 libnvidia-container (1.12.0-1) UNRELEASED; urgency=medium
 
   * Add nvcubins.bin to DriverStore components under WSL2
