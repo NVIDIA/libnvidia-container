@@ -16,10 +16,10 @@ Vendor: NVIDIA CORPORATION
 Packager: NVIDIA CORPORATION <cudatools@nvidia.com>
 URL: https://github.com/NVIDIA/libnvidia-container
 BuildRequires: make
-Version: %{_version}
-%{!?_tag: %define _release 1}
-%{?_tag:  %define _release 0.1.%{_tag}}
-Release: %{_release}
+%{!?_tag: %define _version_tag %{_version}}
+%{?_tag: %define _version_tag %{_version}~%{_tag}}
+Version: %{_version_tag}
+Release: 1
 Summary: NVIDIA container runtime library
 %description
 The nvidia-container library provides an interface to configure GNU/Linux

@@ -119,8 +119,8 @@ ifeq ($(PATCH),)
 $(error Invalid patch version)
 endif
 
-ifneq ($(VERSION_STRING),$(VERSION)$(if $(TAG),~$(TAG),))
-$(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(TAG),~$(TAG),))
+ifneq ($(VERSION_STRING),$(VERSION)$(if $(TAG),-$(TAG),))
+$(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(TAG),-$(TAG),))
 endif
 
 BIN_NAME    := nvidia-container-cli
