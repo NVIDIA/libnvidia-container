@@ -430,45 +430,74 @@ lookup_binaries(struct error *err, struct dxcore_context* dxcore, struct nvc_dri
 }
 
 static int
-lookup_firmwares(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags) {
+lookup_firmwares(struct error *err, struct dxcore_context *dxcore, struct nvc_driver_info *info, const char *root, int32_t flags)
+{
         (void)flags;
-        char **ptr;
-        int rc = -1;
 
+        glob_t gl;
+        char glob_path[PATH_MAX];
         char *firmware_path = NULL;
-        char *resolved_path = NULL;
+        int rv = -1;
 
         if (dxcore->initialized) {
                 log_info("skipping path lookup for dxcore");
-                return 0;
+                goto success;
         }
 
-        // If the NVIDIA driver firmware path exists, include this in the mounted folders.
-        if (xasprintf(err, &firmware_path, NV_FIRMWARE_DRIVER_PATH, info->nvrm_version) < 0) {
+        // Construct the fully resolved NV_FIRMWARE_PATH_GLOB.
+        if (xasprintf(err, &firmware_path, NV_FIRMWARE_PATH, info->nvrm_version) < 0) {
                 log_errf("error constructing firmware path for %s", info->nvrm_version);
-                return (-1);
+                goto fail;
         }
-        if (find_path(err, "firmware", root, firmware_path, &resolved_path) < 0) {
-                log_errf("error finding firmware path %s", firmware_path);
-                goto cleanup;
+        if (path_resolve_full(err, glob_path, root, firmware_path) < 0) {
+                log_errf("error resolving firmware path %s", firmware_path);
+                goto fail;
         }
-        if (resolved_path == NULL) {
-                rc = 0;
-                goto cleanup;
+        if (path_append(err, glob_path, NV_FIRMWARE_GLOB) < 0) {
+                log_errf("error appending glob to firmware path %s", firmware_path);
+                goto fail;
         }
 
-        info->nfirmwares = 1;
-        info->firmwares = ptr = array_new(err, info->nfirmwares);
+        // Walk each path matched in the fully resolved glob_path and
+        // include the non-resolved path in our list of mounted files.
+        if (xglob(err, glob_path, GLOB_ERR, NULL, &gl) < 0) {
+                log_errf("error processing firmware path glob of %s", glob_path);
+                goto fail;
+        }
+
+        if (gl.gl_pathc == 0) {
+                log_warnf("missing firmware path %s", glob_path);
+                goto success;
+        }
+
+        info->nfirmwares = gl.gl_pathc;
+        info->firmwares = array_new(err, gl.gl_pathc);
         if (info->firmwares == NULL) {
-                log_err("error creating path array");
-                goto cleanup;
+                log_err("error creating firmware paths array");
+                goto fail;
         }
-        info->firmwares[0] = firmware_path;
-        return (0);
 
-cleanup:
+        for (size_t i = 0; i < gl.gl_pathc; ++i) {
+                strcpy(glob_path, firmware_path);
+                if (path_append(err, glob_path, basename(gl.gl_pathv[i])) < 0) {
+                        log_err("error appending firmware filename to unresolved firmware path");
+                        goto fail;
+                }
+                log_infof("listing firmware path %s", glob_path);
+                if ((info->firmwares[i] = xstrdup(err, glob_path)) == NULL) {
+                        log_err("error copying firmware path into array");
+                        goto fail;
+                }
+        }
+
+        array_pack(info->firmwares, &info->nfirmwares);
+
+success:
+        rv = 0;
+fail:
         free(firmware_path);
-        return (rc);
+        globfree(&gl);
+        return (rv);
 }
 
 static int
