@@ -58,8 +58,8 @@
 
 #define CUDA_RUNTIME_DIR         "/usr/local/cuda"
 
-#define NV_FIRMWARE_PATH        "/lib/firmware/nvidia"
-#define NV_FIRMWARE_DRIVER_PATH NV_FIRMWARE_PATH "/%s/gsp.bin"
+#define NV_FIRMWARE_PATH "/lib/firmware/nvidia/%s"
+#define NV_FIRMWARE_GLOB "gsp*.bin"
 
 #define MSFT_DXG_DEVICE_PATH     _PATH_DEV "dxg"
 
