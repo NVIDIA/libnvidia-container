@@ -99,8 +99,12 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
-* Fri Feb 10 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.0-0.1.rc.1
-- Bump version to 1.13.0-rc.1
+* Tue Feb 21 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.0-rc.2-1
+- Bump version to 1.13.0-rc.2
+
+* Fri Feb 10 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.0-rc.1-1
+- Include all `gsp*.bin` firmware files if present
+- Align `.deb` and `.rpm` release candidate package versions
 
 * Thu Feb 02 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.12.0-1
 - Add nvcubins.bin to DriverStore components under WSL2
