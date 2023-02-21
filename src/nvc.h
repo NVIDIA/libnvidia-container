@@ -33,8 +33,8 @@ extern "C" {
 // For stable releases, this should be defined as empty.
 // For release candidates, this should be defined with the format "rc.1"
 // The version string should also be updated accordingly, using a - separator where applicable.
-#define NVC_TAG "rc.1"
-#define NVC_VERSION "1.13.0-rc.1"
+#define NVC_TAG "rc.2"
+#define NVC_VERSION "1.13.0-rc.2"
 
 #define NVC_ARG_MAX 256
 
