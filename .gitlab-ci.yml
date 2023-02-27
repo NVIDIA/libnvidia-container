@@ -141,14 +141,6 @@ package-amazonlinux2-x86_64:
   needs:
     - package-ubuntu18.04-amd64
 
-package-centos7-ppc64le:
-  extends:
-    - .package-build
-    - .dist-centos7
-    - .arch-ppc64le
-  needs:
-    - package-ubuntu18.04-ppc64le
-
 package-centos7-x86_64:
   extends:
     - .package-build
