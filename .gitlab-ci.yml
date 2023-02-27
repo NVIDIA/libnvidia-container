@@ -91,12 +91,6 @@ stages:
   variables:
     DIST: rhel8
 
-.dist-ubuntu16.04:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: ubuntu16.04
-
 .dist-ubuntu18.04:
   variables:
     DIST: ubuntu18.04
@@ -242,22 +236,6 @@ package-rhel8-x86_64:
     - .arch-x86_64
   needs:
     - package-ubuntu18.04-amd64
-
-package-ubuntu16.04-amd64:
-  extends:
-    - .package-build
-    - .dist-ubuntu16.04
-    - .arch-amd64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-ubuntu16.04-ppc64le:
-  extends:
-    - .package-build
-    - .dist-ubuntu16.04
-    - .arch-ppc64le
-  needs:
-    - package-ubuntu18.04-ppc64le
 
 package-ubuntu18.04-amd64:
   extends:
