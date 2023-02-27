@@ -73,12 +73,6 @@ stages:
   variables:
     DIST: debian10
 
-.dist-debian9:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: debian9
-
 .dist-opensuse-leap15.1:
   rules:
     - !reference [.main-or-manual, rules]
@@ -197,14 +191,6 @@ package-debian10-amd64:
   extends:
     - .package-build
     - .dist-debian10
-    - .arch-amd64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-debian9-amd64:
-  extends:
-    - .package-build
-    - .dist-debian9
     - .arch-amd64
   needs:
     - package-ubuntu18.04-amd64
