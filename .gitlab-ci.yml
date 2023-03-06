@@ -73,18 +73,6 @@ stages:
   variables:
     DIST: debian10
 
-.dist-debian9:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: debian9
-
-.dist-fedora35:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: fedora35
-
 .dist-opensuse-leap15.1:
   rules:
     - !reference [.main-or-manual, rules]
@@ -102,12 +90,6 @@ stages:
     - !reference [.main-or-manual, rules]
   variables:
     DIST: rhel8
-
-.dist-ubuntu16.04:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: ubuntu16.04
 
 .dist-ubuntu18.04:
   variables:
@@ -159,14 +141,6 @@ package-amazonlinux2-x86_64:
   needs:
     - package-ubuntu18.04-amd64
 
-package-centos7-ppc64le:
-  extends:
-    - .package-build
-    - .dist-centos7
-    - .arch-ppc64le
-  needs:
-    - package-ubuntu18.04-ppc64le
-
 package-centos7-x86_64:
   extends:
     - .package-build
@@ -204,30 +178,6 @@ package-debian10-amd64:
     - .package-build
     - .dist-debian10
     - .arch-amd64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-debian9-amd64:
-  extends:
-    - .package-build
-    - .dist-debian9
-    - .arch-amd64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-fedora35-aarch64:
-  extends:
-    - .package-build
-    - .dist-fedora35
-    - .arch-aarch64
-  needs:
-    - package-ubuntu18.04-arm64
-
-package-fedora35-x86_64:
-  extends:
-    - .package-build
-    - .dist-fedora35
-    - .arch-x86_64
   needs:
     - package-ubuntu18.04-amd64
 
@@ -278,22 +228,6 @@ package-rhel8-x86_64:
     - .arch-x86_64
   needs:
     - package-ubuntu18.04-amd64
-
-package-ubuntu16.04-amd64:
-  extends:
-    - .package-build
-    - .dist-ubuntu16.04
-    - .arch-amd64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-ubuntu16.04-ppc64le:
-  extends:
-    - .package-build
-    - .dist-ubuntu16.04
-    - .arch-ppc64le
-  needs:
-    - package-ubuntu18.04-ppc64le
 
 package-ubuntu18.04-amd64:
   extends:
