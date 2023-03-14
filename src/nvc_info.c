@@ -434,7 +434,7 @@ lookup_firmwares(struct error *err, struct dxcore_context *dxcore, struct nvc_dr
 {
         (void)flags;
 
-        glob_t gl;
+        glob_t gl = {0};
         char glob_path[PATH_MAX];
         char *firmware_path = NULL;
         int rv = -1;
