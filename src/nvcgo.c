@@ -58,6 +58,7 @@ nvcgo_init(struct error *err)
         struct rpc_prog rpc_prog = {0};
         struct nvcgo_ext *ctx = (struct nvcgo_ext *)nvcgo_get_context();
         struct nvcgo_init_res res = {0};
+        struct error rpcerr = {0};
 
         rpc_prog = (struct rpc_prog){
                 .name = "nvcgo",
@@ -79,7 +80,7 @@ nvcgo_init(struct error *err)
         return (0);
 
  fail:
-        rpc_shutdown(NULL, &ctx->rpc, true);
+        rpc_shutdown(&rpcerr, &ctx->rpc, true);
         return (-1);
 }
 
