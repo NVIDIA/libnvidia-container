@@ -128,8 +128,7 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 
 # private centos target with overrides
 --centos%: OS := centos
---centos8%: CFLAGS := -I/usr/include/tirpc
---centos8%: LDLIBS := -ltirpc
+--centos%: WITH_TIRPC = yes
 --centos8%: BASEIMAGE = quay.io/centos/centos:stream8
 
 # private fedora target with overrides
