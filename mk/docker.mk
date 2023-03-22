@@ -33,10 +33,10 @@ REVISION 	 ?= $(shell git rev-parse HEAD)
 
 # Supported OSs by architecture
 AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
-X86_64_TARGETS := fedora35 centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1
+X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1
 PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7 centos8 rhel7 rhel8
 ARM64_TARGETS := ubuntu18.04
-AARCH64_TARGETS := fedora35 centos8 rhel8 amazonlinux2
+AARCH64_TARGETS := centos8 rhel8 amazonlinux2
 
 # Define top-level build targets
 docker%: SHELL:=/bin/bash
@@ -130,18 +130,6 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --centos%: OS := centos
 --centos%: WITH_TIRPC = yes
 --centos8%: BASEIMAGE = quay.io/centos/centos:stream8
-
-# private fedora target with overrides
---fedora%: OS := fedora
---fedora%: CFLAGS := -I/usr/include/tirpc
---fedora%: LDLIBS := -ltirpc
-# The fedora(35) base image has very slow performance when building aarch64 packages.
-# Since our primary concern here is glibc versions, we use the older glibc version available in centos8.
---fedora35%: BASEIMAGE = quay.io/centos/centos:stream8
---fedora35%: OS := centos
-# We need to specify this version to ensure that the correct packages are installed in the centos8 build image
---fedora35%: VERSION := 8
---fedora35%: ARTIFACTS_DIR = $(DIST_DIR)/fedora35/$(ARCH)
 
 # private opensuse-leap target with overrides
 --opensuse-leap%: OS := opensuse-leap
