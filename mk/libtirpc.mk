@@ -27,7 +27,7 @@ $(SRCS_DIR)/.download_stamp:
 	@touch $@
 
 $(SRCS_DIR)/.build_stamp: $(SRCS_DIR)/.download_stamp
-	cd $(SRCS_DIR) && ./configure --prefix=$(DESTDIR)$(prefix) --enable-static --disable-shared --disable-gssapi --with-pic
+	cd $(SRCS_DIR) && ./configure --prefix=$(prefix) --enable-static --disable-shared --disable-gssapi --with-pic
 	$(MAKE) -C $(SRCS_DIR)
 	@touch $@
 
@@ -39,7 +39,7 @@ all: $(SRCS_DIR)/.build_stamp
 
 unexport DESTDIR
 install: all
-	$(MAKE) -C $(SRCS_DIR) install
+	$(MAKE) -C $(SRCS_DIR) install DESTDIR=$(DESTDIR)
 
 clean:
 	$(RM) $(SRCS_DIR)/.build_stamp
