@@ -72,6 +72,7 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
         struct rpc_prog rpc_prog = {0};;
         struct driver *ctx = driver_get_context();
         struct driver_init_res res = {0};
+        struct error rpcerr = {0};
 
         rpc_prog = (struct rpc_prog){
                 .name = "driver",
@@ -108,7 +109,7 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
         return (0);
 
  fail:
-        rpc_shutdown(NULL, &ctx->rpc, true);
+        rpc_shutdown(&rpcerr, &ctx->rpc, true);
         return (-1);
 }
 
