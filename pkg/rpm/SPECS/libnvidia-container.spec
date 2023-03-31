@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Fri Mar 31 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.0-1
+- Promote 1.13.0~rc.3-1 to 1.13.0-1
+
 * Wed Mar 22 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.0-rc.3-1
 - Fix segmentation fault when RPC initialization fails.
 - Build centos variants of the NVIDIA Container Library with static libtirpc v1.3.2.
