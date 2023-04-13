@@ -1,3 +1,9 @@
+libnvidia-container (1.13.1-1) UNRELEASED; urgency=medium
+
+ * Bump version to 1.13.1
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Thu, 13 Apr 2023 12:37:35 +0200
+
 libnvidia-container (1.13.0-1) UNRELEASED; urgency=medium
 
  * Promote 1.13.0~rc.3-1 to 1.13.0-1
