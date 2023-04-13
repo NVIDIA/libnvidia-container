@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Thu Apr 13 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.1-1
+- Bump version to 1.13.1
+
 * Fri Mar 31 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.0-1
 - Promote 1.13.0~rc.3-1 to 1.13.0-1
 
