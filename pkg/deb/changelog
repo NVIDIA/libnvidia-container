@@ -1,20 +1,26 @@
+libnvidia-container (1.14.0~rc.1-1) experimental; urgency=medium
+
+  * Bump version to 1.14.0-rc.1
+
+ -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 24 Apr 2023 17:30:18 +0200
+
 libnvidia-container (1.13.1-1) UNRELEASED; urgency=medium
 
- * Bump version to 1.13.1
+  * Bump version to 1.13.1
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Thu, 13 Apr 2023 12:37:35 +0200
 
 libnvidia-container (1.13.0-1) UNRELEASED; urgency=medium
 
- * Promote 1.13.0~rc.3-1 to 1.13.0-1
+  * Promote 1.13.0~rc.3-1 to 1.13.0-1
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 31 Mar 2023 10:41:51 +0200
 
 libnvidia-container (1.13.0~rc.3-1) experimental; urgency=medium
 
- * Fix segmentation fault when RPC initialization fails.
- * Build centos variants of the NVIDIA Container Library with static libtirpc v1.3.2.
- * Remove make targets for fedora35 as the centos8 packages are compatible.
+  * Fix segmentation fault when RPC initialization fails.
+  * Build centos variants of the NVIDIA Container Library with static libtirpc v1.3.2.
+  * Remove make targets for fedora35 as the centos8 packages are compatible.
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Wed, 22 Mar 2023 19:56:34 +0200
 
