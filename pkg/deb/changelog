@@ -1,6 +1,6 @@
 libnvidia-container (1.14.0~rc.1-1) experimental; urgency=medium
 
-  * Bump version to 1.14.0-rc.1
+  * Remove linvidia-container0 dependency on Ubuntu-based arm64 platforms
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 24 Apr 2023 17:30:18 +0200
 
