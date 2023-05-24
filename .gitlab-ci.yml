@@ -184,14 +184,6 @@ package-centos8-aarch64:
   needs:
     - package-ubuntu18.04-arm64
 
-package-centos8-ppc64le:
-  extends:
-    - .package-build
-    - .dist-centos8
-    - .arch-ppc64le
-  needs:
-    - package-ubuntu18.04-ppc64le
-
 package-centos8-x86_64:
   extends:
     - .package-build
@@ -200,58 +192,10 @@ package-centos8-x86_64:
   needs:
     - package-ubuntu18.04-amd64
 
-package-debian10-amd64:
-  extends:
-    - .package-build
-    - .dist-debian10
-    - .arch-amd64
-  needs:
-    - package-ubuntu18.04-amd64
-
 package-opensuse-leap15.1-x86_64:
   extends:
     - .package-build
     - .dist-opensuse-leap15.1
-    - .arch-x86_64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-rhel7-ppc64le:
-  extends:
-    - .package-build
-    - .dist-rhel7
-    - .arch-ppc64le
-  needs:
-    - package-ubuntu18.04-ppc64le
-
-package-rhel7-x86_64:
-  extends:
-    - .package-build
-    - .dist-rhel7
-    - .arch-x86_64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-rhel8-aarch64:
-  extends:
-    - .package-build
-    - .dist-rhel8
-    - .arch-aarch64
-  needs:
-    - package-ubuntu18.04-arm64
-
-package-rhel8-ppc64le:
-  extends:
-    - .package-build
-    - .dist-rhel8
-    - .arch-ppc64le
-  needs:
-    - package-ubuntu18.04-ppc64le
-
-package-rhel8-x86_64:
-  extends:
-    - .package-build
-    - .dist-rhel8
     - .arch-x86_64
   needs:
     - package-ubuntu18.04-amd64
@@ -273,11 +217,3 @@ package-ubuntu18.04-ppc64le:
     - .package-build
     - .dist-ubuntu18.04
     - .arch-ppc64le
-
-package-ubuntu20.04-amd64:
-  extends:
-    - .package-build
-    - .dist-ubuntu20.04
-    - .arch-amd64
-  needs:
-    - package-ubuntu18.04-amd64
