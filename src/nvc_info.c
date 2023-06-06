@@ -88,6 +88,7 @@ static const char * const compute_libs[] = {
         "libnvidia-allocator.so",           /* NVIDIA allocator runtime library */
         "libnvidia-compiler.so",            /* NVVM-PTX compiler for OpenCL (used by libnvidia-opencl) */
         "libnvidia-pkcs11.so",              /* Encrypt/Decrypt library */
+        "libnvidia-pkcs11-openssl3.so",     /* Encrypt/Decrypt library (OpenSSL 3 support) */
         "libnvidia-nvvm.so",                /* The NVVM Compiler library */
 };
 
