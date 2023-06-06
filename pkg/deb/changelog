@@ -1,6 +1,7 @@
 libnvidia-container (1.14.0~rc.1-1) experimental; urgency=medium
 
   * Remove linvidia-container0 dependency on Ubuntu-based arm64 platforms
+  * Support OpenSSL 3 with the Encrypt/Decrypt library
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Mon, 24 Apr 2023 17:30:18 +0200
 
