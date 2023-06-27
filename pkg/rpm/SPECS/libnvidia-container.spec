@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Tue Jun 27 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.14.0~rc.2-1
+- Bump version to 1.14.0~rc.2-1
+
 * Mon Apr 24 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.14.0-rc.1-1
 - Remove linvidia-container0 dependency on Ubuntu-based arm64 platforms
 - Support OpenSSL 3 with the Encrypt/Decrypt library
