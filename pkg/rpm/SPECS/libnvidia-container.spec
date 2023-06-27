@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Tue Jun 27 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.3-1
+- Bump version to 1.13.3
+
 * Tue Jun 06 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.13.2-1
 - Support OpenSSL 3 with the Encrypt/Decrypt library
 
