@@ -1,6 +1,6 @@
 libnvidia-container (1.14.0~rc.2-1) experimental; urgency=medium
 
-  * Bump version to 1.14.0~rc.2
+  * Inlcude Shared Compiler Library (libnvidia-gpucomp.so) in the list of compute libaries.
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Tue, 27 Jun 2023 14:04:34 +0200
 
