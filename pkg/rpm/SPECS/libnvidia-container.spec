@@ -100,7 +100,7 @@ This package contains command-line tools that facilitate using the library.
 
 %changelog
 * Tue Jun 27 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.14.0~rc.2-1
-- Bump version to 1.14.0~rc.2-1
+- Inlcude Shared Compiler Library (libnvidia-gpucomp.so) in the list of compute libaries.
 
 * Mon Apr 24 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.14.0-rc.1-1
 - Remove linvidia-container0 dependency on Ubuntu-based arm64 platforms
