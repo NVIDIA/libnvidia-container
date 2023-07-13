@@ -1,6 +1,6 @@
 libnvidia-container (1.13.5-1) UNRELEASED; urgency=medium
 
- * Bump version to 1.13.5
+  * Include Shared Compiler Library (libnvidia-gpucomp.so) in the list of compute libaries.
 
  -- NVIDIA CORPORATION <cudatools@nvidia.com>  Thu, 13 Jul 2023 15:55:20 +0200
 
