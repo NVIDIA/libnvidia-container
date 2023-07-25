@@ -1,20 +1,30 @@
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA512
 
-
+Architectures: arm64
+Codename: experimental
+Components: main
+Date: Fri, 27 Apr 2018 21:29:25 +0000
+Description: NVIDIA container runtime library repository
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container/experimental
+Version: 1.0
+SHA512:
+ 17eecad6fab8a424950a890cefa244955da22774a040ea719506970fdd20e67521fe6d3b7a79c1b46d17f24172ca3d73d92f1d550418e02fac93d36ee74f9e39             6402 Packages
+ a5706afd3cef104b70daefb8f952bdd6267c7318975d10cc8810ba7a6badc9eb28f94e4239720223f202c0dc93d6e403b37dfa85418f60e5b1c1fe59e0a55d17             1968 Packages.xz
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEEyVsyG2HojBgJxPdZ3crgRPeW7LAFAmS36gcACgkQ3crgRPeW
-7LBufw//W2CWu0yOGoxR6HWqsgjjr2WKjswITbvGiocPS8CtuwJWrYAoJBgYpv6u
-jMA3efz82dhuA1uSEbb400rcxFDTB7TUosCy5nesbqCOXjGFJIyLX1AjlYmnnIey
-1eslvkCJZWcwns2mjPSlHWV6gonQmh7z7s0Q9LUSpVcFYvNb1EbYwLBtijE9b9zS
-DxcsKkiBK3nsTFg9CWgYDmNVEtsy+z1re/mjaNb3q7Z2lKC5vDBbzg2ozs4FW5rY
-QSoOOKV3WhXMO4NIPSVMhjsl/dvFZZ87Vsu4B2DWNkyDHtKD7vC0b5AFeH2CgwsI
-mjMzq3JKbqKeddzXohznrCJibStaoYY4ii71g3gNca1PnM8FQi0Pp1h052NTRtXJ
-DnTRm8n+1yQKDh88P4dFRpCPicaJZrt010hoppoBi6FAFEacynNYO1tUtzFZGRgQ
-RGqWQG81s3DTG5TzouyjAYD5KqU8XbZbmJa+h6qfisSBixXiNGIxgKBQH0I1EZM9
-rWciec4T5EqsY2yTcOdnQIuDkewD4ueE39yItwwpqlwWAM+/QEQjkzKmn+ukW2B4
-Jbe7+zIx1CzrJ7l44SYELj9NV9zeKsTV94M02WkMrTmjSzoN/ZYmiPeGeEHRBjyQ
-INmrw+GPkaE5e6/RdWf41WyaYSOmzAsq1/tmYmxDK7C41RcnhwI=
-=gdDl
+iQIzBAEBCgAdFiEEyVsyG2HojBgJxPdZ3crgRPeW7LAFAmS/0LQACgkQ3crgRPeW
+7LDmAA//c7O5I1TDywRn3Yu2PPoiqnDQMxsfX9gjyjCy6ER3TaDNyBuEeo/MJtwi
+cSV4sEYbGouavni1Ogtly+NHNGvabecOp0v+JjnvAlQMVegsX1nsmkFN8KyWrUvr
+YRTy8esT7dTZrAyCj3jpCrOxGNc+A21CY83Atm4W3npjwheNxMr4ZcOnyITvzBX4
+WouoZuyskjfPdaITVXSB0D1WeQ3F3vn/Re5ZKQsYfhDXzdonQuxn6eURVx9T79Cf
+fNy9RZ0k6diSSTTbXNfEnZLmrYwU0iYaNB5fFcxtluEmg10kFUX4SnEhalhDQTCI
+IZm7S3GBmpHz+ki9EgovPXZncp2BgquTuryOEHLO1r1AJnz2JNtuW6xJyFKDIgkD
+KbB24log/F35jcEtiTroahkoEpWkrFTU7o8LmRwmWiq4UKqYUDZuXQ11bufO4R0O
+GUtF9QvLPpVqywdTPUuLMuKHja/PFbGbaUwgWRdXuio2kZW0K+meXEBk3KxmyImw
+Vop/avIPgRNgxbck2Tol6H7HM+a1Fr9kwNBEpsEkFr2XMQknSXzAePhgWDdgvNRY
+Tf8Dk96RC2OCjGqTHkKheg+TZH3QFtKlIN7mXo1nkJqKG+nXV/uLnRLfuFtgM1cE
+wBDluf53JqXjuYFqgtyrU3DpOkjJoRfG7Aq7eDCYJNhdJRcfwAI=
+=yMoy
 -----END PGP SIGNATURE-----
