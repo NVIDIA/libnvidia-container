@@ -31,6 +31,7 @@ VERSION {
             nvc_driver_info_free;
             nvc_device_info_new;
             nvc_device_info_free;
+            nvc_symlink_libraries;
             nvc_driver_mount;
             nvc_device_mount;
             nvc_nvcaps_style;

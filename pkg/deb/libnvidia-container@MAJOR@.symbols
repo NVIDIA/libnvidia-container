@@ -19,6 +19,7 @@ libnvidia-container.so.1 libnvidia-container1 #MINVER#
  nvc_device_mig_caps_mount@NVC_1.0 @VERSION_TAG@
  nvc_driver_info_free@NVC_1.0 @VERSION_TAG@
  nvc_driver_info_new@NVC_1.0 @VERSION_TAG@
+ nvc_symlink_libraries@NVC_1.0 @VERSION_TAG@
  nvc_driver_mount@NVC_1.0 @VERSION_TAG@
  nvc_error@NVC_1.0 @VERSION_TAG@
  nvc_init@NVC_1.0 @VERSION_TAG@
