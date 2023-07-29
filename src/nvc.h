@@ -149,6 +149,8 @@ int nvc_nvcaps_style(void);
 
 int nvc_nvcaps_device_from_proc_path(struct nvc_context *, const char *, struct nvc_device_node *);
 
+int nvc_symlink_libraries(struct nvc_context *, const struct nvc_container *, const struct nvc_driver_info *);
+
 int nvc_driver_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_driver_info *);
 
 int nvc_device_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);

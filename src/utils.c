@@ -610,6 +610,20 @@ do_file_remove(const char *path, const struct stat *s, int flag, maybe_unused st
 }
 
 int
+symlink_remove(struct error *err, const char *path)
+{
+        struct stat path_stat;
+        if (lstat(path, &path_stat) != 0) {
+                error_set(err, "file removal failed: %s", path);
+                return (-1);
+        }
+        if (S_ISLNK(path_stat.st_mode))
+                return (unlink(path));
+        error_set(err, "%s is not a symlink", path);
+        return (-1);
+}
+
+int
 file_remove(struct error *err, const char *path)
 {
         if (nftw(path, do_file_remove, 1, FTW_MOUNT|FTW_PHYS|FTW_DEPTH) < 0) {

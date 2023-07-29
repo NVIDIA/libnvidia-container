@@ -38,7 +38,7 @@ static char *mount_app_profile(struct error *, const struct nvc_container *);
 static int  update_app_profile(struct error *, const struct nvc_container *, dev_t);
 static void unmount(const char *);
 static int  symlink_library(struct error *, const char *, const char *, const char *, uid_t, gid_t);
-static int  symlink_libraries(struct error *, const struct nvc_container *, const char * const [], size_t);
+static int  symlink_libraries(struct error *, const struct nvc_container *, const struct nvc_driver_info *info, const char * const [], size_t);
 static void filter_libraries(const struct nvc_driver_info *, char * [], size_t *);
 static int  device_mount_dxcore(struct nvc_context *, const struct nvc_container *);
 static int  device_mount_native(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
@@ -525,6 +525,7 @@ symlink_library(struct error *err, const char *src, const char *target, const ch
                 goto fail;
 
         log_infof("creating symlink %s -> %s", path, target);
+        symlink_remove(err, path);
         if (file_create(err, path, target, uid, gid, MODE_LNK(0777)) < 0)
                 goto fail;
         rv = 0;
@@ -535,10 +536,10 @@ symlink_library(struct error *err, const char *src, const char *target, const ch
 }
 
 static int
-symlink_libraries(struct error *err, const struct nvc_container *cnt, const char * const paths[], size_t size)
+symlink_libraries(struct error *err, const struct nvc_container *cnt, const struct nvc_driver_info *info, const char * const paths[], size_t size)
 {
         char *lib;
-
+        char *src;
         for (size_t i = 0; i < size; ++i) {
                 lib = basename(paths[i]);
                 if (str_has_prefix(lib, "libcuda.so")) {
@@ -553,7 +554,16 @@ symlink_libraries(struct error *err, const struct nvc_container *cnt, const char
                         /* XXX Fix missing symlink for libnvidia-opticalflow.so. */
                         if (symlink_library(err, paths[i], "libnvidia-opticalflow.so.1", "libnvidia-opticalflow.so", cnt->uid, cnt->gid) < 0)
                                 return (-1);
-                }
+                } else if (match_library_flags(lib, cnt->flags) && str_has_suffix(lib, info->nvrm_version)) {
+                        src = xstrdup(err, lib);
+                        src[strlen(src) - strlen(info->nvrm_version) - 1] = '\0';
+                        strcat(src, ".1");
+                        if (symlink_library(err, paths[i], lib, src, cnt->uid, cnt->gid) < 0) {
+                                free(src);
+                                return (-1);
+                        }
+                        free(src);
+                } 
         }
         return (0);
 }
@@ -709,6 +719,71 @@ fail:
 }
 
 int
+nvc_symlink_libraries(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_driver_info *info)
+{   
+        const char **libs, **ptr;
+        char dst[PATH_MAX];
+        char *dst_end;
+        char *file;
+        int rv = -1;
+        size_t nlibs;
+        if (validate_context(ctx) < 0)
+                return (-1);
+        if (validate_args(ctx, cnt != NULL && info != NULL) < 0)
+                return (-1);
+
+        nlibs = 2 + info->nlibs + info->nlibs32;
+
+        libs = ptr = (const char **)array_new(&ctx->err, nlibs);
+
+        if (info->libs != NULL && info->nlibs > 0) {
+                if (path_resolve_full(&ctx->err, dst, cnt->cfg.rootfs, cnt->cfg.libs_dir) < 0) {
+                        rv = -1;
+                        goto fail;
+                }
+                dst_end = dst + strlen(dst);
+                for (size_t i = 0; i < info->nlibs; i++) {
+                        file = basename(info->libs[i]);
+                        if (!match_library_flags(file, cnt->flags))
+                                continue;
+                        if (path_append(&ctx->err, dst, file) < 0) {
+                                rv = -1;
+                                goto fail;
+                        }
+                            
+                        if ((*ptr ++ = xstrdup(&ctx->err, dst))== NULL)
+                                goto fail;
+                        *dst_end = '\0';
+                }
+        }
+        if ((cnt->flags & OPT_COMPAT32) && info->libs32 != NULL && info->nlibs32 > 0) {
+                if (path_resolve_full(&ctx->err, dst, cnt->cfg.rootfs, cnt->cfg.libs32_dir) < 0) {
+                        rv = -1;
+                        goto fail;
+                }
+                dst_end = dst + strlen(dst);
+                for (size_t i = 0; i < info->nlibs32; i++) {
+                        file = basename(info->libs32[i]);
+                        if (!match_library_flags(file, cnt->flags))
+                                continue;
+                        if (path_append(&ctx->err, dst, file) < 0) {
+                                rv = -1;
+                                goto fail;
+                        }
+                            
+                        if ((*ptr ++ = xstrdup(&ctx->err, dst))== NULL)
+                                goto fail;
+                        *dst_end = '\0';
+                }
+        }
+        symlink_libraries(&ctx->err, cnt, info, libs, (size_t)(ptr - libs));
+        rv = 0;
+ fail:
+        array_free((char **)libs, nlibs);
+        return (rv);     
+}
+
+int
 nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_driver_info *info)
 {
         const char **mnt, **ptr, **tmp;
@@ -761,7 +836,7 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
         }
-        if (symlink_libraries(&ctx->err, cnt, mnt, (size_t)(ptr - mnt)) < 0)
+        if (symlink_libraries(&ctx->err, cnt, info, mnt, (size_t)(ptr - mnt)) < 0)
                 goto fail;
 
         /* Container library mounts */

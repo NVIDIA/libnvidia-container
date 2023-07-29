@@ -416,7 +416,10 @@ configure_command(const struct context *ctx)
                 warnx("ldcache error: %s", libnvc.error(nvc));
                 goto fail;
         }
-
+        if (libnvc.symlink_libraries(nvc, cnt, drv) < 0) {
+                warnx("symlink libraries error: %s", libnvc.error(nvc));
+                goto fail;
+        }
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_SHUTDOWN], ecaps_size(NVC_SHUTDOWN)) < 0) {
                 warnx("permission error: %s", err.msg);
                 goto fail;

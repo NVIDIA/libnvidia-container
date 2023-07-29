@@ -57,7 +57,7 @@ static int libnvc_v0_wrapper_device_mount(struct nvc_context *, const struct nvc
 static void libnvc_v0_wrapper_driver_info_free(struct nvc_driver_info *);
 static struct nvc_driver_info *libnvc_v0_wrapper_driver_info_new(struct nvc_context *, const char *);
 static int libnvc_v0_wrapper_driver_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_driver_info *);
-
+static int libnvc_v0_wrapper_symlink_libraries(struct nvc_context *, const struct nvc_container *, const struct nvc_driver_info *);
 int
 load_libnvc(void)
 {
@@ -93,6 +93,7 @@ load_libnvc_v0(void)
                 funcs_entry(device_mount),
                 funcs_entry(driver_info_free),
                 funcs_entry(driver_info_new),
+                funcs_entry(symlink_libraries),
                 funcs_entry(driver_mount),
                 funcs_entry(error),
                 funcs_entry(init),
@@ -125,6 +126,7 @@ load_libnvc_v0(void)
         wrap_libnvc_func(device_mount);
         wrap_libnvc_func(driver_info_free);
         wrap_libnvc_func(driver_info_new);
+        wrap_libnvc_func(symlink_libraries);
         wrap_libnvc_func(driver_mount);
 
         return (0);
@@ -149,6 +151,7 @@ load_libnvc_v1(void)
         load_libnvc_func(device_mount);
         load_libnvc_func(driver_info_free);
         load_libnvc_func(driver_info_new);
+        load_libnvc_func(symlink_libraries);
         load_libnvc_func(driver_mount);
         load_libnvc_func(error);
         load_libnvc_func(init);
@@ -308,4 +311,11 @@ libnvc_v0_wrapper_driver_mount(struct nvc_context *ctx, const struct nvc_contain
 {
         struct libnvc_v0_wrapper_driver_info *info = (void*)info_;
         return libnvc_v0_wrapped.driver_mount(ctx, cnt, info->v0);
+}
+
+static int
+libnvc_v0_wrapper_symlink_libraries(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_driver_info *info_)
+{
+        struct libnvc_v0_wrapper_driver_info *info = (void*)info_;
+        return libnvc_v0_wrapped.symlink_libraries(ctx, cnt, info->v0);
 }

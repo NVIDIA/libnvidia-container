@@ -38,6 +38,7 @@ struct libnvc {
         libnvc_entry(device_mount);
         libnvc_entry(driver_info_free);
         libnvc_entry(driver_info_new);
+        libnvc_entry(symlink_libraries);
         libnvc_entry(driver_mount);
         libnvc_entry(error);
         libnvc_entry(init);
