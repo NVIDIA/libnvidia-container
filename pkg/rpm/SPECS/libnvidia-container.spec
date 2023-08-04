@@ -99,6 +99,9 @@ This package contains command-line tools that facilitate using the library.
 %{_bindir}/*
 
 %changelog
+* Fri Aug 04 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.14.0~rc.3-1
+- Bump version to 1.14.0~rc.3-1
+
 * Tue Jun 27 2023 NVIDIA CORPORATION <cudatools@nvidia.com> 1.14.0~rc.2-1
 - Inlcude Shared Compiler Library (libnvidia-gpucomp.so) in the list of compute libaries.
 
