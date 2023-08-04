@@ -164,6 +164,7 @@ docker-build-%: $(ARTIFACTS_DIR)
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
+	runuser -l svcngcc -c 'mkdir -r $(ARTIFACTS_DIR)'
 	$(DOCKER) run \
 	    --platform=linux/$(ARCH) \
 	    -e TAG \
