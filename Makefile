@@ -339,8 +339,16 @@ distclean: clean
 deb: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)_$(ARCH)
 deb: prefix:=/usr
 deb: libdir:=/usr/lib/@DEB_HOST_MULTIARCH@
+
+
+PKG_VERS := $(VERSION)$(if $(TAG),~$(TAG),)
+PKG_REV := 1
 deb: install
 	$(CP) -T $(PKG_DIR)/deb $(DESTDIR)/debian
+	cd $(DESTDIR) && dch --create --package="$(PKG_NAME)" \
+        --newversion "$(PKG_VERS)-$(PKG_REV)" \
+            "See https://gitlab.com/nvidia/container-toolkit/libnvidia-container/-/blob/$(REVISION)/CHANGELOG.md for the changelog" && \
+    dch --controlmaint --release ""
 	cd $(DESTDIR) && debuild -eDISTRIB -eSECTION --dpkg-buildpackage-hook='debian/prepare %v' -a$(ARCH) -us -uc -B
 	cd $(DESTDIR) && (yes | debuild clean || yes | debuild -- clean)
 
@@ -350,5 +358,13 @@ rpm: all
 	$(CP) -T $(PKG_DIR)/rpm $(DESTDIR)
 	$(LN) -nsf $(CURDIR) $(DESTDIR)/BUILD
 	$(MKDIR) -p $(DESTDIR)/RPMS && $(LN) -nsf $(DIST_DIR) $(DESTDIR)/RPMS/$(ARCH)
-	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" $(and $(TAG),-D"_tag $(TAG)") -D"_major $(MAJOR)" SPECS/*
+	cd $(DESTDIR) && \
+		rpmbuild --clean --target=$(ARCH) -bb \
+			-D"_topdir $(DESTDIR)" \
+			-D "release_date $(shell date +'%a %b %d %Y')" \
+			-D"version $(PKG_VERS)" \
+			-D"release $(PKG_REV)" \
+			-D"_major $(MAJOR)" \
+			-D "git_commit ${REVISION}" \
+		SPECS/*.spec
 	-cd $(DESTDIR) && rpmlint RPMS/*
