@@ -1,8 +1,5 @@
-libnvidia-container (1.14.0~rc.3-1) experimental; urgency=medium
-
-  * Bump version to 1.14.0~rc.3
-
- -- NVIDIA CORPORATION <cudatools@nvidia.com>  Fri, 04 Aug 2023 15:14:19 +0200
+# Note: as of 1.14.0~rc.3-1 this file is no longer updated, with a changelog
+# entry for a given release generated as part of the packaging step.
 
 libnvidia-container (1.14.0~rc.2-1) experimental; urgency=medium
 

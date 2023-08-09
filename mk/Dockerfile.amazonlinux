@@ -53,6 +53,11 @@ COPY . .
 
 ARG REVISION
 ENV REVISION=${REVISION}
+ARG LIB_VERSION
+ENV LIB_VERSION=${LIB_VERSION}
+ARG LIB_TAG
+ENV LIB_TAG=${LIB_TAG}
+
 RUN make distclean && make -j"$(nproc)"
 
 # Use the revision as the package version for the time being

@@ -101,13 +101,6 @@ BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds
 ##### Target definitions #####
 
 ARCH    ?= $(call getarch)
-MAJOR   := $(call getdef,NVC_MAJOR,$(LIB_INCS))
-MINOR   := $(call getdef,NVC_MINOR,$(LIB_INCS))
-PATCH   := $(call getdef,NVC_PATCH,$(LIB_INCS))
-# Extract the VERSION and TAG from the version header file. We strip quotes.
-VERSION_STRING := $(subst ",,$(call getdef,NVC_VERSION,$(LIB_INCS)))
-TAG     := $(subst ",,$(call getdef,NVC_TAG,$(LIB_INCS)))
-VERSION := $(MAJOR).$(MINOR).$(PATCH)
 
 ifeq ($(MAJOR),)
 $(error Invalid major version)
@@ -122,6 +115,14 @@ endif
 ifneq ($(VERSION_STRING),$(VERSION)$(if $(TAG),-$(TAG),))
 $(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(TAG),-$(TAG),))
 endif
+
+$(SRCS_DIR)/nvc.h: $(SRCS_DIR)/nvc.h.template
+	cat $< | \
+	sed -e 's/{{NVC_MAJOR}}/$(MAJOR)/g' | \
+	sed -e 's/{{NVC_MINOR}}/$(MINOR)/g' | \
+	sed -e 's/{{NVC_PATCH}}/$(PATCH)/g' | \
+	sed -e 's/{{NVC_TAG}}/$(if $(TAG),"$(TAG)",)/g' | \
+	sed -e 's/{{NVC_VERSION}}/"$(VERSION_STRING)"/g' > $@
 
 BIN_NAME    := nvidia-container-cli
 LIB_NAME    := libnvidia-container
@@ -213,7 +214,7 @@ $(LIB_RPC_SRCS): $(LIB_RPC_SPEC)
 	$(RM) $@
 	cd $(dir $@) && $(RPCGEN) $(RPCGENFLAGS) -C -M -N -o $(notdir $@) $(LIB_RPC_SPEC)
 
-$(LIB_OBJS): %.lo: %.c | deps
+$(LIB_OBJS): %.lo: %.c | deps $(SRCS_DIR)/nvc.h
 	$(CC) $(LIB_CFLAGS) $(LIB_CPPFLAGS) -MMD -MF $*.d -c $(OUTPUT_OPTION) $<
 
 $(BIN_OBJS): %.o: %.c | shared
@@ -335,12 +336,21 @@ clean: mostlyclean depsclean
 distclean: clean
 	$(RM) -r $(DEPS_DIR) $(DIST_DIR) $(DEBUG_DIR)
 	$(RM) $(LIB_RPC_SRCS) $(LIB_STATIC) $(LIB_SHARED) $(BIN_NAME)
+	$(RM) -f $(SRCS_DIR)/nvc.h
 
 deb: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)_$(ARCH)
 deb: prefix:=/usr
 deb: libdir:=/usr/lib/@DEB_HOST_MULTIARCH@
+
+
+PKG_VERS := $(VERSION)$(if $(TAG),~$(TAG),)
+PKG_REV := 1
 deb: install
 	$(CP) -T $(PKG_DIR)/deb $(DESTDIR)/debian
+	cd $(DESTDIR) && dch --create --package="$(PKG_NAME)" \
+        --newversion "$(PKG_VERS)-$(PKG_REV)" \
+            "See https://gitlab.com/nvidia/container-toolkit/libnvidia-container/-/blob/$(REVISION)/CHANGELOG.md for the changelog" && \
+    dch --controlmaint --release ""
 	cd $(DESTDIR) && debuild -eDISTRIB -eSECTION --dpkg-buildpackage-hook='debian/prepare %v' -a$(ARCH) -us -uc -B
 	cd $(DESTDIR) && (yes | debuild clean || yes | debuild -- clean)
 
@@ -350,5 +360,13 @@ rpm: all
 	$(CP) -T $(PKG_DIR)/rpm $(DESTDIR)
 	$(LN) -nsf $(CURDIR) $(DESTDIR)/BUILD
 	$(MKDIR) -p $(DESTDIR)/RPMS && $(LN) -nsf $(DIST_DIR) $(DESTDIR)/RPMS/$(ARCH)
-	cd $(DESTDIR) && rpmbuild --clean --target=$(ARCH) -bb -D"_topdir $(DESTDIR)" -D"_version $(VERSION)" $(and $(TAG),-D"_tag $(TAG)") -D"_major $(MAJOR)" SPECS/*
+	cd $(DESTDIR) && \
+		rpmbuild --clean --target=$(ARCH) -bb \
+			-D"_topdir $(DESTDIR)" \
+			-D "release_date $(shell date +'%a %b %d %Y')" \
+			-D"version $(PKG_VERS)" \
+			-D"release $(PKG_REV)" \
+			-D"_major $(MAJOR)" \
+			-D "git_commit ${REVISION}" \
+		SPECS/*.spec
 	-cd $(DESTDIR) && rpmlint RPMS/*
