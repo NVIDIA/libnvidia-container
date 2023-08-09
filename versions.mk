@@ -12,9 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+GIT_TAG ?= $(patsubst v%,%,$(shell git describe --tags 2>/dev/null))
+GIT_COMMIT ?= $(shell git describe --match="" --dirty --long --always --abbrev=40 2> /dev/null || echo "")
+
 LIB_NAME := libnvidia-container
-LIB_VERSION ?= 1.14.0
-LIB_TAG ?= rc.3
+LIB_VERSION ?= $(word 1,$(subst -, ,$(GIT_TAG)))
+LIB_TAG ?= $(subst -,+,$(patsubst $(LIB_VERSION)-%,%,$(GIT_TAG)))
 
 VERSION_PARTS := $(subst ., ,$(LIB_VERSION))
 MAJOR := $(word 1,$(VERSION_PARTS))
