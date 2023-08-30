@@ -1,0 +1,30 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: arm64
+Codename: stable
+Components: main
+Date: Fri, 27 Apr 2018 21:29:25 +0000
+Description: NVIDIA container runtime library repository
+Label: NVIDIA CORPORATION <cudatools@nvidia.com>
+Origin: https://nvidia.github.io/libnvidia-container/stable
+Version: 1.0
+SHA512:
+ 5dc44cee5da63459448e3c00f590a17371cff504adc7b05f06fe648539282b42c4bf477b4ff5edbcc3c31fa4ab6a72b4943a06615416d3680be197b40de729f9             8400 Packages
+ 2c28d8720b340ed262e2b2d5231f691433e75eb3c70d757134739324f14f3974f5ef645c1dd72c4bbff7f4ceaa02f59e18ee6b1f1f61228e20069378443ffbe3             2544 Packages.xz
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEyVsyG2HojBgJxPdZ3crgRPeW7LAFAmTvCNwACgkQ3crgRPeW
+7LDBfg/9H6IEqtBpb1UBaDj97FGYsUBouoDpLrWhr4GC30iTtK7xAb9EdMpF7wH6
+p0zVCbH+F3hOK49vKLVj69baVvt/VbwxrvMf3zwagCnGwWfGw4dlFPLHAbYpDmfL
+6e8BO0Nw9HWhF6F366opMlEtcMVW5gCiF5KGh1VeallrNqA6eRSarTkXYT3Ef3dV
+cHqWVukwP/Pv/q8jpfIslhTJ/C4E3kSO4DwFJ5ylIi5aYJnu0mF6abK70CUaEFKv
+6MDET4NjFglBYsp5rGBovRtAsMnAJaF6frA8UEeqSIg89mrKzPXNUp8su65EkJT8
+mr3p8MHKt2f8EMpK1NwfGPlzHDXgCgNFEBu/jtjmEtCx5fIMI3riJFV+72QJUKfA
+r64ITb8WxjvQ8IcyOCqt24xQhOkqaaNudNzsRfKcVcPxRxILnJl/xp9v6oTfgqNa
+Mk/TjNemMX9cL3vaxAMLpx/hK+b/ESCWo45viO3LP8TBQQB8r9f4jYCQOx9Tv6KM
+uDts/eZvyl8uhcN1jKuTLMEy7gTWyAVhfbNdQV7KqBbLQH2itWWclDvGh6+ihYoZ
+9sQHE2PFq/eXFLgGbbw2tEWWgH08s10hvagOTR2DkB4dk9RwP2hYi3RnCf1pa975
+FlswM6AXD58e/a1hmUs7NjTGA8Q/GZVqZVveajRch8fsqHrpFHA=
+=neOu
+-----END PGP SIGNATURE-----
