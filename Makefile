@@ -112,10 +112,6 @@ ifeq ($(PATCH),)
 $(error Invalid patch version)
 endif
 
-ifneq ($(VERSION_STRING),$(VERSION)$(if $(TAG),-$(TAG),))
-$(error Version not updated correctly: $(VERSION_STRING) != $(VERSION)$(if $(TAG),-$(TAG),))
-endif
-
 $(SRCS_DIR)/nvc.h: $(SRCS_DIR)/nvc.h.template
 	cat $< | \
 	sed -e 's/{{NVC_MAJOR}}/$(MAJOR)/g' | \
@@ -343,7 +339,7 @@ deb: prefix:=/usr
 deb: libdir:=/usr/lib/@DEB_HOST_MULTIARCH@
 
 
-PKG_VERS := $(VERSION)$(if $(TAG),~$(TAG),)
+PKG_VERS := $(VERSION_STRING)
 PKG_REV := 1
 deb: install
 	$(CP) -T $(PKG_DIR)/deb $(DESTDIR)/debian

@@ -166,6 +166,7 @@ docker-build-%: $(ARTIFACTS_DIR)
 	    --build-arg REVISION="$(REVISION)" \
 	    --build-arg LIB_VERSION="$(LIB_VERSION)" \
 	    --build-arg LIB_TAG="$(LIB_TAG)" \
+	    --build-arg LIB_BUILD="$(LIB_BUILD)" \
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
