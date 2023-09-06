@@ -128,6 +128,7 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 # private centos target with overrides
 --centos%: OS := centos
 --centos%: WITH_TIRPC = yes
+--centos%: WITH_LIBELF = yes
 --centos8%: BASEIMAGE = quay.io/centos/centos:stream8
 
 # private opensuse-leap target with overrides
