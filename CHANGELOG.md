@@ -2,6 +2,7 @@
 
 ## 1.14.1
 * Use libelf.so on RPM-based systems due to removed mageia repositories hosting pmake and bmake.
+* Use libelf.so on DEB-based systems due to issues with sourceforge.net hosting libelftools.
 
 ## 1.14.0
 * Promote 1.14.0~rc.3 to 1.14.0
