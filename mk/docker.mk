@@ -128,6 +128,7 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 # private centos target with overrides
 --centos%: OS := centos
 --centos%: WITH_TIRPC = yes
+--centos%: WITH_LIBELF = yes
 --centos8%: BASEIMAGE = quay.io/centos/centos:stream8
 
 # private opensuse-leap target with overrides
@@ -165,6 +166,7 @@ docker-build-%: $(ARTIFACTS_DIR)
 	    --build-arg REVISION="$(REVISION)" \
 	    --build-arg LIB_VERSION="$(LIB_VERSION)" \
 	    --build-arg LIB_TAG="$(LIB_TAG)" \
+	    --build-arg LIB_BUILD="$(LIB_BUILD)" \
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .

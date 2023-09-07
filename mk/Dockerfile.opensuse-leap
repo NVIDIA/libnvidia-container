@@ -50,6 +50,8 @@ ARG LIB_VERSION
 ENV LIB_VERSION=${LIB_VERSION}
 ARG LIB_TAG
 ENV LIB_TAG=${LIB_TAG}
+ARG LIB_BUILD
+ENV LIB_BUILD=${LIB_BUILD}
 
 # META_NOECHO=echo is required to work around a bug in Leap 15's version of bmake,
 # see also https://github.com/ptt/pttbbs/issues/30

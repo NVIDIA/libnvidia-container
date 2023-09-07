@@ -40,22 +40,13 @@ ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
 
 ARG WITH_NVCGO=no
-ARG WITH_LIBELF=no
+ARG WITH_LIBELF=yes
 ARG WITH_TIRPC=yes
 ARG WITH_SECCOMP=yes
 ENV WITH_NVCGO=${WITH_NVCGO}
 ENV WITH_LIBELF=${WITH_LIBELF}
 ENV WITH_TIRPC=${WITH_TIRPC}
 ENV WITH_SECCOMP=${WITH_SECCOMP}
-
-RUN if [ "$WITH_LIBELF" = "no" ]; then \
-        arch=${OS_ARCH} && \
-        cd $(mktemp -d) && \
-        curl -fsSL -O https://mirrors.kernel.org/mageia/distrib/7.1/${arch}/media/core/release/pmake-1.45-17.mga7.${arch}.rpm && \
-        curl -fsSL -O https://mirrors.kernel.org/mageia/distrib/7.1/${arch}/media/core/release/bmake-20181221-1.mga7.${arch}.rpm && \
-        rpm -i *.rpm && \
-        rm -rf $PWD \
-    ; fi
 
 WORKDIR /tmp/libnvidia-container
 COPY . .
@@ -71,6 +62,8 @@ ARG LIB_VERSION
 ENV LIB_VERSION=${LIB_VERSION}
 ARG LIB_TAG
 ENV LIB_TAG=${LIB_TAG}
+ARG LIB_BUILD
+ENV LIB_BUILD=${LIB_BUILD}
 
 RUN make distclean && make -j"$(nproc)"
 
