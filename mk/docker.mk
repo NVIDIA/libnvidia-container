@@ -122,7 +122,6 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 
 # private OS targets with defaults
 --ubuntu%: OS := ubuntu
---ubuntu%: WITH_LIBELF = yes
 --debian%: OS := debian
 --amazonlinux%: OS := amazonlinux
 
