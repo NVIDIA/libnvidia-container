@@ -526,7 +526,7 @@ file_create(struct error *err, const char *path, const char *data, uid_t uid, gi
         // We check whether the file already exists with the required mode and skip the creation.
         if (data == NULL && file_mode(err, path, &perm) == 0) {
                 if (perm == mode) {
-                        log_errf("The path %s alreay exists with the required mode; skipping create", path);
+                        log_errf("The path %s already exists with the required mode; skipping create", path);
                         return (0);
                 }
         }

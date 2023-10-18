@@ -62,7 +62,7 @@ static const char * const utility_bins[] = {
         "nvidia-smi",                       /* System management interface */
         "nvidia-debugdump",                 /* GPU coredump utility */
         "nvidia-persistenced",              /* Persistence mode utility */
-        "nv-fabricmanager",                 /* NVSwitch fabrimanager utility */
+        "nv-fabricmanager",                 /* NVSwitch fabric manager utility */
         //"nvidia-modprobe",                /* Kernel module loader */
         //"nvidia-settings",                /* X server settings */
         //"nvidia-xconfig",                 /* X xorg.conf editor */
@@ -656,7 +656,7 @@ fill_mig_device_info(struct nvc_context *ctx, bool mig_enabled, struct driver_de
                 if (xasprintf(&ctx->err, &info->devices[i].ci_caps_path, NV_COMP_INST_CAPS_PATH, minor(device->node.id), info->devices[i].gi, info->devices[i].ci) < 0)
                         goto fail;
 
-                // If we made it to here, update the total count of MIG dervices by 1
+                // If we made it to here, update the total count of MIG devices by 1
                 info->ndevices++;
         }
 

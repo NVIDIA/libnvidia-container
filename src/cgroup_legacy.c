@@ -80,7 +80,7 @@ setup_device_cgroup(struct error *err, const struct nvc_container *cnt, dev_t id
                 return (-1);
 
         log_infof("whitelisting device node %u:%u", major(id), minor(id));
-        /* XXX dprintf doesn't seem to catch the write errors, flush the stream explicitly instead. */
+        /* XXX fprintf doesn't seem to catch the write errors, flush the stream explicitly instead. */
         if (fprintf(fs, "c %u:%u rw", major(id), minor(id)) < 0 || fflush(fs) == EOF || ferror(fs)) {
                 error_set(err, "write error: %s", path);
                 goto fail;
@@ -124,15 +124,15 @@ cgroup_mount(char *line, char *prefix, const char *subsys)
 static char *
 cgroup_root(char *line, char *prefix, const char *subsys)
 {
-        char *heirarchy_id, *controller_list, *cgroup_path;
+        char *hierarchy_id, *controller_list, *cgroup_path;
 
         // From: https://man7.org/linux/man-pages/man7/cgroups.7.html
         // The lines of the /proc/{pid}/cgroup file have the following format:
         //     hierarchy-ID:controller-list:cgroup-path
         // Here we attempt to parse the separate sections. If this is not
         // possible, we return NULL
-        heirarchy_id = strsep(&line, ":");
-        if (heirarchy_id == NULL) {
+        hierarchy_id = strsep(&line, ":");
+        if (hierarchy_id == NULL) {
                 // line contained no colons
                 return (NULL);
         }

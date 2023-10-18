@@ -71,7 +71,7 @@ mount_firmware(struct error *err, const char *root, const struct nvc_container *
         return mount_with_flags(err, src, dst, cnt->uid, cnt->gid, MS_RDONLY|MS_NODEV|MS_NOSUID);
 }
 
-// mount_with_flags bind mounts the specified src to the the specified dst with the specified mount flags
+// mount_with_flags bind mounts the specified src to the specified dst with the specified mount flags
 static char *
 mount_with_flags(struct error *err, const char *src, const char *dst, uid_t uid, uid_t gid, unsigned long mountflags) {
         mode_t mode;
@@ -491,7 +491,7 @@ mount_procfs_mig(struct error *err, const char *root, const struct nvc_container
         if (xmount(err, NULL, dst, NULL, MS_BIND|MS_REMOUNT | MS_RDONLY|MS_NODEV|MS_NOSUID|MS_NOEXEC, NULL) < 0)
                 goto fail;
 
-        // Copy the destinationpath out to a newly allocated string and return it.
+        // Copy the destination path out to a newly allocated string and return it.
         if ((mnt = xstrdup(err, dst)) == NULL)
                 goto fail;
 

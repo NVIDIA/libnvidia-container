@@ -165,7 +165,7 @@ copy_config(struct error *err, struct nvc_container *cnt, const struct nvc_conta
                                 libs_dir = USR_LIB_DIR;
                         if (libs32_dir == NULL) {
                                 /*
-                                 * The lib32 directory is inconsistent accross distributions.
+                                 * The lib32 directory is inconsistent across distributions.
                                  * Check which one is used in the rootfs.
                                  */
                                 libs32_dir = USR_LIB32_DIR;
