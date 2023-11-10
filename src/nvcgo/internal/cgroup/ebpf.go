@@ -136,10 +136,10 @@ func (p *program) appendDevice(dev specs.LinuxDeviceCgroup, labelPrefix string) 
 	}
 	if hasAccess {
 		p.insts = append(p.insts,
-			// if (R3 & bpfAccess != R3 /* use R2 as a temp var */) goto next
-			asm.Mov.Reg32(asm.R2, asm.R3),
-			asm.And.Imm32(asm.R2, bpfAccess),
-			asm.JNE.Reg32(asm.R2, asm.R3, nextBlockSym),
+			// if (R3 & bpfAccess != R3 /* use R6 as a temp var */) goto next
+			asm.Mov.Reg32(asm.R6, asm.R3),
+			asm.And.Imm32(asm.R6, bpfAccess),
+			asm.JNE.Reg32(asm.R6, asm.R3, nextBlockSym),
 		)
 	}
 	if hasMajor {
