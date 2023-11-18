@@ -1,5 +1,7 @@
 # NVIDIA Container Toolkit Library and CLI Changelog
 
+* Fix device permission check when using cgroupv2 (fixes #227)
+
 ## 1.14.1
 * Use libelf.so on RPM-based systems due to removed mageia repositories hosting pmake and bmake.
 
