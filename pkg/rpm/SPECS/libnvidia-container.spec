@@ -96,6 +96,17 @@ This package contains command-line tools that facilitate using the library.
 %license %{_licensedir}/*
 %{_bindir}/*
 
+%package libseccomp2
+Requires: libseccomp2
+Provides: libseccomp.so
+Conflicts: libseccomp.so
+Summary: A virtual package to provide libseccomp through libseccomp2
+%description libseccomp2
+This is a virtual package to satisfy the libseccomp.so dependency through a
+transitive dependency on libseccomp2.so.
+%files libseccomp2
+%license %{_licensedir}/*
+
 %changelog
 # As of 1.14.0-1 we generate the release information automatically
 * %{release_date} NVIDIA CORPORATION <cudatools@nvidia.com> %{version}-%{release}
