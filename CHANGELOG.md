@@ -1,5 +1,9 @@
 # NVIDIA Container Toolkit Library and CLI Changelog
 
+## 1.15.0~rc.2
+* Added detection of libnvdxgdmal.so.1 on WSL2
+
+## 1.15.0~rc.1
 * Fix device permission check when using cgroupv2 (fixes #227)
 
 ## 1.14.1
