@@ -171,6 +171,8 @@ int nvc_mig_monitor_global_caps_mount(struct nvc_context *, const struct nvc_con
 
 int nvc_device_mig_caps_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
 
+int nvc_imex_channel_mount(struct nvc_context *, const struct nvc_container *, const struct nvc_imex_channel *);
+
 int nvc_ldcache_update(struct nvc_context *, const struct nvc_container *);
 
 const char *nvc_error(struct nvc_context *);
