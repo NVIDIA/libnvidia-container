@@ -319,7 +319,7 @@ configure_command(const struct context *ctx)
                 goto fail;
         }
 
-        /* Select the devices available for MIG monitor among the visible . */
+        /* Select the devices available for MIG monitor among the visible devices. */
         if (select_mig_monitor_devices(&err, ctx->mig_monitor, &devices, &mig_monitor_devices) < 0) {
                 warnx("mig-monitor error: %s", err.msg);
                 goto fail;
