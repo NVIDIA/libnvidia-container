@@ -176,5 +176,6 @@ void nvc_entrypoint(void);
 /* Prototypes from nvc_info.c */
 bool match_binary_flags(const char *, int32_t);
 bool match_library_flags(const char *, int32_t);
+int find_device_node(struct error *, const char *, const char *, struct nvc_device_node *);
 
 #endif /* HEADER_NVC_INTERNAL_H */

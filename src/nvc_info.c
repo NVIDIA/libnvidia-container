@@ -37,7 +37,6 @@ static int select_libraries(struct error *, void *, const char *, const char *, 
 static int select_wsl_libraries(struct error *, void *, const char *, const char *, const char *);
 static int find_library_paths(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, const char *, const char * const [], size_t);
 static int find_binary_paths(struct error *, struct dxcore_context*, struct nvc_driver_info *, const char *, const char * const [], size_t);
-static int find_device_node(struct error *, const char *, const char *, struct nvc_device_node *);
 static int find_path(struct error *, const char *, const char *, const char *, char **);
 static int lookup_paths(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
 static int lookup_libraries(struct error *, struct dxcore_context *, struct nvc_driver_info *, const char *, int32_t, const char *);
@@ -310,7 +309,7 @@ find_binary_paths(struct error *err, struct dxcore_context* dxcore, struct nvc_d
         return (rv);
 }
 
-static int
+int
 find_device_node(struct error *err, const char *root, const char *dev, struct nvc_device_node *node)
 {
         char path[PATH_MAX];
