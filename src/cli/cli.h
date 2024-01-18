@@ -74,6 +74,11 @@ void free_devices(struct devices *d);
 int print_nvcaps_device_from_proc_file(struct nvc_context *, const char*, const char*);
 int print_all_mig_minor_devices(const struct nvc_device_node *);
 
+int parse_imex_info(
+    struct error *err,
+    char *chans,
+    struct nvc_imex_info *imex);
+
 int select_devices(
     struct error *err,
     char *devs,
