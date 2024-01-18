@@ -347,9 +347,21 @@ copy_config(struct error *err, struct nvc_context *ctx, const struct nvc_config 
                 ctx->cfg.gid = (gid_t)gid;
         }
 
+        if (cfg->imex.nchans > 0) {
+                if ((ctx->cfg.imex.chans = xcalloc(err, cfg->imex.nchans, sizeof(*ctx->cfg.imex.chans))) == NULL)
+                        return (-1);
+        }
+        for (size_t i = 0; i < cfg->imex.nchans; ++i) {
+                ctx->cfg.imex.chans[i] = cfg->imex.chans[i];
+        }
+        ctx->cfg.imex.nchans = cfg->imex.nchans;
+
         log_infof("using root %s", ctx->cfg.root);
         log_infof("using ldcache %s", ctx->cfg.ldcache);
         log_infof("using unprivileged user %"PRIu32":%"PRIu32, (uint32_t)ctx->cfg.uid, (uint32_t)ctx->cfg.gid);
+        for (size_t i = 0; i < ctx->cfg.imex.nchans; ++i) {
+            log_infof("using IMEX channel %d", ctx->cfg.imex.chans[i].id);
+        }
         return (0);
 }
 
@@ -364,7 +376,7 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
         if (ctx->initialized)
                 return (0);
         if (cfg == NULL)
-                cfg = &(struct nvc_config){NULL, NULL, (uid_t)-1, (gid_t)-1};
+                cfg = &(struct nvc_config){NULL, NULL, (uid_t)-1, (gid_t)-1, {0}};
         if (validate_args(ctx, !str_empty(cfg->ldcache) && !str_empty(cfg->root)) < 0)
                 return (-1);
         if (opts == NULL)
@@ -421,6 +433,7 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
  fail:
         free(ctx->cfg.root);
         free(ctx->cfg.ldcache);
+        free(ctx->cfg.imex.chans);
         xclose(ctx->mnt_ns);
         return (-1);
 }
@@ -453,6 +466,7 @@ nvc_shutdown(struct nvc_context *ctx)
 
         free(ctx->cfg.root);
         free(ctx->cfg.ldcache);
+        free(ctx->cfg.imex.chans);
         xclose(ctx->mnt_ns);
 
         memset(&ctx->cfg, 0, sizeof(ctx->cfg));
