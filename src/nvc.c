@@ -33,7 +33,7 @@
 #include "xfuncs.h"
 
 static int init_within_userns(struct error *);
-static int load_kernel_modules(struct error *, const char *);
+static int load_kernel_modules(struct error *, const char *, const struct nvc_imex_info *);
 static int copy_config(struct error *, struct nvc_context *, const struct nvc_config *);
 
 const char interpreter[] __attribute__((section(".interp"))) = LIB_DIR "/" LD_SO;
@@ -229,7 +229,7 @@ fail:
 }
 
 static int
-load_kernel_modules(struct error *err, const char *root)
+load_kernel_modules(struct error *err, const char *root, const struct nvc_imex_info *imex)
 {
         int userns;
         pid_t pid;
@@ -290,6 +290,11 @@ load_kernel_modules(struct error *err, const char *root)
                         log_info("running mknod for all nvcaps in " NV_CAPS_DEVICE_DIR);
                         if (mig_nvcaps_mknodes(err, devs.num_matches) < 0)
                                 log_errf("could not create kernel module device nodes: %s", err->msg);
+                        for (int i = 0; i < (int)imex->nchans; ++i) {
+                                log_infof("running mknod for " NV_CAPS_IMEX_DEVICE_PATH, imex->chans[i].id);
+                                if (nvidia_cap_imex_channel_mknod(imex->chans[i].id) == 0)
+                                    log_errf("could not mknod for IMEX channel %d", imex->chans[i].id);
+                        }
                         error_reset(err);
                 }
 
@@ -415,7 +420,7 @@ nvc_init(struct nvc_context *ctx, const struct nvc_config *cfg, const char *opts
         if (flags & OPT_LOAD_KMODS) {
                 if (ctx->dxcore.initialized)
                         log_warn("skipping kernel modules load on WSL");
-                else if (load_kernel_modules(&ctx->err, ctx->cfg.root) < 0)
+                else if (load_kernel_modules(&ctx->err, ctx->cfg.root, &ctx->cfg.imex) < 0)
                         goto fail;
         }
 
