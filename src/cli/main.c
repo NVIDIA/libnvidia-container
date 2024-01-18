@@ -148,5 +148,6 @@ main(int argc, char *argv[])
         free(ctx.container_flags);
         free(ctx.mig_config);
         free(ctx.mig_monitor);
+        free(ctx.imex_channels);
         return (rv);
 }

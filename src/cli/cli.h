@@ -54,6 +54,7 @@ struct context {
         char *devices;
         char *mig_config;
         char *mig_monitor;
+        char *imex_channels;
 };
 
 bool matches_pci_format(const char *gpu, char *buf, size_t bufsize);
