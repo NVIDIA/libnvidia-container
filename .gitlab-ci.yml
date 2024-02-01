@@ -70,12 +70,6 @@ trigger-pipeline:
 
 
 # Define the distribution targets
-.dist-amazonlinux2:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: amazonlinux2
-
 .dist-centos7:
   rules:
     - !reference [.main-or-manual, rules]
@@ -86,39 +80,9 @@ trigger-pipeline:
   variables:
     DIST: centos8
 
-.dist-debian10:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: debian10
-
-.dist-opensuse-leap15.1:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: opensuse-leap15.1
-
-.dist-rhel7:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: rhel7
-
-.dist-rhel8:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: rhel8
-
 .dist-ubuntu18.04:
   variables:
     DIST: ubuntu18.04
-
-.dist-ubuntu20.04:
-  rules:
-    - !reference [.main-or-manual, rules]
-  variables:
-    DIST: ubuntu20.04
 
 # Define architecture targets
 .arch-aarch64:
@@ -144,22 +108,6 @@ trigger-pipeline:
     ARCH: x86_64
 
 # Define the package build targets
-package-amazonlinux2-aarch64:
-  extends:
-    - .package-build
-    - .dist-amazonlinux2
-    - .arch-aarch64
-  needs:
-    - package-ubuntu18.04-arm64
-
-package-amazonlinux2-x86_64:
-  extends:
-    - .package-build
-    - .dist-amazonlinux2
-    - .arch-x86_64
-  needs:
-    - package-ubuntu18.04-amd64
-
 package-centos7-aarch64:
   extends:
     - .package-build
@@ -176,27 +124,11 @@ package-centos7-x86_64:
   needs:
     - package-ubuntu18.04-amd64
 
-package-centos8-aarch64:
+package-centos8-ppc64le:
   extends:
     - .package-build
     - .dist-centos8
-    - .arch-aarch64
-  needs:
-    - package-ubuntu18.04-arm64
-
-package-centos8-x86_64:
-  extends:
-    - .package-build
-    - .dist-centos8
-    - .arch-x86_64
-  needs:
-    - package-ubuntu18.04-amd64
-
-package-opensuse-leap15.1-x86_64:
-  extends:
-    - .package-build
-    - .dist-opensuse-leap15.1
-    - .arch-x86_64
+    - .arch-ppc64le
   needs:
     - package-ubuntu18.04-amd64
 
