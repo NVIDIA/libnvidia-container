@@ -55,17 +55,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Check out code
-      - name: Git describe
-        id: ghd
-        uses: proudust/gh-describe@v1
+        with:
+          fetch-tags: true
+          fetch-depth: 1024
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: build ${{ matrix.package }} packages
-        env:
-          GIT_TAG: ${{ steps.ghd.outputs.describe }}
-          GIT_COMMIT: ${{ steps.ghd.outputs.sha }}
         run: |
           sudo apt-get install -y coreutils build-essential sed git bash make
           echo "Building packages"
