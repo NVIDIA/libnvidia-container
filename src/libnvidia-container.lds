@@ -39,6 +39,7 @@ VERSION {
             nvc_mig_config_global_caps_mount;
             nvc_mig_monitor_global_caps_mount;
             nvc_device_mig_caps_mount;
+            nvc_imex_channel_mount;
 
             __ubsan_default_options;
         local:

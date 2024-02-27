@@ -21,6 +21,7 @@ const struct argp list_usage = {
                 {"compat32", 0x80, NULL, 0, "Enable 32bits compatibility", -1},
                 {"mig-config", 0x81, "ID", 0, "MIG devices to list config capabilities files for", -1},
                 {"mig-monitor", 0x82, "ID", 0, "MIG devices to list monitor capabilities files for", -1},
+                {"imex-channel", 0x83, "CHANNEL", 0, "IMEX channel ID(s) to inject", -1},
                 {0},
         },
         list_parser,
@@ -65,8 +66,12 @@ list_parser(int key, char *arg, struct argp_state *state)
                 if (str_join(&err, &ctx->mig_monitor, arg, ",") < 0)
                         goto fatal;
                 break;
+        case 0x83:
+                if (str_join(&err, &ctx->imex_channels, arg, ",") < 0)
+                        goto fatal;
+                break;
         case ARGP_KEY_END:
-                if (state->argc == 1) {
+                if (state->argc == 1 || (state->argc == 2 && ctx->imex_channels != NULL)) {
                         if ((ctx->devices = xstrdup(&err, "all")) == NULL)
                                 goto fatal;
                         ctx->mig_config = NULL;
@@ -127,6 +132,10 @@ list_command(const struct context *ctx)
         nvc_cfg->gid = (!run_as_root && ctx->gid == (gid_t)-1) ? getegid() : ctx->gid;
         nvc_cfg->root = ctx->root;
         nvc_cfg->ldcache = ctx->ldcache;
+        if (parse_imex_info(&err, ctx->imex_channels, &nvc_cfg->imex) < 0) {
+                warnx("error parsing IMEX info: %s", err.msg);
+                goto fail;
+        }
         if (libnvc.init(nvc, nvc_cfg, ctx->init_flags) < 0) {
                 warnx("initialization error: %s", libnvc.error(nvc));
                 goto fail;
@@ -203,6 +212,13 @@ list_command(const struct context *ctx)
                 }
         }
 
+        /* List the IMEX channel devices. */
+        if (ctx->imex_channels != NULL) {
+                for (size_t i = 0; i < nvc_cfg->imex.nchans; ++i) {
+                        printf(NV_CAPS_IMEX_DEVICE_PATH"\n", nvc_cfg->imex.chans[i].id);
+                }
+        }
+
         /* List the files required for MIG configuration of the visible devices */
         if (mig_config_devices.all && mig_config_devices.ngpus) {
                 printf("%s/%s\n", NV_MIG_CAPS_PATH, NV_MIG_CONFIG_FILE);
@@ -258,6 +274,7 @@ list_command(const struct context *ctx)
         }
         rv = EXIT_SUCCESS;
  fail:
+        free(nvc_cfg->imex.chans);
         free_devices(&devices);
         libnvc.shutdown(nvc);
         libnvc.device_info_free(dev);

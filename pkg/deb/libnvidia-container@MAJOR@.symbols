@@ -17,6 +17,7 @@ libnvidia-container.so.1 libnvidia-container1 #MINVER#
  nvc_mig_config_global_caps_mount@NVC_1.0 @VERSION_TAG@
  nvc_mig_monitor_global_caps_mount@NVC_1.0 @VERSION_TAG@
  nvc_device_mig_caps_mount@NVC_1.0 @VERSION_TAG@
+ nvc_imex_channel_mount@NVC_1.0 @VERSION_TAG@
  nvc_driver_info_free@NVC_1.0 @VERSION_TAG@
  nvc_driver_info_new@NVC_1.0 @VERSION_TAG@
  nvc_driver_mount@NVC_1.0 @VERSION_TAG@

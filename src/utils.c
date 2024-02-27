@@ -213,6 +213,24 @@ str_join(struct error *err, char **s1, const char *s2, const char *sep)
         return (0);
 }
 
+size_t
+str_count_tokens(const char *s, char sep)
+{
+        size_t count = 0;
+
+        // No tokens if s == NULL or len(s) == 0
+        if (s == NULL || s[0] == '\0')
+                return (0);
+
+        // Count the number of delimeters
+        for (int i = 1; s[i] != '\0'; i++)
+                if (s[i] == sep)
+                        count++;
+
+        // Add 1 to count the last item after the final delimiter
+        return (count + 1);
+}
+
 int
 str_to_pid(struct error *err, const char *str, pid_t *pid)
 {
