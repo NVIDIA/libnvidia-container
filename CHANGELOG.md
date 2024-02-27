@@ -1,5 +1,8 @@
 # NVIDIA Container Toolkit Library and CLI Changelog
 
+## 1.14.6
+* Added creation and injection of IMEX channels.
+
 ## 1.14.5
 * Bump version to 1.14.5
 
