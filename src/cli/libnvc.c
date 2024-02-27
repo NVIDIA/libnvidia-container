@@ -161,6 +161,7 @@ load_libnvc_v1(void)
         load_libnvc_func(mig_config_global_caps_mount);
         load_libnvc_func(mig_monitor_global_caps_mount);
         load_libnvc_func(device_mig_caps_mount);
+        load_libnvc_func(imex_channel_mount);
 
         return (0);
 }

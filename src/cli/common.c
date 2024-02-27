@@ -443,6 +443,59 @@ select_mig_monitor_devices(
 }
 
 int
+parse_imex_info(
+    struct error *err,
+    char *chans,
+    struct nvc_imex_info *imex)
+{
+        // Initialize local variables.
+        char sep[2] = ",";
+        struct error ierr = {0};
+        char *chan = NULL;
+        char *ptr;
+        size_t id;
+        size_t max_chans = str_count_tokens(chans, ',');
+
+        /* Clear the imex struct */
+        memset(imex, 0, sizeof(*imex));
+
+        /* Short circuit if max_chans == 0 */
+        if (max_chans == 0)
+                return (0);
+
+        /* Allocate space for all IMEX channels */
+        if ((imex->chans = xcalloc(err, max_chans, sizeof(*imex->chans))) == NULL)
+                return (-1);
+
+        // Walk through the comma separated chans string and populate
+        // 'imex->chans' from it.
+        while ((chan = strsep(&chans, sep)) != NULL) {
+                // Allow extra commas between device strings.
+                if (*chan == '\0')
+                        continue;
+
+                // Get the IMEX channel ID.
+                // Channel IDs must fit in the minor number of a dev_t (so within 20 bits).
+                id = strtoumax(chan, &ptr, 10);
+                if (!(*ptr == '\0' && id < (1 << 20))) {
+                        error_setx(&ierr, "unsupported IMEX channel value: %s", chan);
+                        goto fail;
+                }
+
+                // Add the IMEX channel to the selected list.
+                imex->chans[imex->nchans].id = (int)id;
+                imex->nchans++;
+        }
+
+        return (0);
+
+ fail:
+        error_setx(err, "%s", ierr.msg);
+        error_reset(&ierr);
+        return (-1);
+}
+
+int
 new_devices(struct error *err, const struct nvc_device_info *dev, struct devices *d)
 {
         // Allocate space for all of the elements in a 'devices' struct and

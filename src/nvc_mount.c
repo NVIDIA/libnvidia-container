@@ -1092,3 +1092,53 @@ nvc_device_mig_caps_mount(struct nvc_context *ctx, const struct nvc_container *c
 
         return (rv);
 }
+
+int
+nvc_imex_channel_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const struct nvc_imex_channel *chan)
+{
+        // Initialize local variables.
+        char path[PATH_MAX];
+        struct nvc_device_node node;
+        char *mnt = NULL;
+        int rv = -1;
+
+        // Validate incoming arguments.
+        if (validate_context(ctx) < 0)
+                return (-1);
+        if (validate_args(ctx, cnt != NULL && chan != NULL) < 0)
+                return (-1);
+
+        // Enter the mount namespace of the container.
+        if (ns_enter(&ctx->err, cnt->mnt_ns, CLONE_NEWNS) < 0)
+                return (-1);
+
+        // Construct a device node for the channel.
+        if (xsnprintf(&ctx->err, path, sizeof(path), NV_CAPS_IMEX_DEVICE_PATH, chan->id) < 0)
+            goto fail;
+        if (find_device_node(&ctx->err, ctx->cfg.root, path, &node) < 0)
+            goto fail;
+
+        // Mount the device node and set up its cgroups (as appropriate).
+        if (!(cnt->flags & OPT_NO_DEVBIND)) {
+                if ((mnt = mount_device(&ctx->err, ctx->cfg.root, cnt, &node)) == NULL)
+                        goto fail;
+        }
+        if (!(cnt->flags & OPT_NO_CGROUPS)) {
+                if (setup_device_cgroup(&ctx->err, cnt, node.id) < 0)
+                        goto fail;
+        }
+
+        // Set the return value to indicate success.
+        rv = 0;
+
+ fail:
+        if (rv < 0) {
+                unmount(mnt);
+                assert_func(ns_enter_at(NULL, ctx->mnt_ns, CLONE_NEWNS));
+        } else {
+                rv = ns_enter_at(&ctx->err, ctx->mnt_ns, CLONE_NEWNS);
+        }
+        free(mnt);
+
+        return (rv);
+}

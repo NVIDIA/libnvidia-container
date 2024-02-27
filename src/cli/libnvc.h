@@ -50,6 +50,7 @@ struct libnvc {
         libnvc_entry(mig_config_global_caps_mount);
         libnvc_entry(mig_monitor_global_caps_mount);
         libnvc_entry(device_mig_caps_mount);
+        libnvc_entry(imex_channel_mount);
 };
 
 int load_libnvc(void);
