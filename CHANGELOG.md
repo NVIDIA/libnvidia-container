@@ -1,5 +1,11 @@
 # NVIDIA Container Toolkit Library and CLI Changelog
 
+## 1.14.6
+* Added creation and injection of IMEX channels.
+
+## 1.14.5
+* Bump version to 1.14.5
+
 ## 1.14.4
 * Added detection of libnvdxgdmal.so.1 on WSL2
 * Fix device permission check when using cgroupv2 (fixes #227)

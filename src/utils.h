@@ -54,6 +54,7 @@ bool str_array_match(const char *, const char * const [], size_t);
 int  str_to_pid(struct error *, const char *, pid_t *);
 int  str_to_ugid(struct error *, char *, uid_t *, gid_t *);
 int  str_join(struct error *, char **, const char *, const char *);
+size_t str_count_tokens(const char *, char);
 
 int ns_enter_at(struct error *, int, int);
 int ns_enter(struct error *, const char *, int);

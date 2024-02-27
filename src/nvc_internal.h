@@ -37,6 +37,8 @@
 #define NV_MODESET_DEVICE_PATH   _PATH_DEV "nvidia-modeset"
 #define NV_CAPS_DEVICE_DIR       _PATH_DEV "nvidia-caps"
 #define NV_CAPS_DEVICE_PATH      NV_CAPS_DEVICE_DIR "/nvidia-cap%d"
+#define NV_CAPS_IMEX_DEVICE_DIR  _PATH_DEV "nvidia-caps-imex-channels"
+#define NV_CAPS_IMEX_DEVICE_PATH NV_CAPS_IMEX_DEVICE_DIR "/channel%d"
 #define NV_PERSISTENCED_SOCKET   _PATH_VARRUN "nvidia-persistenced/socket"
 #define NV_FABRICMANAGER_SOCKET  _PATH_VARRUN "nvidia-fabricmanager/socket"
 #define NV_MPS_PIPE_DIR          _PATH_TMP "nvidia-mps"
@@ -174,5 +176,6 @@ void nvc_entrypoint(void);
 /* Prototypes from nvc_info.c */
 bool match_binary_flags(const char *, int32_t);
 bool match_library_flags(const char *, int32_t);
+int find_device_node(struct error *, const char *, const char *, struct nvc_device_node *);
 
 #endif /* HEADER_NVC_INTERNAL_H */

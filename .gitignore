@@ -12,9 +12,12 @@ libnvidia-container.so*
 deps
 src/build.h
 
-src/driver_clt.c
-src/driver_rpc.h
-src/driver_svc.c
-src/driver_xdr.c
+src/nvc.h
+src/nvc_clt.c
+src/nvc_rpc.h
+src/nvc_svc.c
+src/nvc_xdr.c
+src/nvcgo/libnvidia-container-go.h
+
 /dist
 /.vscode

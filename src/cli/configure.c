@@ -30,8 +30,9 @@ const struct argp configure_usage = {
                 {"compat32", 0x80, NULL, 0, "Enable 32bits compatibility", -1},
                 {"mig-config", 0x81, "ID", 0, "Enable configuration of MIG devices", -1},
                 {"mig-monitor", 0x82, "ID", 0, "Enable monitoring of MIG devices", -1},
-                {"no-cgroups", 0x83, NULL, 0, "Don't use cgroup enforcement", -1},
-                {"no-devbind", 0x84, NULL, 0, "Don't bind mount devices", -1},
+                {"imex-channel", 0x83, "CHANNEL", 0, "IMEX channel ID(s) to inject", -1},
+                {"no-cgroups", 0x84, NULL, 0, "Don't use cgroup enforcement", -1},
+                {"no-devbind", 0x85, NULL, 0, "Don't bind mount devices", -1},
                 {0},
         },
         configure_parser,
@@ -138,10 +139,14 @@ configure_parser(int key, char *arg, struct argp_state *state)
                         goto fatal;
                 break;
         case 0x83:
-                if (str_join(&err, &ctx->container_flags, "no-cgroups", " ") < 0)
+                if (str_join(&err, &ctx->imex_channels, arg, ",") < 0)
                         goto fatal;
                 break;
         case 0x84:
+                if (str_join(&err, &ctx->container_flags, "no-cgroups", " ") < 0)
+                        goto fatal;
+                break;
+        case 0x85:
                 if (str_join(&err, &ctx->container_flags, "no-devbind", " ") < 0)
                         goto fatal;
                 break;
@@ -262,6 +267,10 @@ configure_command(const struct context *ctx)
         nvc_cfg->gid = ctx->gid;
         nvc_cfg->root = ctx->root;
         nvc_cfg->ldcache = ctx->ldcache;
+        if (parse_imex_info(&err, ctx->imex_channels, &nvc_cfg->imex) < 0) {
+                warnx("error parsing IMEX info: %s", err.msg);
+                goto fail;
+        }
         if (libnvc.init(nvc, nvc_cfg, ctx->init_flags) < 0) {
                 warnx("initialization error: %s", libnvc.error(nvc));
                 goto fail;
@@ -319,7 +328,7 @@ configure_command(const struct context *ctx)
                 goto fail;
         }
 
-        /* Select the devices available for MIG monitor among the visible . */
+        /* Select the devices available for MIG monitor among the visible devices. */
         if (select_mig_monitor_devices(&err, ctx->mig_monitor, &devices, &mig_monitor_devices) < 0) {
                 warnx("mig-monitor error: %s", err.msg);
                 goto fail;
@@ -359,7 +368,7 @@ configure_command(const struct context *ctx)
                 }
         }
 
-        /* Mount the driver, visible devices, mig-configs and mig-monitors. */
+        /* Mount the driver, visible devices, mig-configs, mig-monitors, and imex-channels. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_MOUNT], ecaps_size(NVC_MOUNT)) < 0) {
                 warnx("permission error: %s", err.msg);
                 goto fail;
@@ -406,6 +415,12 @@ configure_command(const struct context *ctx)
                         }
                 }
         }
+        for (size_t i = 0; i < nvc_cfg->imex.nchans; ++i) {
+                if (libnvc.imex_channel_mount(nvc, cnt, &nvc_cfg->imex.chans[i]) < 0) {
+                        warnx("mount error: %s", libnvc.error(nvc));
+                        goto fail;
+                }
+        }
 
         /* Update the container ldcache. */
         if (perm_set_capabilities(&err, CAP_EFFECTIVE, ecaps[NVC_LDCACHE], ecaps_size(NVC_LDCACHE)) < 0) {
@@ -424,6 +439,7 @@ configure_command(const struct context *ctx)
         rv = EXIT_SUCCESS;
 
  fail:
+        free(nvc_cfg->imex.chans);
         free_devices(&devices);
         libnvc.shutdown(nvc);
         libnvc.container_free(cnt);
