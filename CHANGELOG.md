@@ -15,8 +15,8 @@
 * Generate debian and RPM changelogs automatically.
 
 ## 1.14.0~rc.2
-* Include Shared Compiler Library (`libnvidia-gpucomp.so``) in the list of compute libaries.
+* Include Shared Compiler Library (`libnvidia-gpucomp.so``) in the list of compute libraries.
 
 ## 1.14.0~rc.1
-* Remove `linvidia-container0`` dependency on Ubuntu-based arm64 platforms
+* Remove `libnvidia-container0`` dependency on Ubuntu-based arm64 platforms
 * Support OpenSSL 3 with the Encrypt/Decrypt library

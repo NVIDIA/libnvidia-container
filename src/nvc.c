@@ -213,7 +213,7 @@ mig_nvcaps_mknodes(struct error *err, int num_gpus) {
                         continue;
 
                 // Call into nvidia-modprobe code to perform the mknod() on
-                // /dev/nvidia-caps/nvidia-cap<mig_minor> from the canonial
+                // /dev/nvidia-caps/nvidia-cap<mig_minor> from the canonical
                 // /proc path we constructed.
                 log_infof("running mknod for " NV_CAPS_DEVICE_PATH " from %s", mig_minor, path);
                 if (nvidia_cap_mknod(path, &mig_minor) == 0) {

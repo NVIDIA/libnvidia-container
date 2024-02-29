@@ -5,7 +5,7 @@
 #ifndef HEADER_DXCORE_H_
 #define HEADER_DXCORE_H_
 
-#define MAX_DXCORE_DRIVERSTORE_LIBRAIRIES (16)
+#define MAX_DXCORE_DRIVERSTORE_LIBRARIES (16)
 
 struct dxcore_luid
 {
@@ -19,7 +19,7 @@ struct dxcore_adapter
         unsigned int             wddmVersion;
         char*                    pDriverStorePath;
         unsigned int             driverStoreComponentCount;
-        const char*              pDriverStoreComponents[MAX_DXCORE_DRIVERSTORE_LIBRAIRIES];
+        const char*              pDriverStoreComponents[MAX_DXCORE_DRIVERSTORE_LIBRARIES];
         struct dxcore_context    *pContext;
 };
 
