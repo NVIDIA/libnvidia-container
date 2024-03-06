@@ -3,6 +3,15 @@
 
 version: 2
 updates:
+  - package-ecosystem: "gomod"
+    target-branch: main
+    directory: "src/nvcgo/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    labels:
+    - dependencies
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
