@@ -29,6 +29,7 @@
                   nitems(utility_libs) + \
                   nitems(compute_libs) + \
                   nitems(video_libs) + \
+		  nitems(display_libs) + \
                   nitems(graphics_libs) + \
                   nitems(graphics_libs_glvnd) + \
                   nitems(graphics_libs_compat))
@@ -56,6 +57,12 @@ static void clear_mig_device_info(struct nvc_mig_device_info *);
  * "nvidia_drv.so"     // Driver module for X server
  * "libglx.so"         // GLX extension module for X server
  */
+
+static const char * const display_libs[] = {
+        "libnvidia-wfb.so",                 /* Wrapped software rendering module for X server */
+        "libnvidia_drv.so",                 /* Driver module for X server */
+        "libglxserver_nvidia.so",           /* GLX extension module for X server */
+};
 
 static const char * const utility_bins[] = {
         "nvidia-smi",                       /* System management interface */
@@ -384,6 +391,7 @@ lookup_libraries(struct error *err, struct dxcore_context *dxcore, struct nvc_dr
         ptr = array_append(ptr, compute_libs, nitems(compute_libs));
         ptr = array_append(ptr, ngx_libs, nitems(ngx_libs));
         ptr = array_append(ptr, video_libs, nitems(video_libs));
+	ptr = array_append(ptr, display_libs, nitems(display_libs));
         ptr = array_append(ptr, graphics_libs, nitems(graphics_libs));
         if (flags & OPT_NO_GLVND)
                 ptr = array_append(ptr, graphics_libs_compat, nitems(graphics_libs_compat));
@@ -771,6 +779,8 @@ match_library_flags(const char *lib, int32_t flags)
         if ((flags & OPT_COMPUTE_LIBS) && str_array_match_prefix(lib, compute_libs, nitems(compute_libs)))
                 return (true);
         if ((flags & OPT_VIDEO_LIBS) && str_array_match_prefix(lib, video_libs, nitems(video_libs)))
+                return (true);
+	if ((flags & OPT_DISPLAY_LIBS) && str_array_match_prefix(lib, display_libs, nitems(display_libs)))
                 return (true);
         if ((flags & OPT_GRAPHICS_LIBS) && (str_array_match_prefix(lib, graphics_libs, nitems(graphics_libs)) ||
             str_array_match_prefix(lib, graphics_libs_glvnd, nitems(graphics_libs_glvnd)) ||
