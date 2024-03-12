@@ -18,9 +18,8 @@ github.com/opencontainers/runtime-spec/specs-go
 github.com/sirupsen/logrus
 # github.com/stretchr/testify v1.6.1
 ## explicit; go 1.13
-# golang.org/x/sys v0.1.0
-## explicit; go 1.17
-golang.org/x/sys/internal/unsafeheader
+# golang.org/x/sys v0.18.0
+## explicit; go 1.18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 # golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
