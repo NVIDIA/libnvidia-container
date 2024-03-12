@@ -549,9 +549,19 @@ symlink_libraries(struct error *err, const struct nvc_container *cnt, const char
                         /* XXX GLVND requires this symlink for indirect GLX support. */
                         if (symlink_library(err, paths[i], lib, "libGLX_indirect.so.0", cnt->uid, cnt->gid) < 0)
                                 return (-1);
+			/* XXX Link libGL.so.1 required for libs32 */
+                        if(strstr(paths[i], "i386-linux-gnu")) {
+                                if (symlink_library(err, paths[i], lib, "libGL.so.1", cnt->uid, cnt->gid) < 0)
+                                        return (-1);
                 } else if (str_has_prefix(lib, "libnvidia-opticalflow.so")) {
                         /* XXX Fix missing symlink for libnvidia-opticalflow.so. */
                         if (symlink_library(err, paths[i], "libnvidia-opticalflow.so.1", "libnvidia-opticalflow.so", cnt->uid, cnt->gid) < 0)
+                                return (-1);
+		} else if (str_has_prefix(lib, "libnvidia_drv.so")) {
+                        if (symlink_library(err, paths[i], lib, "libnvidia_drv.so", cnt->uid, cnt->gid) < 0)
+                                return (-1);
+                } else if (str_has_prefix(lib, "libglxserver_nvidia.so")) {
+                        if (symlink_library(err, paths[i], lib, "libglxserver_nvidia.so", cnt->uid, cnt->gid) < 0)
                                 return (-1);
                 }
         }
