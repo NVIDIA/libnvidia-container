@@ -1,5 +1,7 @@
 # NVIDIA Container Toolkit Library and CLI Changelog
 
+* Use D3DKMTEnumAdapters3 to enumerate adpaters on WSL2 if available.
+
 ## 1.15.0~rc.2
 * Added detection of libnvdxgdmal.so.1 on WSL2
 
