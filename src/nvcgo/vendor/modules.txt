@@ -10,7 +10,7 @@ github.com/cilium/ebpf/link
 # github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
-# github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
+# github.com/opencontainers/runtime-spec v1.2.0
 ## explicit
 github.com/opencontainers/runtime-spec/specs-go
 # github.com/sirupsen/logrus v1.9.3
