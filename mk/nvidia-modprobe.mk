@@ -25,7 +25,7 @@ PATCH_FILE     := $(MAKE_DIR)/nvidia-modprobe.patch
 
 ARFLAGS  := -rU
 CPPFLAGS := -D_FORTIFY_SOURCE=2 -DNV_LINUX
-CFLAGS   := -O2 -g -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fPIC
+CFLAGS   := -O2 -g -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fPIC $(CFLAGS)
 
 ##### Private rules #####
 
