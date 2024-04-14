@@ -31,8 +31,8 @@ OBJ_NAME := $(LIB_NAME).so
 HDR_NAME := $(LIB_NAME).h
 CTYPES_H := ctypes.h
 
-CGO_CFLAGS  := -std=gnu11 -O2
-CGO_LDFLAGS := -Wl,--gc-sections -Wl,-s -Wl,-soname,$(LIB_SONAME)
+CGO_CFLAGS  := -std=gnu11 -O2 $(CGO_CFLAGS)
+CGO_LDFLAGS := -Wl,--gc-sections -Wl,-s -Wl,-soname,$(LIB_SONAME) $(CGO_LDFLAGS)
 
 build: $(OBJ_NAME)
 
