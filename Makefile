@@ -163,6 +163,9 @@ else
 LIB_LDLIBS_STATIC  += -l:libelf.a
 endif
 ifeq ($(WITH_TIRPC), yes)
+LIB_CPPFLAGS       += -DWITH_TIRPC $(shell pkg-config --cflags libtirpc)
+LIB_LDLIBS_SHARED  += -lpthread $(shell pkg-config --libs libtirpc)
+else
 LIB_CPPFLAGS       += -isystem $(DEPS_DIR)$(includedir)/tirpc -DWITH_TIRPC
 LIB_LDLIBS_STATIC  += -l:libtirpc.a
 LIB_LDLIBS_SHARED  += -lpthread
@@ -269,7 +272,7 @@ endif
 ifeq ($(WITH_LIBELF), no)
 	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk DESTDIR=$(DEPS_DIR) install
 endif
-ifeq ($(WITH_TIRPC), yes)
+ifeq ($(WITH_TIRPC), no)
 	$(MAKE) -f $(MAKE_DIR)/libtirpc.mk DESTDIR=$(DEPS_DIR) install
 endif
 
@@ -332,7 +335,7 @@ endif
 ifeq ($(WITH_LIBELF), no)
 	-$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk clean
 endif
-ifeq ($(WITH_TIRPC), yes)
+ifeq ($(WITH_TIRPC), no)
 	-$(MAKE) -f $(MAKE_DIR)/libtirpc.mk clean
 endif
 
