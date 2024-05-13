@@ -1,4 +1,5 @@
 theme: jekyll-theme-minimal
-title: libnvidia-container
-description: NVIDIA container runtime library repository.
+title: NVIDIA Container Toolkit
+description: |
+  A collection of utilities for using NVIDIA GPUs in containerized environments.
 show_downloads: false
