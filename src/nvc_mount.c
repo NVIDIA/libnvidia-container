@@ -28,6 +28,7 @@ static char **mount_files(struct error *, const char *, const struct nvc_contain
 static char **mount_driverstore_files(struct error *, const char *, const struct nvc_container *, const char *, const char *[], size_t);
 static char *mount_directory(struct error *, const char *, const struct nvc_container *, const char *);
 static char *mount_firmware(struct error *, const char *, const struct nvc_container *, const char *);
+static char *mount_in_root(struct error *err, const char *src, const char *rootfs, const char *path, uid_t uid, uid_t gid, unsigned long mountflags);
 static char *mount_with_flags(struct error *, const char *, const char *,  uid_t, uid_t, unsigned long);
 static char *mount_device(struct error *, const char *, const struct nvc_container *, const struct nvc_device_node *);
 static char *mount_ipc(struct error *, const char *, const struct nvc_container *, const char *);
@@ -49,12 +50,9 @@ static char *
 mount_directory(struct error *err, const char *root, const struct nvc_container *cnt, const char *dir)
 {
         char src[PATH_MAX];
-        char dst[PATH_MAX];
         if (path_join(err, src, root, dir) < 0)
                 return (NULL);
-        if (path_resolve_full(err, dst, cnt->cfg.rootfs, dir) < 0)
-                return (NULL);
-        return mount_with_flags(err, src, dst, cnt->uid, cnt->gid, MS_NOSUID|MS_NOEXEC);
+        return mount_in_root(err, src, cnt->cfg.rootfs, dir, cnt->uid, cnt->gid, MS_NOSUID|MS_NOEXEC);
 }
 
 // mount_firmware mounts the specified firmware file. The path specified is the container path and is resolved
@@ -63,12 +61,19 @@ static char *
 mount_firmware(struct error *err, const char *root, const struct nvc_container *cnt, const char *container_path)
 {
         char src[PATH_MAX];
-        char dst[PATH_MAX];
         if (path_resolve_full(err, src, root, container_path) < 0)
                 return (NULL);
-        if (path_join(err, dst, cnt->cfg.rootfs, container_path) < 0)
+        return mount_in_root(err, src, cnt->cfg.rootfs, container_path, cnt->uid, cnt->gid, MS_RDONLY|MS_NODEV|MS_NOSUID);
+}
+
+// mount_in_root bind mounts the specified src to the specified location in a root.
+// If the destination resolves outside of the root an error is raised.
+static char *
+mount_in_root(struct error *err, const char *src, const char *rootfs, const char *path, uid_t uid, uid_t gid, unsigned long mountflags) {
+        char dst[PATH_MAX];
+        if (path_resolve_full(err, dst, rootfs, path) < 0)
                 return (NULL);
-        return mount_with_flags(err, src, dst, cnt->uid, cnt->gid, MS_RDONLY|MS_NODEV|MS_NOSUID);
+        return mount_with_flags(err, src, dst, uid, gid, mountflags);
 }
 
 // mount_with_flags bind mounts the specified src to the specified dst with the specified mount flags
@@ -111,6 +116,8 @@ mount_files(struct error *err, const char *root, const struct nvc_container *cnt
                 return (NULL);
         if (file_create(err, dst, NULL, cnt->uid, cnt->gid, MODE_DIR(0755)) < 0)
                 return (NULL);
+        if (path_new(err, dst, dir) < 0)
+                return (NULL);
         src_end = src + strlen(src);
         dst_end = dst + strlen(dst);
 
@@ -124,19 +131,16 @@ mount_files(struct error *err, const char *root, const struct nvc_container *cnt
                         continue;
                 if (path_append(err, src, paths[i]) < 0)
                         goto fail;
+                if (file_mode_nofollow(err, src, &mode) < 0)
+                        goto fail;
+                // If we encounter resolved directories or symlinks here, we raise an error.
+                if (S_ISDIR(mode) || S_ISLNK(mode)) {
+                        error_setx(err, "unexpected source file mode %o for %s", mode, paths[i]);
+                        goto fail;
+                }
                 if (path_append(err, dst, file) < 0)
                         goto fail;
-                if (file_mode(err, src, &mode) < 0)
-                        goto fail;
-                if (file_create(err, dst, NULL, cnt->uid, cnt->gid, mode) < 0)
-                        goto fail;
-
-                log_infof("mounting %s at %s", src, dst);
-                if (xmount(err, src, dst, NULL, MS_BIND, NULL) < 0)
-                        goto fail;
-                if (xmount(err, NULL, dst, NULL, MS_BIND|MS_REMOUNT | MS_RDONLY|MS_NODEV|MS_NOSUID, NULL) < 0)
-                        goto fail;
-                if ((*ptr++ = xstrdup(err, dst)) == NULL)
+                if ((*ptr++ = mount_in_root(err, src, cnt->cfg.rootfs, dst, cnt->uid, cnt->gid, MS_RDONLY|MS_NODEV|MS_NOSUID)) == NULL)
                         goto fail;
                 *src_end = '\0';
                 *dst_end = '\0';

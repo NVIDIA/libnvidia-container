@@ -22,6 +22,7 @@ static inline void xclose(int);
 static inline int  xopen(struct error *, const char *, int);
 static inline void *xcalloc(struct error *, size_t, size_t);
 static inline int  xstat(struct error *, const char *, struct stat *);
+static inline int  xlstat(struct error *, const char *, struct stat *);
 static inline FILE *xfopen(struct error *, const char *, const char *);
 static inline char *xstrdup(struct error *, const char *);
 static inline int  xasprintf(struct error *, char **, const char *, ...)
@@ -71,6 +72,16 @@ xstat(struct error *err, const char *path, struct stat *buf)
 
         if ((rv = stat(path, buf)) < 0)
                 error_set(err, "stat failed: %s", path);
+        return (rv);
+}
+
+static inline int
+xlstat(struct error *err, const char *path, struct stat *buf)
+{
+        int rv;
+
+        if ((rv = lstat(path, buf)) < 0)
+                error_set(err, "lstat failed: %s", path);
         return (rv);
 }
 

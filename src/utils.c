@@ -542,9 +542,9 @@ file_create(struct error *err, const char *path, const char *data, uid_t uid, gi
         int rv = -1;
 
         // We check whether the file already exists with the required mode and skip the creation.
-        if (data == NULL && file_mode(err, path, &perm) == 0) {
+        if (data == NULL && file_mode_nofollow(err, path, &perm) == 0) {
                 if (perm == mode) {
-                        log_errf("The path %s already exists with the required mode; skipping create", path);
+                        log_warnf("The path %s already exists with the required mode; skipping create", path);
                         return (0);
                 }
         }
@@ -672,6 +672,20 @@ file_mode(struct error *err, const char *path, mode_t *mode)
         struct stat s;
 
         if (xstat(err, path, &s) < 0)
+                return (-1);
+        *mode = s.st_mode;
+        return (0);
+}
+
+// file_mode_nofollow implements the same functionality as file_mode except that
+// in that case of a symlink, the file is not followed and the mode of the
+// original file is returned.
+int
+file_mode_nofollow(struct error *err, const char *path, mode_t *mode)
+{
+        struct stat s;
+
+        if (xlstat(err, path, &s) < 0)
                 return (-1);
         *mode = s.st_mode;
         return (0);
