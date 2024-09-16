@@ -33,6 +33,7 @@ enum {
         OPT_NO_MPS           = 1 << 3,
         OPT_NO_PERSISTENCED  = 1 << 4,
         OPT_NO_FABRICMANAGER = 1 << 5,
+        OPT_NO_GSP_FIRMWARE  = 1 << 6,
 };
 
 static const struct option driver_opts[] = {
@@ -42,6 +43,7 @@ static const struct option driver_opts[] = {
         {"no-mps", OPT_NO_MPS},
         {"no-persistenced", OPT_NO_PERSISTENCED},
         {"no-fabricmanager", OPT_NO_FABRICMANAGER},
+        {"no-gsp-firmware", OPT_NO_GSP_FIRMWARE},
 };
 
 static const char * const default_driver_opts = "";
