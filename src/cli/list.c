@@ -23,6 +23,7 @@ const struct argp list_usage = {
                 {"mig-monitor", 0x82, "ID", 0, "MIG devices to list monitor capabilities files for", -1},
                 {"imex-channel", 0x83, "CHANNEL", 0, "IMEX channel ID(s) to inject", -1},
                 {"no-persistenced", 0x84, NULL, 0, "Don't include the NVIDIA persistenced socket", -1},
+                {"no-fabricmanager", 0x85, NULL, 0, "Don't include the NVIDIA fabricmanager socket", -1},
                 {0},
         },
         list_parser,
@@ -73,6 +74,10 @@ list_parser(int key, char *arg, struct argp_state *state)
                 break;
         case 0x84:
                 if (str_join(&err, &ctx->driver_opts, "no-persistenced", " ") < 0)
+                        goto fatal;
+                break;
+        case 0x85:
+                if (str_join(&err, &ctx->driver_opts, "no-fabricmanager", " ") < 0)
                         goto fatal;
                 break;
         case ARGP_KEY_END:
