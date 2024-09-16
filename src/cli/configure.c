@@ -33,6 +33,7 @@ const struct argp configure_usage = {
                 {"imex-channel", 0x83, "CHANNEL", 0, "IMEX channel ID(s) to inject", -1},
                 {"no-cgroups", 0x84, NULL, 0, "Don't use cgroup enforcement", -1},
                 {"no-devbind", 0x85, NULL, 0, "Don't bind mount devices", -1},
+                {"no-persistenced", 0x86, NULL, 0, "Don't include the NVIDIA persistenced socket", -1},
                 {0},
         },
         configure_parser,
@@ -148,6 +149,10 @@ configure_parser(int key, char *arg, struct argp_state *state)
                 break;
         case 0x85:
                 if (str_join(&err, &ctx->container_flags, "no-devbind", " ") < 0)
+                        goto fatal;
+                break;
+        case 0x86:
+                if (str_join(&err, &ctx->driver_opts, "no-persistenced", " ") < 0)
                         goto fatal;
                 break;
         case ARGP_KEY_ARG:
@@ -290,7 +295,7 @@ configure_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if ((drv = libnvc.driver_info_new(nvc, NULL)) == NULL ||
+        if ((drv = libnvc.driver_info_new(nvc, ctx->driver_opts)) == NULL ||
             (dev = libnvc.device_info_new(nvc, NULL)) == NULL) {
                 warnx("detection error: %s", libnvc.error(nvc));
                 goto fail;
