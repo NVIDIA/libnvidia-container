@@ -22,6 +22,8 @@ const struct argp list_usage = {
                 {"mig-config", 0x81, "ID", 0, "MIG devices to list config capabilities files for", -1},
                 {"mig-monitor", 0x82, "ID", 0, "MIG devices to list monitor capabilities files for", -1},
                 {"imex-channel", 0x83, "CHANNEL", 0, "IMEX channel ID(s) to inject", -1},
+                {"no-persistenced", 0x84, NULL, 0, "Don't include the NVIDIA persistenced socket", -1},
+                {"no-fabricmanager", 0x85, NULL, 0, "Don't include the NVIDIA fabricmanager socket", -1},
                 {0},
         },
         list_parser,
@@ -68,6 +70,14 @@ list_parser(int key, char *arg, struct argp_state *state)
                 break;
         case 0x83:
                 if (str_join(&err, &ctx->imex_channels, arg, ",") < 0)
+                        goto fatal;
+                break;
+        case 0x84:
+                if (str_join(&err, &ctx->driver_opts, "no-persistenced", " ") < 0)
+                        goto fatal;
+                break;
+        case 0x85:
+                if (str_join(&err, &ctx->driver_opts, "no-fabricmanager", " ") < 0)
                         goto fatal;
                 break;
         case ARGP_KEY_END:
@@ -146,7 +156,7 @@ list_command(const struct context *ctx)
                 warnx("permission error: %s", err.msg);
                 goto fail;
         }
-        if ((drv = libnvc.driver_info_new(nvc, NULL)) == NULL ||
+        if ((drv = libnvc.driver_info_new(nvc, ctx->driver_opts)) == NULL ||
             (dev = libnvc.device_info_new(nvc, NULL)) == NULL) {
                 warnx("detection error: %s", libnvc.error(nvc));
                 goto fail;
