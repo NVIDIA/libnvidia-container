@@ -149,5 +149,6 @@ main(int argc, char *argv[])
         free(ctx.mig_config);
         free(ctx.mig_monitor);
         free(ctx.imex_channels);
+        free(ctx.driver_opts);
         return (rv);
 }
