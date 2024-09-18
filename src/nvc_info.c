@@ -366,9 +366,11 @@ lookup_paths(struct error *err, struct dxcore_context *dxcore, struct nvc_driver
                 return (-1);
         }
 
-        if (lookup_firmwares(err, dxcore, info, root, flags) < 0) {
-                log_err("error looking up additional paths");
-                return (-1);
+        if (!(flags & OPT_NO_GSP_FIRMWARE)) {
+                if (lookup_firmwares(err, dxcore, info, root, flags) < 0) {
+                        log_err("error looking up additional paths");
+                        return (-1);
+                }
         }
 
         return (0);
