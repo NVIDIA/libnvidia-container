@@ -32,6 +32,7 @@ static struct argp usage = {
                 {"user", 'u', "UID[:GID]", OPTION_ARG_OPTIONAL, "User and group to use for privilege separation", -1},
                 {"root", 'r', "PATH", 0, "Path to the driver root directory", -1},
                 {"ldcache", 'l', "FILE", 0, "Path to the system's DSO cache", -1},
+                {"no-create-imex-channels", 0x80, NULL, 0, "Don't automatically create IMEX channel device nodes", -1},
                 {NULL, 0, NULL, 0, "Commands:", 0},
                 {"info", 0, NULL, OPTION_DOC|OPTION_NO_USAGE, "Report information about the driver and devices", 0},
                 {"list", 0, NULL, OPTION_DOC|OPTION_NO_USAGE, "List driver components", 0},
@@ -111,6 +112,10 @@ parser(int key, char *arg, struct argp_state *state)
                 break;
         case 'l':
                 ctx->ldcache = arg;
+                break;
+        case 0x80:
+                if (str_join(&err, &ctx->init_flags, "no-create-imex-channels", " ") < 0)
+                        goto fatal;
                 break;
         case ARGP_KEY_ARGS:
                 state->argv += state->next;
