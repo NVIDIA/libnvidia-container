@@ -16,11 +16,13 @@ struct option {
 
 /* Library options */
 enum {
-        OPT_LOAD_KMODS = 1 << 0,
+        OPT_LOAD_KMODS              = 1 << 0,
+        OPT_NO_CREATE_IMEX_CHANNELS = 1 << 1,
 };
 
 static const struct option library_opts[] = {
         {"load-kmods", OPT_LOAD_KMODS},
+        {"no-create-imex-channels", OPT_NO_CREATE_IMEX_CHANNELS}
 };
 
 static const char * const default_library_opts = "";
