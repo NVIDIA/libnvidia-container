@@ -29,8 +29,8 @@ ENV OS_ARCH=${OS_ARCH}
 RUN OS_ARCH=${OS_ARCH/x86_64/amd64} && OS_ARCH=${OS_ARCH/aarch64/arm64} && \
     curl https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-${OS_ARCH}.tar.gz \
     | tar -C /usr/local -xz
-ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
+ENV GOPATH=/go
+ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 
 ARG WITH_NVCGO=no
 ARG WITH_LIBELF=no
@@ -59,8 +59,8 @@ RUN export META_NOECHO=echo && \
     make distclean && make -j"$(nproc)"
 
 # Use the revision as the package version for the time being
-ENV PKG_NAME libnvidia-container
-ENV PKG_VERS ${REVISION}
+ENV PKG_NAME=libnvidia-container
+ENV PKG_VERS=${REVISION}
 ENV DIST_DIR=/tmp/${PKG_NAME}-${PKG_VERS}
 RUN mkdir -p $DIST_DIR /dist
 CMD make dist && \
