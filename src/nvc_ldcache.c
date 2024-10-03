@@ -6,14 +6,18 @@
 #include <linux/types.h>
 
 #include <sys/capability.h>
+#include <sys/mman.h>
 #include <sys/mount.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
+#include <sys/sendfile.h>
+#include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <paths.h>
 #include <sched.h>
 #ifdef WITH_SECCOMP
@@ -36,6 +40,9 @@ static int   adjust_capabilities(struct error *, uid_t, bool);
 static int   adjust_privileges(struct error *, uid_t, gid_t, bool);
 static int   limit_resources(struct error *);
 static int   limit_syscalls(struct error *);
+static ssize_t   sendfile_nointr(int, int, off_t *, size_t);
+static int       open_as_memfd(struct error *, const char *);
+
 
 static inline bool
 secure_mode(void)
@@ -242,7 +249,7 @@ limit_resources(struct error *err)
         limit = (struct rlimit){64, 64};
         if (setrlimit(RLIMIT_NOFILE, &limit) < 0)
                 goto fail;
-        limit = (struct rlimit){1024*1024, 1024*1024};
+        limit = (struct rlimit){2*1024*1024, 2*1024*1024};
         if (setrlimit(RLIMIT_FSIZE, &limit) < 0)
                 goto fail;
         return (0);
@@ -279,7 +286,7 @@ limit_syscalls(struct error *err)
                 SCMP_SYS(getegid),
                 SCMP_SYS(geteuid),
                 SCMP_SYS(getgid),
-		SCMP_SYS(getpgrp),
+                SCMP_SYS(getpgrp),
                 SCMP_SYS(getpid),
                 SCMP_SYS(gettid),
                 SCMP_SYS(gettimeofday),
@@ -287,6 +294,7 @@ limit_syscalls(struct error *err)
                 SCMP_SYS(_llseek),
                 SCMP_SYS(lseek),
                 SCMP_SYS(lstat),
+                SCMP_SYS(memfd_create),
                 SCMP_SYS(mkdir),
                 SCMP_SYS(mmap),
                 SCMP_SYS(mprotect),
@@ -303,6 +311,7 @@ limit_syscalls(struct error *err)
                 SCMP_SYS(rt_sigaction),
                 SCMP_SYS(rt_sigprocmask),
                 SCMP_SYS(rt_sigreturn),
+                SCMP_SYS(sendfile),
                 SCMP_SYS(stat),
                 SCMP_SYS(symlink),
                 SCMP_SYS(tgkill),
@@ -352,6 +361,66 @@ limit_syscalls(struct error *err)
 }
 #endif /* WITH_SECCOMP */
 
+
+static ssize_t
+sendfile_nointr(int out_fd, int in_fd, off_t *offset, size_t count)
+{
+        ssize_t ret;
+
+        do {
+                ret = sendfile(out_fd, in_fd, offset, count);
+        } while (ret < 0 && errno == EINTR);
+
+        return ret;
+}
+
+static int
+open_as_memfd(struct error *err, const char *path)
+{
+        int fd, memfd, ret;
+        ssize_t bytes_sent = 0;
+        struct stat st = {0};
+        off_t offset = 0;
+
+        if ((fd = xopen(err, path, O_RDONLY)) < 0)
+                return (-1);
+
+        log_info("creating a virtual copy of the ldconfig binary");
+        memfd = memfd_create(path, MFD_ALLOW_SEALING | MFD_CLOEXEC);
+        if (memfd == -1) {
+                error_set(err, "error creating memfd for path: %s", path);
+                return (-1);
+        }
+
+        ret = fstat(fd, &st);
+        if (ret == -1) {
+                error_set(err, "error running fstat for path: %s", path);
+                goto fail;
+        }
+
+        while (bytes_sent < st.st_size) {
+                ssize_t sent;
+                sent = sendfile_nointr(memfd, fd, &offset, st.st_size - bytes_sent);
+                if (sent == -1) {
+                        error_set(err, "failed to copy ldconfig binary to virtual copy");
+                        goto fail;
+                }
+                bytes_sent += sent;
+        }
+
+        if (fcntl(memfd, F_ADD_SEALS, F_SEAL_SEAL | F_SEAL_SHRINK | F_SEAL_GROW | F_SEAL_WRITE) == -1) {
+                error_set(err, "failed to seal virtual copy of the ldconfig binary");
+                goto fail;
+        }
+
+        close(fd);
+        return memfd;
+fail:
+        close(fd);
+        close(memfd);
+        return (-1);
+}
+
 int
 nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
 {
@@ -374,7 +443,7 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
                  * Force proc to be remounted since we're creating a PID namespace and fexecve depends on it.
                  */
                 ++argv[0];
-                if ((fd = xopen(&ctx->err, argv[0], O_RDONLY|O_CLOEXEC)) < 0)
+                if ((fd = open_as_memfd(&ctx->err, argv[0])) < 0)
                         return (-1);
                 host_ldconfig = true;
                 log_infof("executing %s from host at %s", argv[0], cnt->cfg.rootfs);
