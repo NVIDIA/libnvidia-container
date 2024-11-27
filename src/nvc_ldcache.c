@@ -42,6 +42,7 @@ static int   limit_resources(struct error *);
 static int   limit_syscalls(struct error *);
 static ssize_t   sendfile_nointr(int, int, off_t *, size_t);
 static int       open_as_memfd(struct error *, const char *);
+int memfd_create(const char *, unsigned int);
 
 
 static inline bool
@@ -294,7 +295,9 @@ limit_syscalls(struct error *err)
                 SCMP_SYS(_llseek),
                 SCMP_SYS(lseek),
                 SCMP_SYS(lstat),
+#ifdef SYS_memfd_create
                 SCMP_SYS(memfd_create),
+#endif
                 SCMP_SYS(mkdir),
                 SCMP_SYS(mmap),
                 SCMP_SYS(mprotect),
@@ -361,6 +364,38 @@ limit_syscalls(struct error *err)
 }
 #endif /* WITH_SECCOMP */
 
+/* memfd_create(2) flags -- copied from <linux/memfd.h>. */
+#ifndef MFD_CLOEXEC
+#  define MFD_CLOEXEC       0x0001U
+#  define MFD_ALLOW_SEALING 0x0002U
+#endif
+#ifndef MFD_EXEC
+#  define MFD_EXEC          0x0010U
+#endif
+
+/* This comes directly from <linux/fcntl.h>. */
+#ifndef F_LINUX_SPECIFIC_BASE
+#  define F_LINUX_SPECIFIC_BASE 1024
+#endif
+#ifndef F_ADD_SEALS
+#  define F_ADD_SEALS (F_LINUX_SPECIFIC_BASE + 9)
+#endif
+#ifndef F_SEAL_SEAL
+#  define F_SEAL_SEAL          0x0001	/* prevent further seals from being set */
+#  define F_SEAL_SHRINK        0x0002	/* prevent file from shrinking */
+#  define F_SEAL_GROW          0x0004	/* prevent file from growing */
+#  define F_SEAL_WRITE         0x0008	/* prevent writes */
+#endif
+
+int memfd_create(const char *name, unsigned int flags)
+{
+#ifdef SYS_memfd_create
+	return syscall(SYS_memfd_create, name, flags);
+#else
+	errno = ENOSYS;
+	return -1;
+#endif
+}
 
 static ssize_t
 sendfile_nointr(int out_fd, int in_fd, off_t *offset, size_t count)
@@ -444,7 +479,9 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
                  */
                 ++argv[0];
                 if ((fd = open_as_memfd(&ctx->err, argv[0])) < 0)
-                        return (-1);
+                        log_warn("failed to create virtual copy of the ldconfig binary");
+                        if ((fd = xopen(&ctx->err, argv[0], O_RDONLY|O_CLOEXEC)) < 0)
+                                return (-1);
                 host_ldconfig = true;
                 log_infof("executing %s from host at %s", argv[0], cnt->cfg.rootfs);
         } else {
