@@ -478,10 +478,11 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
                  * Force proc to be remounted since we're creating a PID namespace and fexecve depends on it.
                  */
                 ++argv[0];
-                if ((fd = open_as_memfd(&ctx->err, argv[0])) < 0)
+                if ((fd = open_as_memfd(&ctx->err, argv[0])) < 0) {
                         log_warn("failed to create virtual copy of the ldconfig binary");
                         if ((fd = xopen(&ctx->err, argv[0], O_RDONLY|O_CLOEXEC)) < 0)
                                 return (-1);
+                }
                 host_ldconfig = true;
                 log_infof("executing %s from host at %s", argv[0], cnt->cfg.rootfs);
         } else {
