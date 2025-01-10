@@ -25,6 +25,7 @@ const struct argp list_usage = {
                 {"no-persistenced", 0x84, NULL, 0, "Don't include the NVIDIA persistenced socket", -1},
                 {"no-fabricmanager", 0x85, NULL, 0, "Don't include the NVIDIA fabricmanager socket", -1},
                 {"no-gsp-firmware", 0x86, NULL, 0, "Don't include GSP Firmware", -1},
+                {"no-cntlibs", 0x87, NULL, 0, "Don't overwrite host mounts with CUDA compat libs from the container", -1},
                 {0},
         },
         list_parser,
@@ -85,6 +86,10 @@ list_parser(int key, char *arg, struct argp_state *state)
                 if (str_join(&err, &ctx->driver_opts, "no-gsp-firmware", " ") < 0)
                         goto fatal;
                 ctx->list_firmwares = false;
+                break;
+        case 0x87:
+                if (str_join(&err, &ctx->container_flags, "no-cntlibs", " ") < 0)
+                        goto fatal;
                 break;
         case ARGP_KEY_END:
                 if (state->argc == 1 || (state->argc == 2 && ctx->imex_channels != NULL)) {
