@@ -36,6 +36,7 @@ const struct argp configure_usage = {
                 {"no-persistenced", 0x86, NULL, 0, "Don't include the NVIDIA persistenced socket", -1},
                 {"no-fabricmanager", 0x87, NULL, 0, "Don't include the NVIDIA fabricmanager socket", -1},
                 {"no-gsp-firmware", 0x88, NULL, 0, "Don't include GSP Firmware", -1},
+                {"no-cntlibs", 0x89, NULL, 0, "Don't overwrite host mounts with CUDA compat libs from the container", -1},
                 {0},
         },
         configure_parser,
@@ -163,6 +164,10 @@ configure_parser(int key, char *arg, struct argp_state *state)
                 break;
         case 0x88:
                 if (str_join(&err, &ctx->driver_opts, "no-gsp-firmware", " ") < 0)
+                        goto fatal;
+                break;
+        case 0x89:
+                if (str_join(&err, &ctx->container_flags, "no-cntlibs", " ") < 0)
                         goto fatal;
                 break;
         case ARGP_KEY_ARG:

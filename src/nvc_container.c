@@ -21,7 +21,7 @@
 #include "xfuncs.h"
 
 static char *find_namespace_path(struct error *, const struct nvc_container *, const char *);
-static int  find_library_paths(struct error *, struct nvc_container *);
+static int  find_compat_library_paths(struct error *, struct nvc_container *);
 static int  lookup_owner(struct error *, struct nvc_container *);
 static int  copy_config(struct error *, struct nvc_container *, const struct nvc_container_config *);
 
@@ -58,7 +58,7 @@ find_namespace_path(struct error *err, const struct nvc_container *cnt, const ch
 }
 
 static int
-find_library_paths(struct error *err, struct nvc_container *cnt)
+find_compat_library_paths(struct error *err, struct nvc_container *cnt)
 {
         char path[PATH_MAX];
         glob_t gl;
@@ -247,7 +247,7 @@ nvc_container_new(struct nvc_context *ctx, const struct nvc_container_config *cf
         if (lookup_owner(&ctx->err, cnt) < 0)
                 goto fail;
         if (!(flags & OPT_NO_CNTLIBS)) {
-                if (find_library_paths(&ctx->err, cnt) < 0)
+                if (find_compat_library_paths(&ctx->err, cnt) < 0)
                         goto fail;
         }
         if ((cnt->mnt_ns = find_namespace_path(&ctx->err, cnt, "mnt")) == NULL)
