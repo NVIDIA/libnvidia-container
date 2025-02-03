@@ -127,7 +127,6 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 
 # private centos target with overrides
 --centos%: OS := centos
---centos%: WITH_TIRPC = yes
 --centos%: WITH_LIBELF = yes
 --centos8%: BASEIMAGE = quay.io/centos/centos:stream8
 
@@ -139,8 +138,7 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --rhel%: OS := centos
 --rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 --rhel%: ARTIFACTS_DIR = $(DIST_DIR)/rhel$(VERSION)/$(ARCH)
---rhel8%: CFLAGS := -I/usr/include/tirpc
---rhel8%: LDLIBS := -ltirpc
+--rhel%: WITH_TIRPC = yes
 --rhel8%: BASEIMAGE = quay.io/centos/centos:stream8
 
 --verify-rhel%: OS := centos
