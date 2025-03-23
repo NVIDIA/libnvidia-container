@@ -13,10 +13,31 @@ import (
 	"strings"
 
 	"github.com/cilium/ebpf/asm"
+	"github.com/cilium/ebpf/btf"
 	"github.com/cilium/ebpf/internal"
-	"github.com/cilium/ebpf/internal/btf"
-	"github.com/cilium/ebpf/internal/unix"
+	"github.com/cilium/ebpf/internal/sys"
 )
+
+type kconfigMetaKey struct{}
+
+type kconfigMeta struct {
+	Map    *MapSpec
+	Offset uint32
+}
+
+type kfuncMetaKey struct{}
+
+type kfuncMeta struct {
+	Binding elf.SymBind
+	Func    *btf.Func
+}
+
+type ksymMetaKey struct{}
+
+type ksymMeta struct {
+	Binding elf.SymBind
+	Name    string
+}
 
 // elfCode is a convenience to reduce the amount of arguments that have to
 // be passed around explicitly. You should treat its contents as immutable.
@@ -26,6 +47,12 @@ type elfCode struct {
 	license  string
 	version  uint32
 	btf      *btf.Spec
+	extInfo  *btf.ExtInfos
+	maps     map[string]*MapSpec
+	vars     map[string]*VariableSpec
+	kfuncs   map[string]*btf.Func
+	ksyms    map[string]struct{}
+	kconfig  *MapSpec
 }
 
 // LoadCollectionSpec parses an ELF file into a CollectionSpec.
@@ -49,7 +76,12 @@ func LoadCollectionSpecFromReader(rd io.ReaderAt) (*CollectionSpec, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+
+	// Checks if the ELF file is for BPF data.
+	// Old LLVM versions set e_machine to EM_NONE.
+	if f.File.Machine != elf.EM_NONE && f.File.Machine != elf.EM_BPF {
+		return nil, fmt.Errorf("unexpected machine type for BPF ELF: %s", f.File.Machine)
+	}
 
 	var (
 		licenseSection *elf.Section
@@ -63,6 +95,8 @@ func LoadCollectionSpecFromReader(rd io.ReaderAt) (*CollectionSpec, error) {
 
 	// Collect all the sections we're interested in. This includes relocations
 	// which we parse later.
+	//
+	// Keep the documentation at docs/ebpf/loading/elf-sections.md up-to-date.
 	for i, sec := range f.Sections {
 		idx := elf.SectionIndex(i)
 
@@ -75,7 +109,7 @@ func LoadCollectionSpecFromReader(rd io.ReaderAt) (*CollectionSpec, error) {
 			sections[idx] = newElfSection(sec, mapSection)
 		case sec.Name == ".maps":
 			sections[idx] = newElfSection(sec, btfMapSection)
-		case sec.Name == ".bss" || sec.Name == ".data" || strings.HasPrefix(sec.Name, ".rodata"):
+		case isDataSection(sec.Name):
 			sections[idx] = newElfSection(sec, dataSection)
 		case sec.Type == elf.SHT_REL:
 			// Store relocations under the section index of the target
@@ -95,7 +129,7 @@ func LoadCollectionSpecFromReader(rd io.ReaderAt) (*CollectionSpec, error) {
 		return nil, fmt.Errorf("load version: %w", err)
 	}
 
-	btfSpec, err := btf.LoadSpecFromReader(rd)
+	btfSpec, btfExtInfo, err := btf.LoadSpecAndExtInfosFromReader(rd)
 	if err != nil && !errors.Is(err, btf.ErrNotFound) {
 		return nil, fmt.Errorf("load BTF: %w", err)
 	}
@@ -106,6 +140,11 @@ func LoadCollectionSpecFromReader(rd io.ReaderAt) (*CollectionSpec, error) {
 		license:     license,
 		version:     version,
 		btf:         btfSpec,
+		extInfo:     btfExtInfo,
+		maps:        make(map[string]*MapSpec),
+		vars:        make(map[string]*VariableSpec),
+		kfuncs:      make(map[string]*btf.Func),
+		ksyms:       make(map[string]struct{}),
 	}
 
 	symbols, err := f.Symbols()
@@ -115,47 +154,28 @@ func LoadCollectionSpecFromReader(rd io.ReaderAt) (*CollectionSpec, error) {
 
 	ec.assignSymbols(symbols)
 
-	// Go through relocation sections, and parse the ones for sections we're
-	// interested in. Make sure that relocations point at valid sections.
-	for idx, relSection := range relSections {
-		section := sections[idx]
-		if section == nil {
-			continue
-		}
-
-		rels, err := ec.loadRelocations(relSection, symbols)
-		if err != nil {
-			return nil, fmt.Errorf("relocation for section %q: %w", section.Name, err)
-		}
-
-		for _, rel := range rels {
-			target := sections[rel.Section]
-			if target == nil {
-				return nil, fmt.Errorf("section %q: reference to %q in section %s: %w", section.Name, rel.Name, rel.Section, ErrNotSupported)
-			}
-
-			if target.Flags&elf.SHF_STRINGS > 0 {
-				return nil, fmt.Errorf("section %q: string is not stack allocated: %w", section.Name, ErrNotSupported)
-			}
-
-			target.references++
-		}
-
-		section.relocations = rels
+	if err := ec.loadRelocations(relSections, symbols); err != nil {
+		return nil, fmt.Errorf("load relocations: %w", err)
 	}
 
-	// Collect all the various ways to define maps.
-	maps := make(map[string]*MapSpec)
-	if err := ec.loadMaps(maps); err != nil {
+	if err := ec.loadMaps(); err != nil {
 		return nil, fmt.Errorf("load maps: %w", err)
 	}
 
-	if err := ec.loadBTFMaps(maps); err != nil {
+	if err := ec.loadBTFMaps(); err != nil {
 		return nil, fmt.Errorf("load BTF maps: %w", err)
 	}
 
-	if err := ec.loadDataSections(maps); err != nil {
+	if err := ec.loadDataSections(); err != nil {
 		return nil, fmt.Errorf("load data sections: %w", err)
+	}
+
+	if err := ec.loadKconfigSection(); err != nil {
+		return nil, fmt.Errorf("load virtual .kconfig section: %w", err)
+	}
+
+	if err := ec.loadKsymsSection(); err != nil {
+		return nil, fmt.Errorf("load virtual .ksyms section: %w", err)
 	}
 
 	// Finally, collect programs and link them.
@@ -164,7 +184,7 @@ func LoadCollectionSpecFromReader(rd io.ReaderAt) (*CollectionSpec, error) {
 		return nil, fmt.Errorf("load programs: %w", err)
 	}
 
-	return &CollectionSpec{maps, progs, ec.ByteOrder}, nil
+	return &CollectionSpec{ec.maps, progs, ec.vars, btfSpec, ec.ByteOrder}, nil
 }
 
 func loadLicense(sec *elf.Section) (string, error) {
@@ -189,6 +209,18 @@ func loadVersion(sec *elf.Section, bo binary.ByteOrder) (uint32, error) {
 		return 0, fmt.Errorf("section %s: %v", sec.Name, err)
 	}
 	return version, nil
+}
+
+func isDataSection(name string) bool {
+	return name == ".bss" || strings.HasPrefix(name, ".data") || strings.HasPrefix(name, ".rodata")
+}
+
+func isConstantDataSection(name string) bool {
+	return strings.HasPrefix(name, ".rodata")
+}
+
+func isKconfigSection(name string) bool {
+	return name == ".kconfig"
 }
 
 type elfSectionKind int
@@ -265,6 +297,35 @@ func (ec *elfCode) assignSymbols(symbols []elf.Symbol) {
 	}
 }
 
+// loadRelocations iterates .rel* sections and extracts relocation entries for
+// sections of interest. Makes sure relocations point at valid sections.
+func (ec *elfCode) loadRelocations(relSections map[elf.SectionIndex]*elf.Section, symbols []elf.Symbol) error {
+	for idx, relSection := range relSections {
+		section := ec.sections[idx]
+		if section == nil {
+			continue
+		}
+
+		rels, err := ec.loadSectionRelocations(relSection, symbols)
+		if err != nil {
+			return fmt.Errorf("relocation for section %q: %w", section.Name, err)
+		}
+
+		for _, rel := range rels {
+			target := ec.sections[rel.Section]
+			if target == nil {
+				return fmt.Errorf("section %q: reference to %q in section %s: %w", section.Name, rel.Name, rel.Section, ErrNotSupported)
+			}
+
+			target.references++
+		}
+
+		section.relocations = rels
+	}
+
+	return nil
+}
+
 // loadProgramSections iterates ec's sections and emits a ProgramSpec
 // for each function it finds.
 //
@@ -274,6 +335,7 @@ func (ec *elfCode) loadProgramSections() (map[string]*ProgramSpec, error) {
 	progs := make(map[string]*ProgramSpec)
 
 	// Generate a ProgramSpec for each function found in each program section.
+	var export []string
 	for _, sec := range ec.sections {
 		if sec.kind != programSection {
 			continue
@@ -304,25 +366,19 @@ func (ec *elfCode) loadProgramSections() (map[string]*ProgramSpec, error) {
 				ByteOrder:     ec.ByteOrder,
 			}
 
-			if ec.btf != nil {
-				spec.BTF, err = ec.btf.Program(name)
-				if err != nil && !errors.Is(err, btf.ErrNoExtendedInfo) {
-					return nil, fmt.Errorf("program %s: %w", name, err)
-				}
-			}
-
 			// Function names must be unique within a single ELF blob.
 			if progs[name] != nil {
 				return nil, fmt.Errorf("duplicate program name %s", name)
 			}
 			progs[name] = spec
+
+			if spec.SectionName != ".text" {
+				export = append(export, name)
+			}
 		}
 	}
 
-	// Populate each prog's references with pointers to all of its callees.
-	if err := populateReferences(progs); err != nil {
-		return nil, fmt.Errorf("populating references: %w", err)
-	}
+	flattenPrograms(progs, export)
 
 	// Hide programs (e.g. library functions) that were not explicitly emitted
 	// to an ELF section. These could be exposed in a separate CollectionSpec
@@ -342,73 +398,72 @@ func (ec *elfCode) loadProgramSections() (map[string]*ProgramSpec, error) {
 //
 // The resulting map is indexed by function name.
 func (ec *elfCode) loadFunctions(section *elfSection) (map[string]asm.Instructions, error) {
-	var (
-		r      = bufio.NewReader(section.Open())
-		funcs  = make(map[string]asm.Instructions)
-		offset uint64
-		insns  asm.Instructions
-	)
-	for {
-		ins := asm.Instruction{
-			// Symbols denote the first instruction of a function body.
-			Symbol: section.symbols[offset].Name,
-		}
+	r := bufio.NewReader(section.Open())
 
-		// Pull one instruction from the instruction stream.
-		n, err := ins.Unmarshal(r, ec.ByteOrder)
-		if errors.Is(err, io.EOF) {
-			fn := insns.Name()
-			if fn == "" {
-				return nil, errors.New("reached EOF before finding a valid symbol")
-			}
-
-			// Reached the end of the section and the decoded instruction buffer
-			// contains at least one valid instruction belonging to a function.
-			// Store the result and stop processing instructions.
-			funcs[fn] = insns
-			break
-		}
-		if err != nil {
-			return nil, fmt.Errorf("offset %d: %w", offset, err)
-		}
-
-		// Decoded the first instruction of a function body but insns already
-		// holds a valid instruction stream. Store the result and flush insns.
-		if ins.Symbol != "" && insns.Name() != "" {
-			funcs[insns.Name()] = insns
-			insns = nil
-		}
-
-		if rel, ok := section.relocations[offset]; ok {
-			// A relocation was found for the current offset. Apply it to the insn.
-			if err = ec.relocateInstruction(&ins, rel); err != nil {
-				return nil, fmt.Errorf("offset %d: relocate instruction: %w", offset, err)
-			}
-		} else {
-			// Up to LLVM 9, calls to subprograms within the same ELF section are
-			// sometimes encoded using relative jumps without relocation entries.
-			// If, after all relocations entries have been processed, there are
-			// still relative pseudocalls left, they must point to an existing
-			// symbol within the section.
-			// When splitting sections into subprograms, the targets of these calls
-			// are no longer in scope, so they must be resolved here.
-			if ins.IsFunctionReference() && ins.Constant != -1 {
-				tgt := jumpTarget(offset, ins)
-				sym := section.symbols[tgt].Name
-				if sym == "" {
-					return nil, fmt.Errorf("offset %d: no jump target found at offset %d", offset, tgt)
-				}
-
-				ins.Reference = sym
-				ins.Constant = -1
-			}
-		}
-
-		insns = append(insns, ins)
-		offset += n
+	// Decode the section's instruction stream.
+	insns := make(asm.Instructions, 0, section.Size/asm.InstructionSize)
+	if err := insns.Unmarshal(r, ec.ByteOrder); err != nil {
+		return nil, fmt.Errorf("decoding instructions for section %s: %w", section.Name, err)
+	}
+	if len(insns) == 0 {
+		return nil, fmt.Errorf("no instructions found in section %s", section.Name)
 	}
 
-	return funcs, nil
+	iter := insns.Iterate()
+	for iter.Next() {
+		ins := iter.Ins
+		offset := iter.Offset.Bytes()
+
+		// Tag Symbol Instructions.
+		if sym, ok := section.symbols[offset]; ok {
+			*ins = ins.WithSymbol(sym.Name)
+		}
+
+		// Apply any relocations for the current instruction.
+		// If no relocation is present, resolve any section-relative function calls.
+		if rel, ok := section.relocations[offset]; ok {
+			if err := ec.relocateInstruction(ins, rel); err != nil {
+				return nil, fmt.Errorf("offset %d: relocating instruction: %w", offset, err)
+			}
+		} else {
+			if err := referenceRelativeJump(ins, offset, section.symbols); err != nil {
+				return nil, fmt.Errorf("offset %d: resolving relative jump: %w", offset, err)
+			}
+		}
+	}
+
+	if ec.extInfo != nil {
+		ec.extInfo.Assign(insns, section.Name)
+	}
+
+	return splitSymbols(insns)
+}
+
+// referenceRelativeJump turns a relative jump to another bpf subprogram within
+// the same ELF section into a Reference Instruction.
+//
+// Up to LLVM 9, calls to subprograms within the same ELF section are sometimes
+// encoded using relative jumps instead of relocation entries. These jumps go
+// out of bounds of the current program, so their targets must be memoized
+// before the section's instruction stream is split.
+//
+// The relative jump Constant is blinded to -1 and the target Symbol is set as
+// the Instruction's Reference so it can be resolved by the linker.
+func referenceRelativeJump(ins *asm.Instruction, offset uint64, symbols map[uint64]elf.Symbol) error {
+	if !ins.IsFunctionReference() || ins.Constant == -1 {
+		return nil
+	}
+
+	tgt := jumpTarget(offset, *ins)
+	sym := symbols[tgt].Name
+	if sym == "" {
+		return fmt.Errorf("no jump target found at offset %d", tgt)
+	}
+
+	*ins = ins.WithReference(sym)
+	ins.Constant = -1
+
+	return nil
 }
 
 // jumpTarget takes ins' offset within an instruction stream (in bytes)
@@ -429,6 +484,8 @@ func jumpTarget(offset uint64, ins asm.Instruction) uint64 {
 	return uint64(dest)
 }
 
+var errUnsupportedBinding = errors.New("unsupported binding")
+
 func (ec *elfCode) relocateInstruction(ins *asm.Instruction, rel elf.Symbol) error {
 	var (
 		typ  = elf.ST_TYPE(rel.Info)
@@ -440,8 +497,12 @@ func (ec *elfCode) relocateInstruction(ins *asm.Instruction, rel elf.Symbol) err
 
 	switch target.kind {
 	case mapSection, btfMapSection:
-		if bind != elf.STB_GLOBAL {
+		if bind == elf.STB_LOCAL {
 			return fmt.Errorf("possible erroneous static qualifier on map definition: found reference to %q", name)
+		}
+
+		if bind != elf.STB_GLOBAL {
+			return fmt.Errorf("map %q: %w: %s", name, errUnsupportedBinding, bind)
 		}
 
 		if typ != elf.STT_OBJECT && typ != elf.STT_NOTYPE {
@@ -452,18 +513,12 @@ func (ec *elfCode) relocateInstruction(ins *asm.Instruction, rel elf.Symbol) err
 
 		ins.Src = asm.PseudoMapFD
 
-		// Mark the instruction as needing an update when creating the
-		// collection.
-		if err := ins.RewriteMapPtr(-1); err != nil {
-			return err
-		}
-
 	case dataSection:
 		var offset uint32
 		switch typ {
 		case elf.STT_SECTION:
 			if bind != elf.STB_LOCAL {
-				return fmt.Errorf("direct load: %s: unsupported relocation %s", name, bind)
+				return fmt.Errorf("direct load: %s: %w: %s", name, errUnsupportedBinding, bind)
 			}
 
 			// This is really a reference to a static symbol, which clang doesn't
@@ -472,8 +527,17 @@ func (ec *elfCode) relocateInstruction(ins *asm.Instruction, rel elf.Symbol) err
 			offset = uint32(uint64(ins.Constant))
 
 		case elf.STT_OBJECT:
-			if bind != elf.STB_GLOBAL {
-				return fmt.Errorf("direct load: %s: unsupported relocation %s", name, bind)
+			// LLVM 9 emits OBJECT-LOCAL symbols for anonymous constants.
+			if bind != elf.STB_GLOBAL && bind != elf.STB_LOCAL && bind != elf.STB_WEAK {
+				return fmt.Errorf("direct load: %s: %w: %s", name, errUnsupportedBinding, bind)
+			}
+
+			offset = uint32(rel.Value)
+
+		case elf.STT_NOTYPE:
+			// LLVM 7 emits NOTYPE-LOCAL symbols for anonymous constants.
+			if bind != elf.STB_LOCAL {
+				return fmt.Errorf("direct load: %s: %w: %s", name, errUnsupportedBinding, bind)
 			}
 
 			offset = uint32(rel.Value)
@@ -491,12 +555,6 @@ func (ec *elfCode) relocateInstruction(ins *asm.Instruction, rel elf.Symbol) err
 		ins.Constant = int64(uint64(offset) << 32)
 		ins.Src = asm.PseudoMapValue
 
-		// Mark the instruction as needing an update when creating the
-		// collection.
-		if err := ins.RewriteMapPtr(-1); err != nil {
-			return err
-		}
-
 	case programSection:
 		switch opCode := ins.OpCode; {
 		case opCode.JumpOp() == asm.Call:
@@ -507,12 +565,12 @@ func (ec *elfCode) relocateInstruction(ins *asm.Instruction, rel elf.Symbol) err
 			switch typ {
 			case elf.STT_NOTYPE, elf.STT_FUNC:
 				if bind != elf.STB_GLOBAL {
-					return fmt.Errorf("call: %s: unsupported binding: %s", name, bind)
+					return fmt.Errorf("call: %s: %w: %s", name, errUnsupportedBinding, bind)
 				}
 
 			case elf.STT_SECTION:
 				if bind != elf.STB_LOCAL {
-					return fmt.Errorf("call: %s: unsupported binding: %s", name, bind)
+					return fmt.Errorf("call: %s: %w: %s", name, errUnsupportedBinding, bind)
 				}
 
 				// The function we want to call is in the indicated section,
@@ -535,12 +593,12 @@ func (ec *elfCode) relocateInstruction(ins *asm.Instruction, rel elf.Symbol) err
 			switch typ {
 			case elf.STT_FUNC:
 				if bind != elf.STB_GLOBAL {
-					return fmt.Errorf("load: %s: unsupported binding: %s", name, bind)
+					return fmt.Errorf("load: %s: %w: %s", name, errUnsupportedBinding, bind)
 				}
 
 			case elf.STT_SECTION:
 				if bind != elf.STB_LOCAL {
-					return fmt.Errorf("load: %s: unsupported binding: %s", name, bind)
+					return fmt.Errorf("load: %s: %w: %s", name, errUnsupportedBinding, bind)
 				}
 
 				// ins.Constant already contains the offset in bytes from the
@@ -564,26 +622,86 @@ func (ec *elfCode) relocateInstruction(ins *asm.Instruction, rel elf.Symbol) err
 			return fmt.Errorf("neither a call nor a load instruction: %v", ins)
 		}
 
+	// The Undefined section is used for 'virtual' symbols that aren't backed by
+	// an ELF section. This includes symbol references from inline asm, forward
+	// function declarations, as well as extern kfunc declarations using __ksym
+	// and extern kconfig variables declared using __kconfig.
 	case undefSection:
-		if bind != elf.STB_GLOBAL {
-			return fmt.Errorf("asm relocation: %s: unsupported binding: %s", name, bind)
+		if bind != elf.STB_GLOBAL && bind != elf.STB_WEAK {
+			return fmt.Errorf("asm relocation: %s: %w: %s", name, errUnsupportedBinding, bind)
 		}
 
 		if typ != elf.STT_NOTYPE {
 			return fmt.Errorf("asm relocation: %s: unsupported type %s", name, typ)
 		}
 
-		// There is nothing to do here but set ins.Reference.
+		kf := ec.kfuncs[name]
+		_, ks := ec.ksyms[name]
+
+		switch {
+		// If a Call / DWordLoad instruction is found and the datasec has a btf.Func with a Name
+		// that matches the symbol name we mark the instruction as a referencing a kfunc.
+		case kf != nil && ins.OpCode.JumpOp() == asm.Call:
+			ins.Metadata.Set(kfuncMetaKey{}, &kfuncMeta{
+				Func:    kf,
+				Binding: bind,
+			})
+
+			ins.Src = asm.PseudoKfuncCall
+			ins.Constant = -1
+
+		case kf != nil && ins.OpCode.IsDWordLoad():
+			ins.Metadata.Set(kfuncMetaKey{}, &kfuncMeta{
+				Func:    kf,
+				Binding: bind,
+			})
+
+			ins.Constant = 0
+
+		case ks && ins.OpCode.IsDWordLoad():
+			if bind != elf.STB_GLOBAL && bind != elf.STB_WEAK {
+				return fmt.Errorf("asm relocation: %s: %w: %s", name, errUnsupportedBinding, bind)
+			}
+			ins.Metadata.Set(ksymMetaKey{}, &ksymMeta{
+				Binding: bind,
+				Name:    name,
+			})
+
+		// If no kconfig map is found, this must be a symbol reference from inline
+		// asm (see testdata/loader.c:asm_relocation()) or a call to a forward
+		// function declaration (see testdata/fwd_decl.c). Don't interfere, These
+		// remain standard symbol references.
+		// extern __kconfig reads are represented as dword loads that need to be
+		// rewritten to pseudo map loads from .kconfig. If the map is present,
+		// require it to contain the symbol to disambiguate between inline asm
+		// relos and kconfigs.
+		case ec.kconfig != nil && ins.OpCode.IsDWordLoad():
+			if bind != elf.STB_GLOBAL {
+				return fmt.Errorf("asm relocation: %s: %w: %s", name, errUnsupportedBinding, bind)
+			}
+
+			for _, vsi := range ec.kconfig.Value.(*btf.Datasec).Vars {
+				if vsi.Type.(*btf.Var).Name != rel.Name {
+					continue
+				}
+
+				ins.Src = asm.PseudoMapValue
+				ins.Metadata.Set(kconfigMetaKey{}, &kconfigMeta{ec.kconfig, vsi.Offset})
+				return nil
+			}
+
+			return fmt.Errorf("kconfig %s not found in .kconfig", rel.Name)
+		}
 
 	default:
 		return fmt.Errorf("relocation to %q: %w", target.Name, ErrNotSupported)
 	}
 
-	ins.Reference = name
+	*ins = ins.WithReference(name)
 	return nil
 }
 
-func (ec *elfCode) loadMaps(maps map[string]*MapSpec) error {
+func (ec *elfCode) loadMaps() error {
 	for _, sec := range ec.sections {
 		if sec.kind != mapSection {
 			continue
@@ -609,7 +727,7 @@ func (ec *elfCode) loadMaps(maps map[string]*MapSpec) error {
 			}
 
 			mapName := mapSym.Name
-			if maps[mapName] != nil {
+			if ec.maps[mapName] != nil {
 				return fmt.Errorf("section %v: map %v already exists", sec.Name, mapSym)
 			}
 
@@ -639,11 +757,7 @@ func (ec *elfCode) loadMaps(maps map[string]*MapSpec) error {
 				spec.Extra = bytes.NewReader(extra)
 			}
 
-			if err := spec.clampPerfEventArraySize(); err != nil {
-				return fmt.Errorf("map %s: %w", mapName, err)
-			}
-
-			maps[mapName] = &spec
+			ec.maps[mapName] = &spec
 		}
 	}
 
@@ -653,7 +767,7 @@ func (ec *elfCode) loadMaps(maps map[string]*MapSpec) error {
 // loadBTFMaps iterates over all ELF sections marked as BTF map sections
 // (like .maps) and parses them into MapSpecs. Dump the .maps section and
 // any relocations with `readelf -x .maps -r <elf_file>`.
-func (ec *elfCode) loadBTFMaps(maps map[string]*MapSpec) error {
+func (ec *elfCode) loadBTFMaps() error {
 	for _, sec := range ec.sections {
 		if sec.kind != btfMapSection {
 			continue
@@ -692,12 +806,12 @@ func (ec *elfCode) loadBTFMaps(maps map[string]*MapSpec) error {
 				return fmt.Errorf("section %v: map %s: initializing BTF map definitions: %w", sec.Name, name, internal.ErrNotSupported)
 			}
 
-			if maps[name] != nil {
+			if ec.maps[name] != nil {
 				return fmt.Errorf("section %v: map %s already exists", sec.Name, name)
 			}
 
 			// Each Var representing a BTF map definition contains a Struct.
-			mapStruct, ok := v.Type.(*btf.Struct)
+			mapStruct, ok := btf.UnderlyingType(v.Type).(*btf.Struct)
 			if !ok {
 				return fmt.Errorf("expected struct, got %s", v.Type)
 			}
@@ -707,11 +821,7 @@ func (ec *elfCode) loadBTFMaps(maps map[string]*MapSpec) error {
 				return fmt.Errorf("map %v: %w", name, err)
 			}
 
-			if err := mapSpec.clampPerfEventArraySize(); err != nil {
-				return fmt.Errorf("map %v: %w", name, err)
-			}
-
-			maps[name] = mapSpec
+			ec.maps[name] = mapSpec
 		}
 
 		// Drain the ELF section reader to make sure all bytes are accounted for
@@ -728,17 +838,9 @@ func (ec *elfCode) loadBTFMaps(maps map[string]*MapSpec) error {
 	return nil
 }
 
-// A programStub is a placeholder for a Program to be inserted at a certain map key.
-// It needs to be resolved into a Program later on in the loader process.
-type programStub string
-
-// A mapStub is a placeholder for a Map to be inserted at a certain map key.
-// It needs to be resolved into a Map later on in the loader process.
-type mapStub string
-
 // mapSpecFromBTF produces a MapSpec based on a btf.Struct def representing
 // a BTF map definition. The name and spec arguments will be copied to the
-// resulting MapSpec, and inner must be true on any resursive invocations.
+// resulting MapSpec, and inner must be true on any recursive invocations.
 func mapSpecFromBTF(es *elfSection, vs *btf.VarSecinfo, def *btf.Struct, spec *btf.Spec, name string, inner bool) (*MapSpec, error) {
 	var (
 		key, value         btf.Type
@@ -903,16 +1005,19 @@ func mapSpecFromBTF(es *elfSection, vs *btf.VarSecinfo, def *btf.Struct, spec *b
 				return nil, fmt.Errorf("resolving values contents: %w", err)
 			}
 
+		case "map_extra":
+			return nil, fmt.Errorf("BTF map definition: field %s: %w", member.Name, ErrNotSupported)
+
 		default:
 			return nil, fmt.Errorf("unrecognized field %s in BTF map definition", member.Name)
 		}
 	}
 
-	if key == nil {
-		key = &btf.Void{}
-	}
-	if value == nil {
-		value = &btf.Void{}
+	// Some maps don't support value sizes, but annotating their map definitions
+	// with __type macros can still be useful, especially to let bpf2go generate
+	// type definitions for them.
+	if value != nil && !mapType.canHaveValueSize() {
+		valueSize = 0
 	}
 
 	return &MapSpec{
@@ -922,7 +1027,8 @@ func mapSpecFromBTF(es *elfSection, vs *btf.VarSecinfo, def *btf.Struct, spec *b
 		ValueSize:  valueSize,
 		MaxEntries: maxEntries,
 		Flags:      flags,
-		BTF:        &btf.Map{Spec: spec, Key: key, Value: value},
+		Key:        key,
+		Value:      value,
 		Pinning:    pinType,
 		InnerMap:   innerMapSpec,
 		Contents:   contents,
@@ -974,7 +1080,7 @@ func resolveBTFValuesContents(es *elfSection, vs *btf.VarSecinfo, member btf.Mem
 	// The offset of the 'values' member within the _struct_ (in bits)
 	// is the starting point of the array. Convert to bytes. Add VarSecinfo
 	// offset to get the absolute position in the ELF blob.
-	start := (member.OffsetBits / 8) + vs.Offset
+	start := member.Offset.Bytes() + vs.Offset
 	// 'values' is encoded in BTF as a zero (variable) length struct
 	// member, and its contents run until the end of the VarSecinfo.
 	// Add VarSecinfo offset to get the absolute position in the ELF blob.
@@ -1009,44 +1115,35 @@ func resolveBTFValuesContents(es *elfSection, vs *btf.VarSecinfo, member btf.Mem
 		// skipped here.
 		switch t := elf.ST_TYPE(r.Info); t {
 		case elf.STT_FUNC:
-			contents = append(contents, MapKV{uint32(k), programStub(r.Name)})
+			contents = append(contents, MapKV{uint32(k), r.Name})
 		case elf.STT_OBJECT:
-			contents = append(contents, MapKV{uint32(k), mapStub(r.Name)})
+			contents = append(contents, MapKV{uint32(k), r.Name})
 		default:
-			return nil, fmt.Errorf("unknown relocation type %v", t)
+			return nil, fmt.Errorf("unknown relocation type %v for symbol %s", t, r.Name)
 		}
 	}
 
 	return contents, nil
 }
 
-func (ec *elfCode) loadDataSections(maps map[string]*MapSpec) error {
+func (ec *elfCode) loadDataSections() error {
 	for _, sec := range ec.sections {
 		if sec.kind != dataSection {
 			continue
 		}
 
-		if sec.references == 0 {
-			// Prune data sections which are not referenced by any
-			// instructions.
+		// If a section has no references, it will be freed as soon as the
+		// Collection closes, so creating and populating it is wasteful. If it has
+		// no symbols, it is likely an ephemeral section used during compilation
+		// that wasn't sanitized by the bpf linker. (like .rodata.str1.1)
+		//
+		// No symbols means no VariableSpecs can be generated from it, making it
+		// pointless to emit a data section for.
+		if sec.references == 0 && len(sec.symbols) == 0 {
 			continue
 		}
 
-		if ec.btf == nil {
-			return errors.New("data sections require BTF, make sure all consts are marked as static")
-		}
-
-		var datasec *btf.Datasec
-		if err := ec.btf.TypeByName(sec.Name, &datasec); err != nil {
-			return fmt.Errorf("data section %s: can't get BTF: %w", sec.Name, err)
-		}
-
-		data, err := sec.Data()
-		if err != nil {
-			return fmt.Errorf("data section %s: can't get contents: %w", sec.Name, err)
-		}
-
-		if uint64(len(data)) > math.MaxUint32 {
+		if sec.Size > math.MaxUint32 {
 			return fmt.Errorf("data section %s: contents exceed maximum size", sec.Name)
 		}
 
@@ -1054,123 +1151,284 @@ func (ec *elfCode) loadDataSections(maps map[string]*MapSpec) error {
 			Name:       SanitizeName(sec.Name, -1),
 			Type:       Array,
 			KeySize:    4,
-			ValueSize:  uint32(len(data)),
+			ValueSize:  uint32(sec.Size),
 			MaxEntries: 1,
-			Contents:   []MapKV{{uint32(0), data}},
-			BTF:        &btf.Map{Spec: ec.btf, Key: &btf.Void{}, Value: datasec},
 		}
 
-		switch sec.Name {
-		case ".rodata":
-			mapSpec.Flags = unix.BPF_F_RDONLY_PROG
-			mapSpec.Freeze = true
-		case ".bss":
-			// The kernel already zero-initializes the map
-			mapSpec.Contents = nil
+		if isConstantDataSection(sec.Name) {
+			mapSpec.Flags = sys.BPF_F_RDONLY_PROG
 		}
 
-		maps[sec.Name] = mapSpec
+		switch sec.Type {
+		// Only open the section if we know there's actual data to be read.
+		case elf.SHT_PROGBITS:
+			data, err := sec.Data()
+			if err != nil {
+				return fmt.Errorf("data section %s: can't get contents: %w", sec.Name, err)
+			}
+			mapSpec.Contents = []MapKV{{uint32(0), data}}
+
+		case elf.SHT_NOBITS:
+			// NOBITS sections like .bss contain only zeroes and are not allocated in
+			// the ELF. Since data sections are Arrays, the kernel can preallocate
+			// them. Don't attempt reading zeroes from the ELF, instead allocate the
+			// zeroed memory to support getting and setting VariableSpecs for sections
+			// like .bss.
+			mapSpec.Contents = []MapKV{{uint32(0), make([]byte, sec.Size)}}
+
+		default:
+			return fmt.Errorf("data section %s: unknown section type %s", sec.Name, sec.Type)
+		}
+
+		for off, sym := range sec.symbols {
+			// Skip symbols marked with the 'hidden' attribute.
+			if elf.ST_VISIBILITY(sym.Other) == elf.STV_HIDDEN ||
+				elf.ST_VISIBILITY(sym.Other) == elf.STV_INTERNAL {
+				continue
+			}
+
+			// Only accept symbols with global or weak bindings. The common
+			// alternative is STB_LOCAL, which are either function-scoped or declared
+			// 'static'.
+			if elf.ST_BIND(sym.Info) != elf.STB_GLOBAL &&
+				elf.ST_BIND(sym.Info) != elf.STB_WEAK {
+				continue
+			}
+
+			if ec.vars[sym.Name] != nil {
+				return fmt.Errorf("data section %s: duplicate variable %s", sec.Name, sym.Name)
+			}
+
+			// Skip symbols starting with a dot, they are compiler-internal symbols
+			// emitted by clang 11 and earlier and are not cleaned up by the bpf
+			// compiler backend (e.g. symbols named .Lconstinit.1 in sections like
+			// .rodata.cst32). Variables in C cannot start with a dot, so filter these
+			// out.
+			if strings.HasPrefix(sym.Name, ".") {
+				continue
+			}
+
+			ec.vars[sym.Name] = &VariableSpec{
+				name:   sym.Name,
+				offset: off,
+				size:   sym.Size,
+				m:      mapSpec,
+			}
+		}
+
+		// It is possible for a data section to exist without a corresponding BTF Datasec
+		// if it only contains anonymous values like macro-defined arrays.
+		if ec.btf != nil {
+			var ds *btf.Datasec
+			if ec.btf.TypeByName(sec.Name, &ds) == nil {
+				// Assign the spec's key and BTF only if the Datasec lookup was successful.
+				mapSpec.Key = &btf.Void{}
+				mapSpec.Value = ds
+
+				// Populate VariableSpecs with type information, if available.
+				for _, v := range ds.Vars {
+					name := v.Type.TypeName()
+					if name == "" {
+						return fmt.Errorf("data section %s: anonymous variable %v", sec.Name, v)
+					}
+
+					vt, ok := v.Type.(*btf.Var)
+					if !ok {
+						return fmt.Errorf("data section %s: unexpected type %T for variable %s", sec.Name, v.Type, name)
+					}
+
+					ev := ec.vars[name]
+					if ev == nil {
+						// Hidden symbols appear in the BTF Datasec but don't receive a VariableSpec.
+						continue
+					}
+
+					if uint64(v.Offset) != ev.offset {
+						return fmt.Errorf("data section %s: variable %s datasec offset (%d) doesn't match ELF symbol offset (%d)", sec.Name, name, v.Offset, ev.offset)
+					}
+
+					if uint64(v.Size) != ev.size {
+						return fmt.Errorf("data section %s: variable %s size in datasec (%d) doesn't match ELF symbol size (%d)", sec.Name, name, v.Size, ev.size)
+					}
+
+					// Decouple the Var in the VariableSpec from the underlying DataSec in
+					// the MapSpec to avoid modifications from affecting map loads later on.
+					ev.t = btf.Copy(vt).(*btf.Var)
+				}
+			}
+		}
+
+		ec.maps[sec.Name] = mapSpec
 	}
+
 	return nil
 }
 
-func getProgType(sectionName string) (ProgramType, AttachType, uint32, string) {
-	types := map[string]struct {
-		progType   ProgramType
-		attachType AttachType
-		progFlags  uint32
-	}{
-		// Please update the types from libbpf.c and follow the order of it.
-		// https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/lib/bpf/libbpf.c
-		"socket":                {SocketFilter, AttachNone, 0},
-		"sk_reuseport/migrate":  {SkReuseport, AttachSkReuseportSelectOrMigrate, 0},
-		"sk_reuseport":          {SkReuseport, AttachSkReuseportSelect, 0},
-		"kprobe/":               {Kprobe, AttachNone, 0},
-		"uprobe/":               {Kprobe, AttachNone, 0},
-		"kretprobe/":            {Kprobe, AttachNone, 0},
-		"uretprobe/":            {Kprobe, AttachNone, 0},
-		"tc":                    {SchedCLS, AttachNone, 0},
-		"classifier":            {SchedCLS, AttachNone, 0},
-		"action":                {SchedACT, AttachNone, 0},
-		"tracepoint/":           {TracePoint, AttachNone, 0},
-		"tp/":                   {TracePoint, AttachNone, 0},
-		"raw_tracepoint/":       {RawTracepoint, AttachNone, 0},
-		"raw_tp/":               {RawTracepoint, AttachNone, 0},
-		"raw_tracepoint.w/":     {RawTracepointWritable, AttachNone, 0},
-		"raw_tp.w/":             {RawTracepointWritable, AttachNone, 0},
-		"tp_btf/":               {Tracing, AttachTraceRawTp, 0},
-		"fentry/":               {Tracing, AttachTraceFEntry, 0},
-		"fmod_ret/":             {Tracing, AttachModifyReturn, 0},
-		"fexit/":                {Tracing, AttachTraceFExit, 0},
-		"fentry.s/":             {Tracing, AttachTraceFEntry, unix.BPF_F_SLEEPABLE},
-		"fmod_ret.s/":           {Tracing, AttachModifyReturn, unix.BPF_F_SLEEPABLE},
-		"fexit.s/":              {Tracing, AttachTraceFExit, unix.BPF_F_SLEEPABLE},
-		"freplace/":             {Extension, AttachNone, 0},
-		"lsm/":                  {LSM, AttachLSMMac, 0},
-		"lsm.s/":                {LSM, AttachLSMMac, unix.BPF_F_SLEEPABLE},
-		"iter/":                 {Tracing, AttachTraceIter, 0},
-		"syscall":               {Syscall, AttachNone, 0},
-		"xdp_devmap/":           {XDP, AttachXDPDevMap, 0},
-		"xdp_cpumap/":           {XDP, AttachXDPCPUMap, 0},
-		"xdp":                   {XDP, AttachNone, 0},
-		"perf_event":            {PerfEvent, AttachNone, 0},
-		"lwt_in":                {LWTIn, AttachNone, 0},
-		"lwt_out":               {LWTOut, AttachNone, 0},
-		"lwt_xmit":              {LWTXmit, AttachNone, 0},
-		"lwt_seg6local":         {LWTSeg6Local, AttachNone, 0},
-		"cgroup_skb/ingress":    {CGroupSKB, AttachCGroupInetIngress, 0},
-		"cgroup_skb/egress":     {CGroupSKB, AttachCGroupInetEgress, 0},
-		"cgroup/skb":            {CGroupSKB, AttachNone, 0},
-		"cgroup/sock_create":    {CGroupSKB, AttachCGroupInetSockCreate, 0},
-		"cgroup/sock_release":   {CGroupSKB, AttachCgroupInetSockRelease, 0},
-		"cgroup/sock":           {CGroupSock, AttachCGroupInetSockCreate, 0},
-		"cgroup/post_bind4":     {CGroupSock, AttachCGroupInet4PostBind, 0},
-		"cgroup/post_bind6":     {CGroupSock, AttachCGroupInet6PostBind, 0},
-		"cgroup/dev":            {CGroupDevice, AttachCGroupDevice, 0},
-		"sockops":               {SockOps, AttachCGroupSockOps, 0},
-		"sk_skb/stream_parser":  {SkSKB, AttachSkSKBStreamParser, 0},
-		"sk_skb/stream_verdict": {SkSKB, AttachSkSKBStreamVerdict, 0},
-		"sk_skb":                {SkSKB, AttachNone, 0},
-		"sk_msg":                {SkMsg, AttachSkMsgVerdict, 0},
-		"lirc_mode2":            {LircMode2, AttachLircMode2, 0},
-		"flow_dissector":        {FlowDissector, AttachFlowDissector, 0},
-		"cgroup/bind4":          {CGroupSockAddr, AttachCGroupInet4Bind, 0},
-		"cgroup/bind6":          {CGroupSockAddr, AttachCGroupInet6Bind, 0},
-		"cgroup/connect4":       {CGroupSockAddr, AttachCGroupInet4Connect, 0},
-		"cgroup/connect6":       {CGroupSockAddr, AttachCGroupInet6Connect, 0},
-		"cgroup/sendmsg4":       {CGroupSockAddr, AttachCGroupUDP4Sendmsg, 0},
-		"cgroup/sendmsg6":       {CGroupSockAddr, AttachCGroupUDP6Sendmsg, 0},
-		"cgroup/recvmsg4":       {CGroupSockAddr, AttachCGroupUDP4Recvmsg, 0},
-		"cgroup/recvmsg6":       {CGroupSockAddr, AttachCGroupUDP6Recvmsg, 0},
-		"cgroup/getpeername4":   {CGroupSockAddr, AttachCgroupInet4GetPeername, 0},
-		"cgroup/getpeername6":   {CGroupSockAddr, AttachCgroupInet6GetPeername, 0},
-		"cgroup/getsockname4":   {CGroupSockAddr, AttachCgroupInet4GetSockname, 0},
-		"cgroup/getsockname6":   {CGroupSockAddr, AttachCgroupInet6GetSockname, 0},
-		"cgroup/sysctl":         {CGroupSysctl, AttachCGroupSysctl, 0},
-		"cgroup/getsockopt":     {CGroupSockopt, AttachCGroupGetsockopt, 0},
-		"cgroup/setsockopt":     {CGroupSockopt, AttachCGroupSetsockopt, 0},
-		"struct_ops+":           {StructOps, AttachNone, 0},
-		"sk_lookup/":            {SkLookup, AttachSkLookup, 0},
-
-		"seccomp": {SocketFilter, AttachNone, 0},
+// loadKconfigSection handles the 'virtual' Datasec .kconfig that doesn't
+// have a corresponding ELF section and exist purely in BTF.
+func (ec *elfCode) loadKconfigSection() error {
+	if ec.btf == nil {
+		return nil
 	}
 
-	for prefix, t := range types {
-		if !strings.HasPrefix(sectionName, prefix) {
+	var ds *btf.Datasec
+	err := ec.btf.TypeByName(".kconfig", &ds)
+	if errors.Is(err, btf.ErrNotFound) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	if ds.Size == 0 {
+		return errors.New("zero-length .kconfig")
+	}
+
+	ec.kconfig = &MapSpec{
+		Name:       ".kconfig",
+		Type:       Array,
+		KeySize:    uint32(4),
+		ValueSize:  ds.Size,
+		MaxEntries: 1,
+		Flags:      sys.BPF_F_RDONLY_PROG,
+		Key:        &btf.Int{Size: 4},
+		Value:      ds,
+	}
+
+	return nil
+}
+
+// loadKsymsSection handles the 'virtual' Datasec .ksyms that doesn't
+// have a corresponding ELF section and exist purely in BTF.
+func (ec *elfCode) loadKsymsSection() error {
+	if ec.btf == nil {
+		return nil
+	}
+
+	var ds *btf.Datasec
+	err := ec.btf.TypeByName(".ksyms", &ds)
+	if errors.Is(err, btf.ErrNotFound) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	for _, v := range ds.Vars {
+		switch t := v.Type.(type) {
+		case *btf.Func:
+			ec.kfuncs[t.TypeName()] = t
+		case *btf.Var:
+			ec.ksyms[t.TypeName()] = struct{}{}
+		default:
+			return fmt.Errorf("unexpected variable type in .ksyms: %T", v)
+		}
+	}
+
+	return nil
+}
+
+type libbpfElfSectionDef struct {
+	pattern     string
+	programType sys.ProgType
+	attachType  sys.AttachType
+	flags       libbpfElfSectionFlag
+}
+
+type libbpfElfSectionFlag uint32
+
+// The values correspond to enum sec_def_flags in libbpf.
+const (
+	_SEC_NONE libbpfElfSectionFlag = 0
+
+	_SEC_EXP_ATTACH_OPT libbpfElfSectionFlag = 1 << (iota - 1)
+	_SEC_ATTACHABLE
+	_SEC_ATTACH_BTF
+	_SEC_SLEEPABLE
+	_SEC_XDP_FRAGS
+	_SEC_USDT
+
+	// Ignore any present extra in order to preserve backwards compatibility
+	// with earlier versions of the library.
+	ignoreExtra
+
+	_SEC_ATTACHABLE_OPT = _SEC_ATTACHABLE | _SEC_EXP_ATTACH_OPT
+)
+
+func init() {
+	// Compatibility with older versions of the library.
+	// We prepend libbpf definitions since they contain a prefix match
+	// for "xdp".
+	elfSectionDefs = append([]libbpfElfSectionDef{
+		{"xdp.frags/", sys.BPF_PROG_TYPE_XDP, sys.BPF_XDP, _SEC_XDP_FRAGS | ignoreExtra},
+		{"xdp.frags_devmap/", sys.BPF_PROG_TYPE_XDP, sys.BPF_XDP_DEVMAP, _SEC_XDP_FRAGS},
+		{"xdp_devmap/", sys.BPF_PROG_TYPE_XDP, sys.BPF_XDP_DEVMAP, 0},
+		{"xdp.frags_cpumap/", sys.BPF_PROG_TYPE_XDP, sys.BPF_XDP_CPUMAP, _SEC_XDP_FRAGS},
+		{"xdp_cpumap/", sys.BPF_PROG_TYPE_XDP, sys.BPF_XDP_CPUMAP, 0},
+		// This has been in the library since the beginning of time. Not sure
+		// where it came from.
+		{"seccomp", sys.BPF_PROG_TYPE_SOCKET_FILTER, 0, _SEC_NONE},
+	}, elfSectionDefs...)
+}
+
+func getProgType(sectionName string) (ProgramType, AttachType, uint32, string) {
+	// Skip optional program marking for now.
+	sectionName = strings.TrimPrefix(sectionName, "?")
+
+	for _, t := range elfSectionDefs {
+		extra, ok := matchSectionName(sectionName, t.pattern)
+		if !ok {
 			continue
 		}
 
-		if !strings.HasSuffix(prefix, "/") {
-			return t.progType, t.attachType, t.progFlags, ""
+		programType := ProgramType(t.programType)
+		attachType := AttachType(t.attachType)
+
+		var flags uint32
+		if t.flags&_SEC_SLEEPABLE > 0 {
+			flags |= sys.BPF_F_SLEEPABLE
+		}
+		if t.flags&_SEC_XDP_FRAGS > 0 {
+			flags |= sys.BPF_F_XDP_HAS_FRAGS
+		}
+		if t.flags&_SEC_EXP_ATTACH_OPT > 0 {
+			if programType == XDP {
+				// The library doesn't yet have code to fallback to not specifying
+				// attach type. Only do this for XDP since we've enforced correct
+				// attach type for all other program types.
+				attachType = AttachNone
+			}
+		}
+		if t.flags&ignoreExtra > 0 {
+			extra = ""
 		}
 
-		return t.progType, t.attachType, t.progFlags, sectionName[len(prefix):]
+		return programType, attachType, flags, extra
 	}
 
 	return UnspecifiedProgram, AttachNone, 0, ""
 }
 
-func (ec *elfCode) loadRelocations(sec *elf.Section, symbols []elf.Symbol) (map[uint64]elf.Symbol, error) {
+// matchSectionName checks a section name against a pattern.
+//
+// It's behaviour mirrors that of libbpf's sec_def_matches.
+func matchSectionName(sectionName, pattern string) (extra string, found bool) {
+	have, extra, found := strings.Cut(sectionName, "/")
+	want := strings.TrimRight(pattern, "+/")
+
+	if strings.HasSuffix(pattern, "/") {
+		// Section name must have a slash and extra may be empty.
+		return extra, have == want && found
+	} else if strings.HasSuffix(pattern, "+") {
+		// Section name may have a slash and extra may be empty.
+		return extra, have == want
+	}
+
+	// Section name must have a prefix. extra is ignored.
+	return "", strings.HasPrefix(sectionName, pattern)
+}
+
+func (ec *elfCode) loadSectionRelocations(sec *elf.Section, symbols []elf.Symbol) (map[uint64]elf.Symbol, error) {
 	rels := make(map[uint64]elf.Symbol)
 
 	if sec.Entsize < 16 {
