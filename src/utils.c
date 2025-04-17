@@ -899,7 +899,7 @@ do_path_resolve(struct error *err, bool full, char *buf, const char *root, const
                                                 goto fail;
                                         break;
                                 default:
-                                        error_set(err, "path error: %s/%s", root, path);
+                                        error_set(err, "path error: %s/%s %d", root, path, errno);
                                         goto fail;
                                 }
                         }

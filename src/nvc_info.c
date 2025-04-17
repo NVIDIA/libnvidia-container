@@ -337,8 +337,16 @@ find_path(struct error *err, const char *tag, const char *root, const char *targ
         char path[PATH_MAX];
         int ret;
 
-        if (path_resolve(err, path, root, target) < 0)
+        if (path_resolve(err, path, root, target) < 0) {
+                if (errno == EACCES) {
+                        // The current user doesn't have permission to access
+                        // this path. Treat this the same as a missing path.
+                        log_warnf("insufficient permissions for %s path %s", tag, target);
+                        return (0);
+                }
                 return (-1);
+        }
+
         if ((ret = file_exists_at(err, root, path)) < 0)
                 return (-1);
         if (ret) {
