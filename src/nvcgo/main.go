@@ -32,7 +32,7 @@ func main() {}
 type CDeviceRule = C.struct_device_rule
 
 // Convert a C-based DeviceRule to a Go-based cgroup.DeviceRule
-func (r *CDeviceRule) convert() cgroup.DeviceRule {
+func convert(r *CDeviceRule) cgroup.DeviceRule {
 	return cgroup.DeviceRule{
 		Allow:  bool(r.allow),
 		Type:   C.GoString(r._type),
@@ -67,7 +67,7 @@ func GetDeviceCGroupMountPath(version C.int, procRootPath *C.char, pid C.pid_t, 
 		return -1
 	}
 	*cgroupMountPath = C.CString(p)
-	*cgroupRootPrefix= C.CString(r)
+	*cgroupRootPrefix = C.CString(r)
 
 	return 0
 }
@@ -100,7 +100,7 @@ func AddDeviceRules(version C.int, cgroupPath *C.char, crules []CDeviceRule, rer
 
 	rules := make([]cgroup.DeviceRule, len(crules))
 	for i, cr := range crules {
-		rules[i] = cr.convert()
+		rules[i] = convert(&cr)
 	}
 
 	err = api.AddDeviceRules(C.GoString(cgroupPath), rules)
