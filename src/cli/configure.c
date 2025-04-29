@@ -7,6 +7,7 @@
 
 #include "cli.h"
 #include "dsl.h"
+#include "compat_mode.h"
 
 static error_t configure_parser(int, char *, struct argp_state *);
 static int check_cuda_version(const struct dsl_data *, enum dsl_comparator, const char *);
@@ -36,7 +37,8 @@ const struct argp configure_usage = {
                 {"no-persistenced", 0x86, NULL, 0, "Don't include the NVIDIA persistenced socket", -1},
                 {"no-fabricmanager", 0x87, NULL, 0, "Don't include the NVIDIA fabricmanager socket", -1},
                 {"no-gsp-firmware", 0x88, NULL, 0, "Don't include GSP Firmware", -1},
-                {"no-cntlibs", 0x89, NULL, 0, "Don't overwrite host mounts with CUDA compat libs from the container", -1},
+                {"no-cntlibs", 0x89, NULL, 0, "[Deprecated] Equivalent to --cuda-compat-mode=disabled", -1},
+                {"cuda-compat-mode", 0x90, "MODE", 0, "The mode to use to support CUDA Forward Compatibility. One of [ mount (default) | ldconfig | disabled]", -1},
                 {0},
         },
         configure_parser,
@@ -167,7 +169,15 @@ configure_parser(int key, char *arg, struct argp_state *state)
                         goto fatal;
                 break;
         case 0x89:
-                if (str_join(&err, &ctx->container_flags, "no-cntlibs", " ") < 0)
+                /* The --no-cntlibs command line flag is equivalent to --cuda-compat-mode=disabled. */
+                if (str_join(&err, &ctx->container_flags, "cuda-compat-mode=disabled", " ") < 0)
+                        goto fatal;
+                break;
+        case 0x90:
+                /* We add cuda-compat-mode=$arg to the container_flags. */
+                if (str_join(&err, &ctx->container_flags, "cuda-compat-mode", " ") < 0)
+                        goto fatal;
+                if (str_join(&err, &ctx->container_flags, arg, "=") < 0)
                         goto fatal;
                 break;
         case ARGP_KEY_ARG:
@@ -313,6 +323,15 @@ configure_command(const struct context *ctx)
         if ((drv = libnvc.driver_info_new(nvc, ctx->driver_opts)) == NULL ||
             (dev = libnvc.device_info_new(nvc, NULL)) == NULL) {
                 warnx("detection error: %s", libnvc.error(nvc));
+                goto fail;
+        }
+
+        /*
+         * We now have the driver version and can update the list of compat
+         * libraries discovered above accordingly.
+         */
+        if (update_compat_libraries(nvc, cnt, drv) < 0) {
+                warn("updating compat library settings failed: %s", libnvc.error(nvc));
                 goto fail;
         }
 

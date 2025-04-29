@@ -40,7 +40,6 @@ static int  update_app_profile(struct error *, const struct nvc_container *, dev
 static void unmount(const char *);
 static int  symlink_library(struct error *, const char *, const char *, const char *, uid_t, gid_t);
 static int  symlink_libraries(struct error *, const struct nvc_container *, const char * const [], size_t);
-static void filter_libraries(const struct nvc_driver_info *, char * [], size_t *);
 static int  device_mount_dxcore(struct nvc_context *, const struct nvc_container *);
 static int  device_mount_native(struct nvc_context *, const struct nvc_container *, const struct nvc_device *);
 static int  cap_device_mount(struct nvc_context *, const struct nvc_container *, const char *);
@@ -562,27 +561,6 @@ symlink_libraries(struct error *err, const struct nvc_container *cnt, const char
         return (0);
 }
 
-static void
-filter_libraries(const struct nvc_driver_info *info, char * paths[], size_t *size)
-{
-        char *lib, *maj;
-
-        /*
-         * XXX Filter out any library that matches the major version of RM to prevent us from
-         * running into an unsupported configurations (e.g. CUDA compat on Geforce or non-LTS drivers).
-         */
-        for (size_t i = 0; i < *size; ++i) {
-                lib = basename(paths[i]);
-                if ((maj = strstr(lib, ".so.")) != NULL) {
-                        maj += strlen(".so.");
-                        if (strncmp(info->nvrm_version, maj, strspn(maj, "0123456789")))
-                                continue;
-                }
-                paths[i] = NULL;
-        }
-        array_pack(paths, size);
-}
-
 static int
 device_mount_dxcore(struct nvc_context *ctx, const struct nvc_container *cnt)
 {
@@ -769,20 +747,12 @@ nvc_driver_mount(struct nvc_context *ctx, const struct nvc_container *cnt, const
                 goto fail;
 
         /* Container library mounts */
-        if (cnt->libs != NULL && cnt->nlibs > 0) {
-                size_t nlibs = cnt->nlibs;
-                char **libs = array_copy(&ctx->err, (const char * const *)cnt->libs, cnt->nlibs);
-                if (libs == NULL)
-                        goto fail;
-
-                filter_libraries(info, libs, &nlibs);
-                if ((tmp = (const char **)mount_files(&ctx->err, cnt->cfg.rootfs, cnt, cnt->cfg.libs_dir, libs, nlibs)) == NULL) {
-                        free(libs);
+        if ((cnt->flags & OPT_CUDA_COMPAT_MODE_MOUNT) && cnt->libs != NULL && cnt->nlibs > 0) {
+                if ((tmp = (const char **)mount_files(&ctx->err, cnt->cfg.rootfs, cnt, cnt->cfg.libs_dir, cnt->libs, cnt->nlibs)) == NULL) {
                         goto fail;
                 }
                 ptr = array_append(ptr, tmp, array_size(tmp));
                 free(tmp);
-                free(libs);
         }
 
         /* Firmware mounts */
