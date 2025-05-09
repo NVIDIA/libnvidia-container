@@ -61,7 +61,6 @@ enum {
         OPT_STANDALONE    = 1 << 1,
         OPT_NO_CGROUPS    = 1 << 2,
         OPT_NO_DEVBIND    = 1 << 3,
-        OPT_NO_CNTLIBS    = 1 << 4,
         OPT_UTILITY_LIBS  = 1 << 5,
         OPT_COMPUTE_LIBS  = 1 << 6,
         OPT_NGX_LIBS      = 1 << 7,
@@ -75,6 +74,10 @@ enum {
 #else
         OPT_COMPAT32      = 1 << 13,
 #endif /* defined(__powerpc64__) */
+        /* OPT_CUDA_COMPAT_MODE_DISABLED replaced OPT_NO_CNTLIBS. */
+        OPT_CUDA_COMPAT_MODE_DISABLED = 1 << 14,
+        OPT_CUDA_COMPAT_MODE_LDCONFIG = 1 << 15,
+        OPT_CUDA_COMPAT_MODE_MOUNT    = 1 << 16,
 };
 
 static const struct option container_opts[] = {
@@ -82,7 +85,6 @@ static const struct option container_opts[] = {
         {"standalone", OPT_STANDALONE},
         {"no-cgroups", OPT_NO_CGROUPS},
         {"no-devbind", OPT_NO_DEVBIND},
-        {"no-cntlibs", OPT_NO_CNTLIBS},
         {"utility", OPT_UTILITY_BINS|OPT_UTILITY_LIBS},
         {"compute", OPT_COMPUTE_BINS|OPT_COMPUTE_LIBS},
         {"video", OPT_VIDEO_LIBS|OPT_COMPUTE_LIBS},
@@ -90,6 +92,9 @@ static const struct option container_opts[] = {
         {"display", OPT_DISPLAY|OPT_GRAPHICS_LIBS},
         {"ngx", OPT_NGX_LIBS},
         {"compat32", OPT_COMPAT32},
+        {"cuda-compat-mode=disabled", OPT_CUDA_COMPAT_MODE_DISABLED},
+        {"cuda-compat-mode=mount", OPT_CUDA_COMPAT_MODE_MOUNT},
+        {"cuda-compat-mode=ldconfig", OPT_CUDA_COMPAT_MODE_LDCONFIG},
 };
 
 static const char * const default_container_opts = "standalone no-cgroups no-devbind utility";

@@ -236,6 +236,26 @@ nvc_container_new(struct nvc_context *ctx, const struct nvc_container_config *cf
                 error_setx(&ctx->err, "invalid mode of operation");
                 return (NULL);
         }
+        if (flags & OPT_CUDA_COMPAT_MODE_DISABLED) {
+                /*
+                 * If the OPT_CUDA_COMPAT_MODE_DISABLED flag is specified, we
+                 * explicitly ignore other OP_CUDA_COMPAT_MODE_* flags.
+                 */
+                flags &= ~(OPT_CUDA_COMPAT_MODE_MOUNT | OPT_CUDA_COMPAT_MODE_LDCONFIG);
+        } else {
+                if (!(flags & (OPT_CUDA_COMPAT_MODE_LDCONFIG | OPT_CUDA_COMPAT_MODE_MOUNT))) {
+                        /*
+                         * If no OPT_CUDA_COMPAT_MODE_* flags are specified,
+                         * default to OPT_CUDA_COMPAT_MODE_MOUNT to maintain
+                         * backward compatibility.
+                         */
+                        flags &= OPT_CUDA_COMPAT_MODE_MOUNT;
+                }
+        }
+        if ((flags & OPT_CUDA_COMPAT_MODE_MOUNT) && (flags & OPT_CUDA_COMPAT_MODE_LDCONFIG)) {
+                error_setx(&ctx->err, "only one cuda-compat-mode can be specified at a time");
+                return (NULL);
+        }
 
         log_infof("configuring container with '%s'", opts);
         if ((cnt = xcalloc(&ctx->err, 1, sizeof(*cnt))) == NULL)
@@ -246,7 +266,7 @@ nvc_container_new(struct nvc_context *ctx, const struct nvc_container_config *cf
                 goto fail;
         if (lookup_owner(&ctx->err, cnt) < 0)
                 goto fail;
-        if (!(flags & OPT_NO_CNTLIBS)) {
+        if (!(flags & OPT_CUDA_COMPAT_MODE_DISABLED)) {
                 if (find_compat_library_paths(&ctx->err, cnt) < 0)
                         goto fail;
         }
@@ -293,5 +313,6 @@ nvc_container_free(struct nvc_container *cnt)
         free(cnt->mnt_ns);
         free(cnt->dev_cg);
         array_free(cnt->libs, cnt->nlibs);
+        free(cnt->cuda_compat_dir);
         free(cnt);
 }
