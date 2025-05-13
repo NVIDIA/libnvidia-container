@@ -86,6 +86,7 @@ LIB_RPC_SRCS := $(SRCS_DIR)/nvc_rpc.h \
                 $(SRCS_DIR)/nvc_clt.c
 
 BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
+                $(SRCS_DIR)/cli/compat_mode.c \
                 $(SRCS_DIR)/cli/configure.c \
                 $(SRCS_DIR)/cli/dsl.c       \
                 $(SRCS_DIR)/cli/info.c      \

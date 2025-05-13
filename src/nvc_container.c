@@ -24,6 +24,7 @@ static char *find_namespace_path(struct error *, const struct nvc_container *, c
 static int  find_compat_library_paths(struct error *, struct nvc_container *);
 static int  lookup_owner(struct error *, struct nvc_container *);
 static int  copy_config(struct error *, struct nvc_container *, const struct nvc_container_config *);
+static int  validate_cuda_compat_mode_flags(struct error *, int32_t *);
 
 struct nvc_container_config *
 nvc_container_config_new(pid_t pid, const char *rootfs)
@@ -236,6 +237,9 @@ nvc_container_new(struct nvc_context *ctx, const struct nvc_container_config *cf
                 error_setx(&ctx->err, "invalid mode of operation");
                 return (NULL);
         }
+        if (validate_cuda_compat_mode_flags(&ctx->err, &flags) < 0) {
+                return (NULL);
+        }
 
         log_infof("configuring container with '%s'", opts);
         if ((cnt = xcalloc(&ctx->err, 1, sizeof(*cnt))) == NULL)
@@ -246,7 +250,7 @@ nvc_container_new(struct nvc_context *ctx, const struct nvc_container_config *cf
                 goto fail;
         if (lookup_owner(&ctx->err, cnt) < 0)
                 goto fail;
-        if (!(flags & OPT_NO_CNTLIBS)) {
+        if (!(flags & OPT_CUDA_COMPAT_MODE_DISABLED)) {
                 if (find_compat_library_paths(&ctx->err, cnt) < 0)
                         goto fail;
         }
@@ -293,5 +297,41 @@ nvc_container_free(struct nvc_container *cnt)
         free(cnt->mnt_ns);
         free(cnt->dev_cg);
         array_free(cnt->libs, cnt->nlibs);
+        free(cnt->cuda_compat_dir);
         free(cnt);
+}
+
+/*
+ * validate_cuda_compat_mode_flags checks the options associated with the
+ * cuda-compat-mode flags.
+ * This function does the following:
+ * - Ensures that if OPT_CUDA_COMPAT_MODE_DISABLED is set, other modes are ignored.
+ * - Ensures that the mode is set to the default (OPT_CUDA_COMPAT_MODE_MOUNT) if unset.
+ * - Ensures that only a single mode is set.
+ */
+static int
+validate_cuda_compat_mode_flags(struct error *err, int32_t *flags) {
+        if (*flags & OPT_CUDA_COMPAT_MODE_DISABLED) {
+                /*
+                 * If the OPT_CUDA_COMPAT_MODE_DISABLED flag is specified, we
+                 * explicitly ignore other OP_CUDA_COMPAT_MODE_* flags.
+                 */
+                *flags &= ~(OPT_CUDA_COMPAT_MODE_MOUNT | OPT_CUDA_COMPAT_MODE_LDCONFIG);
+                return (0);
+        }
+        if (!(*flags & (OPT_CUDA_COMPAT_MODE_LDCONFIG | OPT_CUDA_COMPAT_MODE_MOUNT))) {
+                /*
+                 * If no OPT_CUDA_COMPAT_MODE_* flags are specified,
+                 * default to OPT_CUDA_COMPAT_MODE_MOUNT to maintain
+                 * backward compatibility.
+                 */
+                *flags &= OPT_CUDA_COMPAT_MODE_MOUNT;
+                return (0);
+        }
+
+        if ((*flags & OPT_CUDA_COMPAT_MODE_MOUNT) && (*flags & OPT_CUDA_COMPAT_MODE_LDCONFIG)) {
+                error_setx(err, "only one cuda-compat-mode can be specified at a time");
+                return (-1);
+        }
+        return (0);
 }

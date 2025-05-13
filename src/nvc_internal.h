@@ -84,6 +84,7 @@ struct nvc_container {
         char *dev_cg;
         char **libs;
         size_t nlibs;
+        char *cuda_compat_dir;
 };
 
 enum {
