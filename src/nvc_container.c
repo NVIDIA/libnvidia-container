@@ -325,7 +325,7 @@ validate_cuda_compat_mode_flags(struct error *err, int32_t *flags) {
                  * default to OPT_CUDA_COMPAT_MODE_MOUNT to maintain
                  * backward compatibility.
                  */
-                *flags &= OPT_CUDA_COMPAT_MODE_MOUNT;
+                *flags |= OPT_CUDA_COMPAT_MODE_MOUNT;
                 return (0);
         }
 
