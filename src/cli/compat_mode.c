@@ -40,7 +40,7 @@ update_compat_libraries(struct nvc_context *ctx, struct nvc_container *cnt, cons
         }
 
         /* For cuda-compat-mode=mount, we also allow compat libraries with a LOWER major versions. */
-        bool allow_lower_major_versions = (cnt-> flags & OPT_CUDA_COMPAT_MODE_MOUNT);
+        bool allow_lower_major_versions = (cnt->flags & OPT_CUDA_COMPAT_MODE_MOUNT);
         filter_by_major_version(allow_lower_major_versions, info, libs, &nlibs);
 
         /* Use the filtered library list. */
@@ -55,6 +55,7 @@ update_compat_libraries(struct nvc_context *ctx, struct nvc_container *cnt, cons
         if (get_compat_library_path(&ctx->err, (const char **)libs, nlibs, &cnt->cuda_compat_dir) < 0) {
                 return (-1);
         }
+        log_infof("setting CUDA Forward Compatibility directory to %s", cnt->cuda_compat_dir);
         return (0);
 }
 

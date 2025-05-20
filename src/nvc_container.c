@@ -241,10 +241,11 @@ nvc_container_new(struct nvc_context *ctx, const struct nvc_container_config *cf
                 return (NULL);
         }
 
-        log_infof("configuring container with '%s'", opts);
+        log_infof("configuring container with '%s' (flags: 0x%08x)", opts, flags);
         if ((cnt = xcalloc(&ctx->err, 1, sizeof(*cnt))) == NULL)
                 return (NULL);
 
+        cnt->cuda_compat_dir = NULL;
         cnt->flags = flags;
         if (copy_config(&ctx->err, cnt, cfg) < 0)
                 goto fail;
@@ -316,6 +317,7 @@ validate_cuda_compat_mode_flags(struct error *err, int32_t *flags) {
                  * If the OPT_CUDA_COMPAT_MODE_DISABLED flag is specified, we
                  * explicitly ignore other OP_CUDA_COMPAT_MODE_* flags.
                  */
+                log_info("disabling CUDA Forward Compatibility");
                 *flags &= ~(OPT_CUDA_COMPAT_MODE_MOUNT | OPT_CUDA_COMPAT_MODE_LDCONFIG);
                 return (0);
         }
@@ -325,6 +327,7 @@ validate_cuda_compat_mode_flags(struct error *err, int32_t *flags) {
                  * default to OPT_CUDA_COMPAT_MODE_MOUNT to maintain
                  * backward compatibility.
                  */
+                log_info("defaulting to cuda-compat-mode=mount");
                 *flags |= OPT_CUDA_COMPAT_MODE_MOUNT;
                 return (0);
         }
