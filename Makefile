@@ -103,21 +103,21 @@ BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds
 
 ARCH    ?= $(call getarch)
 
-ifeq ($(MAJOR),)
+ifeq ($(VERSION_MAJOR),)
 $(error Invalid major version)
 endif
-ifeq ($(MINOR),)
+ifeq ($(VERSION_MINOR),)
 $(error Invalid minor version)
 endif
-ifeq ($(PATCH),)
+ifeq ($(VERSION_PATCH),)
 $(error Invalid patch version)
 endif
 
 $(SRCS_DIR)/nvc.h: $(SRCS_DIR)/nvc.h.template
 	cat $< | \
-	sed -e 's/{{NVC_MAJOR}}/$(MAJOR)/g' | \
-	sed -e 's/{{NVC_MINOR}}/$(MINOR)/g' | \
-	sed -e 's/{{NVC_PATCH}}/$(PATCH)/g' | \
+	sed -e 's/{{NVC_MAJOR}}/$(VERSION_MAJOR)/g' | \
+	sed -e 's/{{NVC_MINOR}}/$(VERSION_MINOR)/g' | \
+	sed -e 's/{{NVC_PATCH}}/$(VERSION_PATCH)/g' | \
 	sed -e 's/{{NVC_TAG}}/$(if $(TAG),"$(TAG)",)/g' | \
 	sed -e 's/{{NVC_VERSION}}/"$(VERSION_STRING)"/g' > $@
 
@@ -125,13 +125,13 @@ BIN_NAME    := nvidia-container-cli
 LIB_NAME    := libnvidia-container
 LIB_STATIC  := $(LIB_NAME).a
 LIB_SHARED  := $(LIB_NAME).so.$(VERSION)
-LIB_SONAME  := $(LIB_NAME).so.$(MAJOR)
+LIB_SONAME  := $(LIB_NAME).so.$(VERSION_MAJOR)
 LIB_SYMLINK := $(LIB_NAME).so
 LIB_PKGCFG  := $(LIB_NAME).pc
 
 LIBGO_NAME    := $(LIB_NAME)-go
 LIBGO_SHARED  := $(LIBGO_NAME).so.$(VERSION)
-LIBGO_SONAME  := $(LIBGO_NAME).so.$(MAJOR)
+LIBGO_SONAME  := $(LIBGO_NAME).so.$(VERSION_MAJOR)
 LIBGO_SYMLINK := $(LIBGO_NAME).so
 
 ##### Flags definitions #####
@@ -258,7 +258,7 @@ deps: $(LIB_RPC_SRCS) $(BUILD_DEFS)
 	$(MKDIR) -p $(DEPS_DIR)
 	$(MAKE) -f $(MAKE_DIR)/nvidia-modprobe.mk DESTDIR=$(DEPS_DIR) install
 ifeq ($(WITH_NVCGO), yes)
-	$(MAKE) -f $(MAKE_DIR)/nvcgo.mk DESTDIR=$(DEPS_DIR) MAJOR=$(MAJOR) VERSION=$(VERSION) LIB_NAME=$(LIBGO_NAME) install
+	$(MAKE) -f $(MAKE_DIR)/nvcgo.mk DESTDIR=$(DEPS_DIR) VERSION_MAJOR=$(VERSION_MAJOR) VERSION=$(VERSION) LIB_NAME=$(LIBGO_NAME) install
 endif
 ifeq ($(WITH_LIBELF), no)
 	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk DESTDIR=$(DEPS_DIR) install
@@ -363,7 +363,7 @@ rpm: all
 			-D "release_date $(shell date +'%a %b %d %Y')" \
 			-D"version $(PKG_VERS)" \
 			-D"release $(PKG_REV)" \
-			-D"_major $(MAJOR)" \
+			-D"_major $(VERSION_MAJOR)" \
 			-D "git_commit ${REVISION}" \
 		SPECS/*.spec
 	-cd $(DESTDIR) && rpmlint RPMS/*

@@ -39,9 +39,9 @@ LIB_BUILD ?= $(subst $(space),.,$(strip $(wordlist $(build_start),$(build_end),$
 endif
 
 VERSION_PARTS := $(subst ., ,$(LIB_VERSION))
-MAJOR := $(word 1,$(VERSION_PARTS))
-MINOR := $(word 2,$(VERSION_PARTS))
-PATCH := $(word 3,$(VERSION_PARTS))
+VERSION_MAJOR := $(word 1,$(VERSION_PARTS))
+VERSION_MINOR := $(word 2,$(VERSION_PARTS))
+VERSION_PATCH := $(word 3,$(VERSION_PARTS))
 
 VERSION := $(LIB_VERSION)
 TAG := $(LIB_TAG)
