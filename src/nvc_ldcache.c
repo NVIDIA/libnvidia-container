@@ -30,7 +30,6 @@
 #include "nvc_internal.h"
 
 #include "error.h"
-#include "options.h"
 #include "utils.h"
 #include "xfuncs.h"
 
@@ -472,19 +471,7 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
         if (validate_args(ctx, cnt != NULL) < 0)
                 return (-1);
 
-        if ((cnt->flags & OPT_CUDA_COMPAT_MODE_LDCONFIG) && (cnt->cuda_compat_dir != NULL)) {
-                /*
-                 * We include the cuda_compat_dir directory on the ldconfig
-                 * command line. This ensures that the CUDA Forward compat
-                 * libraries take precendence over the user-mode driver
-                 * libraries in the standard library paths (libs_dir and
-                 * libs32_dir).
-                 * */
-                log_info("prefering CUDA Forward Compatibility dir when running ldconfig");
-                argv = (char * []){cnt->cfg.ldconfig, "-f", "/etc/ld.so.conf", "-C", "/etc/ld.so.cache", cnt->cuda_compat_dir, cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
-        } else {
-                argv = (char * []){cnt->cfg.ldconfig, "-f", "/etc/ld.so.conf", "-C", "/etc/ld.so.cache", cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
-        }
+        argv = (char * []){cnt->cfg.ldconfig, "-f", "/etc/ld.so.conf", "-C", "/etc/ld.so.cache", cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
 
         if (*argv[0] == '@') {
                 /*
