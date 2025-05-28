@@ -472,6 +472,18 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
         if (validate_args(ctx, cnt != NULL) < 0)
                 return (-1);
 
+        /*
+         * The C11 standard states that the value of a pointer is undefined
+         * outside of its lifetime. Since we were initilizing the argv pointer
+         * in two conditional blocks below, compilers that implement this
+         * standard clean up the local value and this causes invalid
+         * dereferences of the pointer when it is used later.
+         *
+         * See https://github.com/NVIDIA/libnvidia-container/issues/316 for an
+         * in-depth investigation.
+         */
+        char *argv_default[] = {cnt->cfg.ldconfig, "-f", "/etc/ld.so.conf", "-C", "/etc/ld.so.cache", cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
+        char *argv_with_compat_dir[] = {cnt->cfg.ldconfig, "-f", "/etc/ld.so.conf", "-C", "/etc/ld.so.cache", cnt->cuda_compat_dir, cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
         if ((cnt->flags & OPT_CUDA_COMPAT_MODE_LDCONFIG) && (cnt->cuda_compat_dir != NULL)) {
                 /*
                  * We include the cuda_compat_dir directory on the ldconfig
@@ -479,11 +491,11 @@ nvc_ldcache_update(struct nvc_context *ctx, const struct nvc_container *cnt)
                  * libraries take precendence over the user-mode driver
                  * libraries in the standard library paths (libs_dir and
                  * libs32_dir).
-                 * */
+                 */
                 log_info("prefering CUDA Forward Compatibility dir when running ldconfig");
-                argv = (char * []){cnt->cfg.ldconfig, "-f", "/etc/ld.so.conf", "-C", "/etc/ld.so.cache", cnt->cuda_compat_dir, cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
+                argv = argv_with_compat_dir;
         } else {
-                argv = (char * []){cnt->cfg.ldconfig, "-f", "/etc/ld.so.conf", "-C", "/etc/ld.so.cache", cnt->cfg.libs_dir, cnt->cfg.libs32_dir, NULL};
+                argv = argv_default;
         }
 
         if (*argv[0] == '@') {
