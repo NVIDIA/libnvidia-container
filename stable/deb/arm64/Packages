@@ -454,6 +454,30 @@ Description: NVIDIA container runtime library (development files)
  .
  This package contains the files required to compile programs with the library.
 
+Package: libnvidia-container-dev
+Architecture: arm64
+Version: 1.17.8-1
+Multi-Arch: same
+Priority: optional
+Section: libdevel
+Source: libnvidia-container
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 442
+Depends: libnvidia-container1 (= 1.17.8-1)
+Filename: ./libnvidia-container-dev_1.17.8-1_arm64.deb
+Size: 77984
+MD5sum: 09b609884467ace7e526643c11d9d3a4
+SHA1: 08d1f63b527b748f2699b914808bae30e2196f1c
+SHA256: 28122f65c68f88513c68a88cc36c065bc3ab4c1ab43daadd3033f0a8013738cb
+SHA512: 2b50fff253f11ebe9cc38654b8edf80a1a5d819aa6d4557c54d6c53b906bd18055fa8c02e07308ebc5784104459548473d591fa219dfbc724425a0fa17215086
+Homepage: https://github.com/NVIDIA/libnvidia-container
+Description: NVIDIA container runtime library (development files)
+ The nvidia-container library provides an interface to configure GNU/Linux
+ containers leveraging NVIDIA hardware. The implementation relies on several
+ kernel subsystems and is designed to be agnostic of the container runtime.
+ .
+ This package contains the files required to compile programs with the library.
+
 Package: libnvidia-container-tools
 Architecture: arm64
 Version: 1.14.0-1
@@ -883,6 +907,29 @@ MD5sum: 7d0271bfd7dab650a6e92c9f70f706cf
 SHA1: 1a1cd1b662ad1ae5f4170ba9bb90ded76a11143d
 SHA256: 12383ab9c7473ca04b3da7cd888c90b8d30410b317da2f6a5306f17f3a4f621b
 SHA512: 4a82b965261898050ff18080dc76b3e76d24f670c3b1ded4b83d3e7bb2b974c1d6ef99d3d19564c840062f5d667ce1cd67f916e29b4fc15f6aa0876d2b19327c
+Homepage: https://github.com/NVIDIA/libnvidia-container
+Description: NVIDIA container runtime library (command-line tools)
+ The nvidia-container library provides an interface to configure GNU/Linux
+ containers leveraging NVIDIA hardware. The implementation relies on several
+ kernel subsystems and is designed to be agnostic of the container runtime.
+ .
+ This package contains command-line tools that facilitate using the library.
+
+Package: libnvidia-container-tools
+Architecture: arm64
+Version: 1.17.8-1
+Priority: optional
+Section: utils
+Source: libnvidia-container
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 67
+Depends: libc6 (>= 2.17), libcap2 (>= 1:2.10), libnvidia-container1 (>= 1.17.8)
+Filename: ./libnvidia-container-tools_1.17.8-1_arm64.deb
+Size: 18908
+MD5sum: 3d7dedce002db8abb29feda5e563b947
+SHA1: d4cc68cf79bc071bf547248becdd621fcbbec7cd
+SHA256: b420ee773a7e1675a8c463e0010e5369f97c8fb3577145d6f0e6dfc54ba83a9f
+SHA512: 296c27b42e1b3037f5493dbc17ead9d7d40c047332e5113b99f2051bd34ead9543c276c2294b295732771d9ffc81f600272d8dcf4c1ec6d6c967666cee063692
 Homepage: https://github.com/NVIDIA/libnvidia-container
 Description: NVIDIA container runtime library (command-line tools)
  The nvidia-container library provides an interface to configure GNU/Linux
@@ -1347,6 +1394,30 @@ Description: NVIDIA container runtime library (debugging symbols)
  .
  This package contains the debugging symbols for the library.
 
+Package: libnvidia-container1-dbg
+Architecture: arm64
+Version: 1.17.8-1
+Multi-Arch: same
+Priority: optional
+Section: debug
+Source: libnvidia-container
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 1085
+Depends: libnvidia-container1 (= 1.17.8-1)
+Filename: ./libnvidia-container1-dbg_1.17.8-1_arm64.deb
+Size: 236408
+MD5sum: 456071d7f4bb51a5e5403017a6b9703d
+SHA1: daa331c1e5b504914f8c568e2f39a6888c807479
+SHA256: 066d20e472a90df691d5fb072e30b9a6a701b9af7c9977850ba4d1804b48d606
+SHA512: 9d977a436c46dd1274c551dfc6b5d932ee0d242490ab972d2932d4fbb4dbd256c8e557fff7e2a00d0e410de1a41a247589b3782679f642aaf00f3ea3494b8c71
+Homepage: https://github.com/NVIDIA/libnvidia-container
+Description: NVIDIA container runtime library (debugging symbols)
+ The nvidia-container library provides an interface to configure GNU/Linux
+ containers leveraging NVIDIA hardware. The implementation relies on several
+ kernel subsystems and is designed to be agnostic of the container runtime.
+ .
+ This package contains the debugging symbols for the library.
+
 Package: libnvidia-container1
 Architecture: arm64
 Version: 1.14.0-1
@@ -1803,6 +1874,30 @@ Description: NVIDIA container runtime library
  .
  This package requires the NVIDIA driver (>= 340.29) to be installed separately.
 
+Package: libnvidia-container1
+Architecture: arm64
+Version: 1.17.8-1
+Multi-Arch: same
+Priority: optional
+Section: libs
+Source: libnvidia-container
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 3082
+Depends: libc6 (>= 2.27), libcap2 (>= 1:2.10), libseccomp2 (>= 0.0.0~20120605)
+Filename: ./libnvidia-container1_1.17.8-1_arm64.deb
+Size: 809872
+MD5sum: 5305c2fba893ffa8e7c1376aaebf2d27
+SHA1: b393b9cc8d89e70f0a7ec9373d1339d972abe4e7
+SHA256: 42ce75007d964d88d147a46d857b08f25e6687c39963e5a4624bee02040cc1f1
+SHA512: ec368ba0cfc8a841623db5bc0d31aa26ca0cdbe0631fe995005f65f92b1a0a799d1ab69676f57813b2e1108ccf3e0c0a0854c391b3b5a34be0aaea62d81b708c
+Homepage: https://github.com/NVIDIA/libnvidia-container
+Description: NVIDIA container runtime library
+ The nvidia-container library provides an interface to configure GNU/Linux
+ containers leveraging NVIDIA hardware. The implementation relies on several
+ kernel subsystems and is designed to be agnostic of the container runtime.
+ .
+ This package requires the NVIDIA driver (>= 340.29) to be installed separately.
+
 Package: nvidia-container-runtime
 Architecture: all
 Version: 3.14.0-1
@@ -2202,6 +2297,26 @@ Homepage: https://github.com/NVIDIA/nvidia-container-toolkit
 Description: NVIDIA Container Toolkit Base
  Provides tools such as the NVIDIA Container Runtime and NVIDIA Container Toolkit CLI to enable GPU support in containers.
 
+Package: nvidia-container-toolkit-base
+Architecture: arm64
+Version: 1.17.8-1
+Priority: optional
+Section: utils
+Source: nvidia-container-toolkit
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 19727
+Breaks: nvidia-container-runtime (<= 3.5.0-1), nvidia-container-runtime-hook, nvidia-container-toolkit (<= 1.10.0-1)
+Replaces: nvidia-container-runtime (<= 3.5.0-1), nvidia-container-runtime-hook
+Filename: ./nvidia-container-toolkit-base_1.17.8-1_arm64.deb
+Size: 3393808
+MD5sum: a8e59b125c3c2c4f8fabac607c2faf0e
+SHA1: 50b925d971e7d4793c8273d16bf5a96d80f965ee
+SHA256: e2ea4fae6e38c45087457ac297c1452713e364f1795400fc7aac71ec4f74706d
+SHA512: 5eca945cdde88cfc47dec697d78a2594d243cbabdfbd7ba7357dd3bbf85259524e4e4ce4af56ab40503a10ad1876aca34246d186daed32a798f324c5c33fcd63
+Homepage: https://github.com/NVIDIA/nvidia-container-toolkit
+Description: NVIDIA Container Toolkit Base
+ Provides tools such as the NVIDIA Container Runtime and NVIDIA Container Toolkit CLI to enable GPU support in containers.
+
 Package: nvidia-container-toolkit
 Architecture: arm64
 Version: 1.14.0-1
@@ -2578,6 +2693,26 @@ MD5sum: 51a521d3119731fc3df4b206094209f3
 SHA1: f7acdc19f73c766588d31285408f8cbd6933eb95
 SHA256: 6885ed3d9b57ba3f80c52aa425966cbe9ea03d6869a3245c29f203aaa1e7d8f5
 SHA512: 261875039545c63a8af8447a0a6301029313a7c4fecfc2b6b449ab5aaa2d954cd7555714f944feea9cf5c57131fd4460e0d6409a29fc447dd05bb5ca6f83bc0d
+Homepage: https://github.com/NVIDIA/nvidia-container-toolkit
+Description: NVIDIA Container toolkit
+ Provides tools and utilities to enable GPU support in containers.
+
+Package: nvidia-container-toolkit
+Architecture: arm64
+Version: 1.17.8-1
+Priority: optional
+Section: utils
+Maintainer: NVIDIA CORPORATION <cudatools@nvidia.com>
+Installed-Size: 3959
+Depends: nvidia-container-toolkit-base (= 1.17.8-1), libnvidia-container-tools (>= 1.17.8-1), libnvidia-container-tools (<< 2.0.0)
+Breaks: nvidia-container-runtime (<= 3.5.0-1), nvidia-container-runtime-hook
+Replaces: nvidia-container-runtime (<= 3.5.0-1), nvidia-container-runtime-hook
+Filename: ./nvidia-container-toolkit_1.17.8-1_arm64.deb
+Size: 1026184
+MD5sum: abbac5448ffbe8078e42320f06706655
+SHA1: 8c589283f850ab48c38062c0cd84c12f223bfcf9
+SHA256: 98f26a4a156fb017a614bab269e529931d742ad8fdb44c16fea96e56510f4613
+SHA512: fb6906511f1f46a01aca9452e1d3d819de4e537e3841af98f8a944820cf7de50e798b07786942396100ec98ee01d90c5f6da194237390e2f61760e49c68aaf97
 Homepage: https://github.com/NVIDIA/nvidia-container-toolkit
 Description: NVIDIA Container toolkit
  Provides tools and utilities to enable GPU support in containers.
