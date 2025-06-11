@@ -4,9 +4,12 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 
+	"github.com/cilium/ebpf/internal/testutils/fdtrace"
 	"github.com/cilium/ebpf/internal/unix"
 )
 
@@ -17,9 +20,23 @@ type FD struct {
 }
 
 func newFD(value int) *FD {
+	fdtrace.TraceFD(value, 1)
+
 	fd := &FD{value}
-	runtime.SetFinalizer(fd, (*FD).Close)
+	runtime.SetFinalizer(fd, (*FD).finalize)
 	return fd
+}
+
+// finalize is set as the FD's runtime finalizer and
+// sends a leak trace before calling FD.Close().
+func (fd *FD) finalize() {
+	if fd.raw < 0 {
+		return
+	}
+
+	fdtrace.LeakFD(fd.raw)
+
+	_ = fd.Close()
 }
 
 // NewFD wraps a raw fd with a finalizer.
@@ -64,15 +81,19 @@ func (fd *FD) Close() error {
 		return nil
 	}
 
-	value := int(fd.raw)
-	fd.raw = -1
-
-	fd.Forget()
-	return unix.Close(value)
+	return unix.Close(fd.Disown())
 }
 
-func (fd *FD) Forget() {
+// Disown destroys the FD and returns its raw file descriptor without closing
+// it. After this call, the underlying fd is no longer tied to the FD's
+// lifecycle.
+func (fd *FD) Disown() int {
+	value := fd.raw
+	fdtrace.ForgetFD(value)
+	fd.raw = -1
+
 	runtime.SetFinalizer(fd, nil)
+	return value
 }
 
 func (fd *FD) Dup() (*FD, error) {
@@ -90,7 +111,55 @@ func (fd *FD) Dup() (*FD, error) {
 	return newFD(dup), nil
 }
 
+// File takes ownership of FD and turns it into an [*os.File].
+//
+// You must not use the FD after the call returns.
+//
+// Returns nil if the FD is not valid.
 func (fd *FD) File(name string) *os.File {
-	fd.Forget()
-	return os.NewFile(uintptr(fd.raw), name)
+	if fd.raw < 0 {
+		return nil
+	}
+
+	return os.NewFile(uintptr(fd.Disown()), name)
+}
+
+// ObjGetTyped wraps [ObjGet] with a readlink call to extract the type of the
+// underlying bpf object.
+func ObjGetTyped(attr *ObjGetAttr) (*FD, ObjType, error) {
+	fd, err := ObjGet(attr)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	typ, err := readType(fd)
+	if err != nil {
+		_ = fd.Close()
+		return nil, 0, fmt.Errorf("reading fd type: %w", err)
+	}
+
+	return fd, typ, nil
+}
+
+// readType returns the bpf object type of the file descriptor by calling
+// readlink(3). Returns an error if the file descriptor does not represent a bpf
+// object.
+func readType(fd *FD) (ObjType, error) {
+	s, err := os.Readlink(filepath.Join("/proc/self/fd/", fd.String()))
+	if err != nil {
+		return 0, fmt.Errorf("readlink fd %d: %w", fd.Int(), err)
+	}
+
+	s = strings.TrimPrefix(s, "anon_inode:")
+
+	switch s {
+	case "bpf-map":
+		return BPF_TYPE_MAP, nil
+	case "bpf-prog":
+		return BPF_TYPE_PROG, nil
+	case "bpf-link":
+		return BPF_TYPE_LINK, nil
+	}
+
+	return 0, fmt.Errorf("unknown type %s of fd %d", s, fd.Int())
 }
