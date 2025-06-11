@@ -556,6 +556,10 @@ symlink_libraries(struct error *err, const struct nvc_container *cnt, const char
                         /* XXX Fix missing symlink for libnvidia-opticalflow.so. */
                         if (symlink_library(err, paths[i], "libnvidia-opticalflow.so.1", "libnvidia-opticalflow.so", cnt->uid, cnt->gid) < 0)
                                 return (-1);
+                } else if (str_has_prefix(lib, "libnvidia-ml.so")) {
+                        /* XXX Fix missing symlink for libnvidia-ml.so. */
+                        if (symlink_library(err, paths[i], SONAME_LIBNVML, "libnvidia-ml.so", cnt->uid, cnt->gid) < 0)
+                                return (-1);
                 }
         }
         return (0);
