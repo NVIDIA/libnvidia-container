@@ -90,6 +90,7 @@ static const char * const compute_libs[] = {
         "libnvidia-pkcs11.so",              /* Encrypt/Decrypt library */
         "libnvidia-pkcs11-openssl3.so",     /* Encrypt/Decrypt library (OpenSSL 3 support) */
         "libnvidia-nvvm.so",                /* The NVVM Compiler library */
+        "libnvidia-gpucomp.so",             /* The GPU shader compiler for D3D/VK/GL/RT. */
 };
 
 static const char * const video_libs[] = {
