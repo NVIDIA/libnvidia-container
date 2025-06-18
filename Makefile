@@ -21,6 +21,7 @@ WITH_NVCGO   ?= yes
 WITH_LIBELF  ?= no
 WITH_TIRPC   ?= no
 WITH_SECCOMP ?= yes
+STRIP_DEBUG_INFO ?= yes
 
 ##### Global definitions #####
 
@@ -163,6 +164,9 @@ else
 LIB_LDLIBS_STATIC  += -l:libelf.a
 endif
 ifeq ($(WITH_TIRPC), yes)
+LIB_CPPFLAGS       += -DWITH_TIRPC $(shell pkg-config --cflags libtirpc)
+LIB_LDLIBS_SHARED  += -lpthread $(shell pkg-config --libs libtirpc)
+else
 LIB_CPPFLAGS       += -isystem $(DEPS_DIR)$(includedir)/tirpc -DWITH_TIRPC
 LIB_LDLIBS_STATIC  += -l:libtirpc.a
 LIB_LDLIBS_SHARED  += -lpthread
@@ -220,22 +224,28 @@ $(BIN_OBJS): %.o: %.c | shared
 -include $(DEPENDENCIES)
 
 $(LIB_SHARED): $(LIB_OBJS)
-	$(MKDIR) -p $(DEBUG_DIR)
 	$(CC) $(LIB_CFLAGS) $(LIB_CPPFLAGS) $(LIB_LDFLAGS) $(OUTPUT_OPTION) $^ $(LIB_SCRIPT) $(LIB_LDLIBS)
+ifeq ($(STRIP_DEBUG_INFO), yes)
+	$(MKDIR) -p $(DEBUG_DIR)
 	$(OBJCPY) --only-keep-debug $@ $(LIB_SONAME)
 	$(OBJCPY) --add-gnu-debuglink=$(LIB_SONAME) $@
 	$(MV) $(LIB_SONAME) $(DEBUG_DIR)
 	$(STRIP) --strip-unneeded -R .comment $@
+endif
 
 $(LIB_STATIC_OBJ): $(LIB_OBJS)
 	# FIXME Handle user-defined LDFLAGS and LDLIBS
 	$(LD) -d -r --exclude-libs ALL -L$(DEPS_DIR)$(libdir) $(OUTPUT_OPTION) $^ $(LIB_LDLIBS_STATIC)
+ifeq ($(STRIP_DEBUG_INFO), yes)
 	$(OBJCPY) --localize-hidden $@
 	$(STRIP) --strip-unneeded -R .comment $@
+endif
 
 $(BIN_NAME): $(BIN_OBJS)
 	$(CC) $(BIN_CFLAGS) $(BIN_CPPFLAGS) $(BIN_LDFLAGS) $(OUTPUT_OPTION) $^ $(BIN_SCRIPT) $(BIN_LDLIBS)
+ifeq ($(STRIP_DEBUG_INFO), yes)
 	$(STRIP) --strip-unneeded -R .comment $@
+endif
 
 ##### Public rules #####
 
@@ -263,12 +273,12 @@ endif
 ifeq ($(WITH_LIBELF), no)
 	$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk DESTDIR=$(DEPS_DIR) install
 endif
-ifeq ($(WITH_TIRPC), yes)
+ifeq ($(WITH_TIRPC), no)
 	$(MAKE) -f $(MAKE_DIR)/libtirpc.mk DESTDIR=$(DEPS_DIR) install
 endif
 
 install: all
-	$(INSTALL) -d -m 755 $(addprefix $(DESTDIR),$(includedir) $(bindir) $(libdir) $(docdir) $(libdbgdir) $(pkgconfdir))
+	$(INSTALL) -d -m 755 $(addprefix $(DESTDIR),$(includedir) $(bindir) $(libdir) $(docdir) $(pkgconfdir))
 	# Install header files
 	$(INSTALL) -m 644 $(LIB_INCS) $(DESTDIR)$(includedir)
 	# Install library files
@@ -281,7 +291,10 @@ ifeq ($(WITH_NVCGO), yes)
 endif
 	$(LDCONFIG) -n $(DESTDIR)$(libdir)
 	# Install debugging symbols
+ifeq ($(STRIP_DEBUG_INFO), yes)
+	$(INSTALL) -d -m 755 $(addprefix $(DESTDIR),$(libdbgdir))
 	$(INSTALL) -m 644 $(DEBUG_DIR)/$(LIB_SONAME) $(DESTDIR)$(libdbgdir)
+endif
 	# Install configuration files
 	$(MAKE_DIR)/$(LIB_PKGCFG).in "$(strip $(VERSION))" "$(strip $(LIB_LDLIBS_SHARED))" > $(DESTDIR)$(pkgconfdir)/$(LIB_PKGCFG)
 	# Install binary files
@@ -299,7 +312,9 @@ ifeq ($(WITH_NVCGO), yes)
 	$(RM) $(addprefix $(DESTDIR)$(libdir)/,$(LIBGO_SHARED) $(LIBGO_SONAME) $(LIBGO_SYMLINK))
 endif
 	# Uninstall debugging symbols
+ifeq ($(STRIP_DEBUG_INFO), yes)
 	$(RM) $(DESTDIR)$(libdbgdir)/$(LIB_SONAME)
+endif
 	# Uninstall configuration files
 	$(RM) $(DESTDIR)$(pkgconfdir)/$(LIB_PKGCFG)
 	# Uninstall binary files
@@ -321,7 +336,7 @@ endif
 ifeq ($(WITH_LIBELF), no)
 	-$(MAKE) -f $(MAKE_DIR)/elftoolchain.mk clean
 endif
-ifeq ($(WITH_TIRPC), yes)
+ifeq ($(WITH_TIRPC), no)
 	-$(MAKE) -f $(MAKE_DIR)/libtirpc.mk clean
 endif
 
