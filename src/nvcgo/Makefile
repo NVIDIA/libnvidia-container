@@ -19,13 +19,13 @@ INSTALL ?= install
 
 DESTDIR ?=
 VERSION ?= devel
-MAJOR   ?= 1
+VERSION_MAJOR ?= 1
 
 PKG_NAME := nvcgo
 
 LIB_NAME    ?= libnvidia-container-go
 LIB_SHARED  ?= $(LIB_NAME).so.$(VERSION)
-LIB_SONAME  ?= $(LIB_NAME).so.$(MAJOR)
+LIB_SONAME  ?= $(LIB_NAME).so.$(VERSION_MAJOR)
 
 OBJ_NAME := $(LIB_NAME).so
 HDR_NAME := $(LIB_NAME).h
