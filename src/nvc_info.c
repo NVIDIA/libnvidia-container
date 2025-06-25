@@ -62,6 +62,8 @@ static const char * const utility_bins[] = {
         "nvidia-debugdump",                 /* GPU coredump utility */
         "nvidia-persistenced",              /* Persistence mode utility */
         "nv-fabricmanager",                 /* NVSwitch fabric manager utility */
+        "nvidia-imex",                      /* Imex daemon */
+        "nvidia-imex-ctl",                  /* Imex CLI */
         //"nvidia-modprobe",                /* Kernel module loader */
         //"nvidia-settings",                /* X server settings */
         //"nvidia-xconfig",                 /* X xorg.conf editor */
