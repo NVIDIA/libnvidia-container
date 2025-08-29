@@ -21,16 +21,66 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/asm"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/sys/unix"
 )
 
 const (
 	BpfProgramLicense = "Apache"
 )
+
+// isRuntimeCrun walks up the process tree and returns true if a parent
+// executable basename is "crun". It prefers /proc/<pid>/exe, falling back
+// to /proc/<pid>/comm when needed.
+func isRuntimeCrun() bool {
+	p := os.Getppid()
+    for i := 0; i < 10 && p > 1; i++ {
+        if link, err := os.Readlink(fmt.Sprintf("/proc/%d/exe", p)); err == nil {
+            base := filepath.Base(link)
+            if base == "crun" {
+                return true
+            }
+        } else {
+            if b, err2 := os.ReadFile(fmt.Sprintf("/proc/%d/comm", p)); err2 == nil {
+                name := strings.TrimSpace(string(b))
+                if name == "crun" {
+                    return true
+                }
+            }
+        }
+		np, err := getPPid(p)
+		if err != nil {
+			break
+		}
+		p = np
+	}
+	return false
+}
+
+func getPPid(pid int) (int, error) {
+	b, err := os.ReadFile(fmt.Sprintf("/proc/%d/status", pid))
+	if err != nil {
+		return 0, err
+	}
+	for _, line := range strings.Split(string(b), "\n") {
+		if strings.HasPrefix(line, "PPid:") {
+			f := strings.Fields(line)
+			if len(f) >= 2 {
+				v, err := strconv.Atoi(f[1])
+				if err != nil {
+					return 0, err
+				}
+				return v, nil
+			}
+		}
+	}
+	return 0, fmt.Errorf("PPid not found for pid %d", pid)
+}
 
 // GetDeviceCGroupMountPath returns the mount path (and its prefix) for the device cgroup controller associated with pid
 func (c *cgroupv2) GetDeviceCGroupMountPath(procRootPath string, pid int) (string, string, error) {
@@ -108,6 +158,15 @@ func (c *cgroupv2) GetDeviceCGroupRootPath(procRootPath string, prefix string, p
 
 // AddDeviceRules adds a set of device rules for the device cgroup at cgroupPath
 func (c *cgroupv2) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
+	// Skip programming device filters on systemd-owned scopes.
+	// crun >= 1.23 installs the device program via systemd (BPFProgram=device),
+	// and systemd rejects foreign changes. A scope cgroup path ends with ".scope".
+	// Only skip when the runtime is crun.
+	if strings.HasSuffix(filepath.Base(cgroupPath), ".scope") && isRuntimeCrun() {
+		logrus.Debugf("auto-skip device eBPF programming on systemd scope: %q", cgroupPath)
+		return nil
+	}
+
 	// Open the cgroup path.
 	dirFD, err := unix.Open(cgroupPath, unix.O_DIRECTORY|unix.O_RDONLY, 0600)
 	if err != nil {
