@@ -189,7 +189,15 @@ static int dxcore_query_adapter_driverstore(struct dxcore_lib* pLib, unsigned in
                 free(pValue);
                 return (-1);
         }
-        wcstombs(*ppDriverStorePath, pOutput, outputSize);
+        /*
+         * wcstombs() expects the size of the destination buffer in bytes. The
+         * buffer allocated above is `outputSize + 1` bytes long, which includes
+         * room for the terminating NUL byte.  Passing only `outputSize` could
+         * prevent the terminator from being written when the converted string
+         * length equals `outputSize`.  Use the full buffer size here to ensure
+         * the resulting string is always NUL terminated.
+         */
+        wcstombs(*ppDriverStorePath, pOutput, outputSize + 1);
 
         free(pValue);
 
