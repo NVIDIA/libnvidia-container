@@ -272,6 +272,7 @@ limit_syscalls(struct error *err)
                 SCMP_SYS(brk),
                 SCMP_SYS(chdir),
                 SCMP_SYS(chmod),
+                SCMP_SYS(clock_gettime),
                 SCMP_SYS(close),
                 SCMP_SYS(execve),
                 SCMP_SYS(execveat),
