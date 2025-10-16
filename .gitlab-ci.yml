@@ -70,15 +70,9 @@ trigger-pipeline:
 
 
 # Define the distribution targets
-.dist-centos7:
-  rules:
-    - !reference [.main-or-manual, rules]
+.dist-rhel8:
   variables:
-    DIST: centos7
-
-.dist-centos8:
-  variables:
-    DIST: centos8
+    DIST: rhel8
 
 .dist-ubuntu18.04:
   variables:
@@ -108,26 +102,26 @@ trigger-pipeline:
     ARCH: x86_64
 
 # Define the package build targets
-package-centos7-aarch64:
+package-rhel8-aarch64:
   extends:
     - .package-build
-    - .dist-centos7
+    - .dist-rhel8
     - .arch-aarch64
   needs:
     - package-ubuntu18.04-amd64
 
-package-centos7-x86_64:
+package-rhel8-x86_64:
   extends:
     - .package-build
-    - .dist-centos7
+    - .dist-rhel8
     - .arch-x86_64
   needs:
     - package-ubuntu18.04-amd64
 
-package-centos8-ppc64le:
+package-rhel8-ppc64le:
   extends:
     - .package-build
-    - .dist-centos8
+    - .dist-rhel8
     - .arch-ppc64le
   needs:
     - package-ubuntu18.04-amd64

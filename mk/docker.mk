@@ -33,12 +33,12 @@ REVISION 	 ?= $(shell git rev-parse HEAD)
 
 include $(CURDIR)/versions.mk
 
-# Supported OSs by architecture
+# Minimum Supported OSs by architecture
 AMD64_TARGETS := ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
-X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1
-PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7 centos8 rhel7 rhel8
+X86_64_TARGETS := rhel8 amazonlinux2 opensuse-leap15.1
+PPC64LE_TARGETS := ubuntu18.04 rhel8
 ARM64_TARGETS := ubuntu18.04
-AARCH64_TARGETS := centos7 rhel7 centos8 rhel8 amazonlinux2
+AARCH64_TARGETS := rhel8 amazonlinux2
 
 # Define top-level build targets
 docker%: SHELL:=/bin/bash
@@ -124,26 +124,21 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --ubuntu%: OS := ubuntu
 --debian%: OS := debian
 --amazonlinux%: OS := amazonlinux
-
-# private centos target with overrides
---centos%: OS := centos
---centos%: WITH_TIRPC = yes
---centos%: WITH_LIBELF = yes
---centos8%: BASEIMAGE = quay.io/centos/centos:stream8
+--amazonlinux%: WITH_LIBELF = yes
 
 # private opensuse-leap target with overrides
 --opensuse-leap%: OS := opensuse-leap
+--opensuse-leap%: WITH_LIBELF = yes
 --opensuse-leap%: BASEIMAGE = opensuse/leap:$(VERSION)
 
-# private rhel target (actually built on centos)
---rhel%: OS := centos
+# private rhel target (actually built on oraclelinux)
+--rhel%: OS := oraclelinux
 --rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 --rhel%: ARTIFACTS_DIR = $(DIST_DIR)/rhel$(VERSION)/$(ARCH)
---rhel8%: CFLAGS := -I/usr/include/tirpc
---rhel8%: LDLIBS := -ltirpc
---rhel8%: BASEIMAGE = quay.io/centos/centos:stream8
+--rhel%: WITH_LIBELF = yes
+--rhel%: WITH_TIRPC = yes
 
---verify-rhel%: OS := centos
+--verify-rhel%: OS := oraclelinux
 --verify-rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 
 docker-build-%: $(ARTIFACTS_DIR)

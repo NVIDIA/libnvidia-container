@@ -1,27 +1,10 @@
 ARG BASEIMAGE
 FROM ${BASEIMAGE}
 
-# centos:stream8 is EOL.
-# We switch to the vault repositories for this base image.
-ARG BASEIMAGE
-RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" \
-            -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" \
-                /etc/yum.repos.d/CentOS-*
-
 SHELL ["/bin/bash", "-c"]
 
 ARG OS_VERSION
-RUN if [ "${OS_VERSION}" = "8" ]; then \
-        yum --enablerepo=powertools install -y \
-            rpcgen \
-            libseccomp-devel; \
-    else \
-        yum install -y \
-            libseccomp-devel; \
-    fi
-
-RUN yum install -y \
-        --setopt=best=0 \
+RUN dnf --enablerepo=ol${OS_VERSION}_codeready_builder install -y \
         bzip2 \
         createrepo \
         elfutils-libelf-devel \
@@ -30,12 +13,12 @@ RUN yum install -y \
         libcap-devel \
         m4 \
         make \
-        redhat-lsb-core \
         libtirpc-devel \
         rpm-build \
-        rpmlint \
+        rpcgen \
+        libseccomp-devel \
         which && \
-    rm -rf /var/cache/yum/*
+    rm -rf /var/cache/dnf/*
 
 ARG OS_ARCH
 ARG GOLANG_VERSION

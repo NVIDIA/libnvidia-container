@@ -1,7 +1,5 @@
 Name: libnvidia-container
-License:        BSD-3-Clause AND Apache-2.0 AND GPL-3.0-or-later AND LGPL-3.0-or-later AND MIT AND GPL-2.0-only
-# elftoolchain is licensed under BSD-3-Clause
-#  https://github.com/elftoolchain/elftoolchain#copyright-and-license
+License:        ASL 2.0 AND GPLv3+ AND LGPLv3+ AND MIT AND GPLv2
 # libnvidia-container is licensed under apache-2.0
 #  https://github.com/NVIDIA/libnvidia-container/blob/main/LICENSE
 # libnvidia-container includes the GPLv3 license
@@ -16,13 +14,17 @@ Vendor: NVIDIA CORPORATION
 Packager: NVIDIA CORPORATION <cudatools@nvidia.com>
 URL: https://github.com/NVIDIA/libnvidia-container
 BuildRequires: make
-Version: %{version}
-Release: %{release}
+Version: %{_version}
+Release: %{_release}
 Summary: NVIDIA container runtime library
 %description
 The nvidia-container library provides an interface to configure GNU/Linux
 containers leveraging NVIDIA hardware. The implementation relies on several
 kernel subsystems and is designed to be agnostic of the container runtime.
+
+%prep
+
+%build
 
 %install
 DESTDIR=%{buildroot} %{__make} install prefix=%{_prefix} exec_prefix=%{_exec_prefix} bindir=%{_bindir} libdir=%{_libdir} includedir=%{_includedir} docdir=%{_licensedir}
