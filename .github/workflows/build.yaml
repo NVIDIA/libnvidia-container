@@ -37,20 +37,19 @@ jobs:
           - ubuntu18.04-arm64
           - ubuntu18.04-amd64
           - ubuntu18.04-ppc64le
-          - centos7-aarch64
-          - centos7-x86_64
-          - centos8-ppc64le
+          - rhel7-aarch64
+          - rhel7-x86_64
+          - rhel8-aarch64
+          - rhel8-x86_64
         ispr:
           - ${{github.event_name == 'pull_request'}}
         exclude:
           - ispr: true
             package: ubuntu18.04-arm64
           - ispr: true
-            package: ubuntu18.04-ppc64le
+            package: rhel7-aarch64
           - ispr: true
-            package: centos7-aarch64
-          - ispr: true
-            package: centos8-ppc64le
+            package: rhel8-aarch64
       fail-fast: false
     steps:
       - uses: actions/checkout@v4

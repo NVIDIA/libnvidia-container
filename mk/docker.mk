@@ -129,7 +129,7 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 --centos%: OS := centos
 --centos%: WITH_TIRPC = yes
 --centos%: WITH_LIBELF = yes
---centos8%: BASEIMAGE = quay.io/centos/centos:stream8
+--centos8%: BASEIMAGE = rockylinux/rockylinux:8
 
 # private opensuse-leap target with overrides
 --opensuse-leap%: OS := opensuse-leap
@@ -137,11 +137,13 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 
 # private rhel target (actually built on centos)
 --rhel%: OS := centos
+--rhel%: WITH_TIRPC = yes
+--rhel%: WITH_LIBELF = yes
 --rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))
 --rhel%: ARTIFACTS_DIR = $(DIST_DIR)/rhel$(VERSION)/$(ARCH)
 --rhel8%: CFLAGS := -I/usr/include/tirpc
 --rhel8%: LDLIBS := -ltirpc
---rhel8%: BASEIMAGE = quay.io/centos/centos:stream8
+--rhel8%: BASEIMAGE = rockylinux/rockylinux:8
 
 --verify-rhel%: OS := centos
 --verify-rhel%: VERSION = $(patsubst rhel%-$(ARCH),%,$(TARGET_PLATFORM))

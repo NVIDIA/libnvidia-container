@@ -6,9 +6,9 @@ include $(MAKE_DIR)/common.mk
 
 ##### Source definitions #####
 
-VERSION        := 550.54.14
+VERSION        := 550.144.03
 PREFIX         := nvidia-modprobe-$(VERSION)
-URL            := https://github.com/NVIDIA/nvidia-modprobe/archive/$(VERSION).tar.gz
+URL            := https://github.com/NVIDIA/nvidia-modprobe/archive/refs/tags/$(VERSION).tar.gz
 
 SRCS_DIR       := $(DEPS_DIR)/src/$(PREFIX)
 MODPROBE_UTILS := $(SRCS_DIR)/modprobe-utils
@@ -33,7 +33,7 @@ LIB_OBJS := $(LIB_SRCS:.c=.o)
 
 $(SRCS_DIR)/.download_stamp:
 	$(MKDIR) -p $(SRCS_DIR)
-	$(CURL) --progress-bar -fSL $(URL) | \
+	$(CURL) -fSL $(URL) | \
 	$(TAR) -C $(SRCS_DIR) --strip-components=1 -xz $(PREFIX)/modprobe-utils
 	$(PATCH) -d $(SRCS_DIR) -p1 < $(PATCH_FILE)
 	@touch $@

@@ -1,12 +1,16 @@
 ARG BASEIMAGE
 FROM ${BASEIMAGE}
 
-# centos:stream8 is EOL.
+# centos:7 is EOL.
 # We switch to the vault repositories for this base image.
-ARG BASEIMAGE
-RUN sed -i -e "s|mirrorlist=|#mirrorlist=|g" \
+ARG OS_VERSION
+RUN if [ "${OS_VERSION}" = "7" ]; then \
+        sed -i -e "s|mirrorlist=|#mirrorlist=|g" \
             -e "s|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g" \
-                /etc/yum.repos.d/CentOS-*
+                /etc/yum.repos.d/CentOS-*; \
+    else \
+        true; \
+    fi
 
 SHELL ["/bin/bash", "-c"]
 
@@ -34,15 +38,23 @@ RUN yum install -y \
         libtirpc-devel \
         rpm-build \
         rpmlint \
+        wget \
         which && \
     rm -rf /var/cache/yum/*
 
-ARG OS_ARCH
-ARG GOLANG_VERSION
-ENV OS_ARCH=${OS_ARCH}
-RUN OS_ARCH=${OS_ARCH/x86_64/amd64} && OS_ARCH=${OS_ARCH/aarch64/arm64} && \
-    curl https://storage.googleapis.com/golang/go${GOLANG_VERSION}.linux-${OS_ARCH}.tar.gz \
+ARG GOLANG_VERSION=0.0.0
+RUN set -eux; \
+    \
+    arch="$(uname -m)"; \
+    case "${arch##*-}" in \
+        x86_64 | amd64) ARCH='amd64' ;; \
+        ppc64el | ppc64le) ARCH='ppc64le' ;; \
+        aarch64 | arm64) ARCH='arm64' ;; \
+        *) echo "unsupported architecture"; exit 1 ;; \
+    esac; \
+    wget -nv -O - https://dl.google.com/go/go${GOLANG_VERSION}.linux-${ARCH}.tar.gz \
     | tar -C /usr/local -xz
+
 ENV GOPATH=/go
 ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 

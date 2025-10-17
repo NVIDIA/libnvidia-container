@@ -22,7 +22,7 @@ export CFLAGS   := -O2 -g -fdata-sections -ffunction-sections -fstack-protector 
 
 $(SRCS_DIR)/.download_stamp:
 	$(MKDIR) -p $(SRCS_DIR)
-	$(CURL) --progress-bar -fSL $(URL) | \
+	$(CURL) -fSL $(URL) | \
 	$(TAR) -C $(SRCS_DIR) --strip-components=1 -xj
 	@touch $@
 

@@ -16,13 +16,17 @@ Vendor: NVIDIA CORPORATION
 Packager: NVIDIA CORPORATION <cudatools@nvidia.com>
 URL: https://github.com/NVIDIA/libnvidia-container
 BuildRequires: make
-Version: %{version}
-Release: %{release}
+Version: %{_version}
+Release: %{_release}%{?dist}
 Summary: NVIDIA container runtime library
 %description
 The nvidia-container library provides an interface to configure GNU/Linux
 containers leveraging NVIDIA hardware. The implementation relies on several
 kernel subsystems and is designed to be agnostic of the container runtime.
+
+%prep
+
+%build
 
 %install
 DESTDIR=%{buildroot} %{__make} install prefix=%{_prefix} exec_prefix=%{_exec_prefix} bindir=%{_bindir} libdir=%{_libdir} includedir=%{_includedir} docdir=%{_licensedir}
@@ -98,7 +102,7 @@ This package contains command-line tools that facilitate using the library.
 
 %package libseccomp2
 Requires: libseccomp2
-Provides: libseccomp.so
+Provides: libseccomp.so = %{version}-%{release}
 Conflicts: libseccomp.so
 Summary: A virtual package to provide libseccomp through libseccomp2
 %description libseccomp2

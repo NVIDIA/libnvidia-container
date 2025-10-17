@@ -34,7 +34,7 @@ export CFLAGS   := -O2 -g -fdata-sections -ffunction-sections -fstack-protector 
 
 $(SRCS_DIR)/.download_stamp:
 	$(MKDIR) -p $(SRCS_DIR)
-	$(CURL) --progress-bar -fSL $(URL) | \
+	$(CURL) -fSL $(URL) | \
 	$(TAR) -C $(SRCS_DIR) --strip-components=1 -xj $(addprefix $(PREFIX)/,mk common libelf)
 	$(CP) $(MAKE_DIR)/native-elf-format $(COMMON)
 	@touch $@

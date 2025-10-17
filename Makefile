@@ -361,9 +361,8 @@ rpm: all
 		rpmbuild --clean --target=$(ARCH) -bb \
 			-D"_topdir $(DESTDIR)" \
 			-D "release_date $(shell date +'%a %b %d %Y')" \
-			-D"version $(PKG_VERS)" \
-			-D"release $(PKG_REV)" \
+			-D"_version $(PKG_VERS)" \
+			-D"_release $(PKG_REV)" \
 			-D"_major $(VERSION_MAJOR)" \
 			-D "git_commit ${REVISION}" \
 		SPECS/*.spec
-	-cd $(DESTDIR) && rpmlint RPMS/*
