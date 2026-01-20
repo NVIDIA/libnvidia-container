@@ -39,7 +39,7 @@ build: $(OBJ_NAME)
 $(OBJ_NAME): $(wildcard $(CURDIR)/*.go) $(wildcard */*.go)
 	export CGO_CFLAGS="$(CGO_CFLAGS)"; \
 	export CGO_LDFLAGS="$(CGO_LDFLAGS)"; \
-	$(GO) build -o $(@) -ldflags "-s -w" -buildmode=c-shared .
+	$(GO) build -buildvcs=false -o $(@) -ldflags "-s -w" -buildmode=c-shared .
 
 install: $(OBJ_NAME)
 	$(INSTALL) -d -m 755 $(addprefix $(DESTDIR),$(libdir) $(includedir)/$(PKG_NAME))

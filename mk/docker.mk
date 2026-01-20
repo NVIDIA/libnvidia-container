@@ -14,7 +14,7 @@
 #
 
 # Version of golang to use in docker specific builds.
-GOLANG_VERSION ?= 1.17.1
+GOLANG_VERSION ?= 1.25.6
 
 # Global definitions. These are defined here to allow the docker targets to be
 # invoked directly without the root makefile.
