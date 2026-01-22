@@ -12,6 +12,55 @@ updates:
     labels:
     - dependencies
 
+  - package-ecosystem: "docker"
+    target-branch: main
+    directories:
+    # Golang version
+    - "/deployments/devel"
+    schedule:
+      interval: "daily"
+    labels:
+    - dependencies
+
+# The release branch(es):
+  - package-ecosystem: "gomod"
+    target-branch: release-1.18
+    directories:
+    - "/"
+    # We don't update development or test dependencies on release branches
+    # - "deployments/devel"
+    # - "tests"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    labels:
+    - dependencies
+    - maintenance
+    ignore:
+    # For release branches we only consider patch updates.
+    - dependency-name: "*"
+      update-types:
+      - version-update:semver-major
+      - version-update:semver-minor
+
+  - package-ecosystem: "docker"
+    target-branch: release-1.18
+    directories:
+    # Golang version
+    - "/deployments/devel"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    ignore:
+    # For release branches we only apply patch updates to the golang version.
+    - dependency-name: "*golang*"
+      update-types:
+      - version-update:semver-major
+      - version-update:semver-minor
+    labels:
+    - dependencies
+    - maintenance
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
