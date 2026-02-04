@@ -138,7 +138,7 @@ LIBGO_SYMLINK := $(LIBGO_NAME).so
 
 # Common flags
 CPPFLAGS := -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 $(CPPFLAGS)
-CFLAGS   := -std=gnu11 -O2 -g -fdata-sections -ffunction-sections -fplan9-extensions -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
+CFLAGS   := -std=gnu11 -O2 -g -fdata-sections -ffunction-sections -fms-extensions -fstack-protector -fno-strict-aliasing -fvisibility=hidden \
             -Wall -Wextra -Wcast-align -Wpointer-arith -Wmissing-prototypes -Wnonnull \
             -Wwrite-strings -Wlogical-op -Wformat=2 -Wmissing-format-attribute -Winit-self -Wshadow \
             -Wstrict-prototypes -Wunreachable-code -Wconversion -Wsign-conversion \
