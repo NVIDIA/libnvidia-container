@@ -5,35 +5,36 @@ import (
 	"strings"
 )
 
-//go:generate stringer -output opcode_string.go -type=Class
+//go:generate go tool stringer -output opcode_string.go -type=Class
 
 // Class of operations
 //
-//    msb      lsb
-//    +---+--+---+
-//    |  ??  |CLS|
-//    +---+--+---+
+//	msb      lsb
+//	+---+--+---+
+//	|  ??  |CLS|
+//	+---+--+---+
 type Class uint8
 
 const classMask OpCode = 0x07
 
 const (
-	// LdClass load memory
+	// LdClass loads immediate values into registers.
+	// Also used for non-standard load operations from cBPF.
 	LdClass Class = 0x00
-	// LdXClass load memory from constant
+	// LdXClass loads memory into registers.
 	LdXClass Class = 0x01
-	// StClass load register from memory
+	// StClass stores immediate values to memory.
 	StClass Class = 0x02
-	// StXClass load register from constant
+	// StXClass stores registers to memory.
 	StXClass Class = 0x03
-	// ALUClass arithmetic operators
+	// ALUClass describes arithmetic operators.
 	ALUClass Class = 0x04
-	// JumpClass jump operators
+	// JumpClass describes jump operators.
 	JumpClass Class = 0x05
-	// Jump32Class jump operators with 32 bit comparaisons
-	// Requires kernel 5.1
+	// Jump32Class describes jump operators with 32-bit comparisons.
+	// Requires kernel 5.1.
 	Jump32Class Class = 0x06
-	// ALU64Class arithmetic in 64 bit mode
+	// ALU64Class describes arithmetic operators in 64-bit mode.
 	ALU64Class Class = 0x07
 )
 
@@ -65,18 +66,48 @@ func (cls Class) isJumpOrALU() bool {
 	return cls.IsJump() || cls.IsALU()
 }
 
-// OpCode is a packed eBPF opcode.
+// OpCode represents a single operation.
+// It is not a 1:1 mapping to real eBPF opcodes.
 //
-// Its encoding is defined by a Class value:
+// The encoding varies based on a 3-bit Class:
 //
-//    msb      lsb
-//    +----+-+---+
-//    | ???? |CLS|
-//    +----+-+---+
-type OpCode uint8
+//	7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0
+//	                          ???                            | CLS
+//
+// For ALUClass and ALUCLass32:
+//
+//	7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0
+//	             0                 |           OPC         |S| CLS
+//
+// For LdClass, LdXclass, StClass and StXClass:
+//
+//	7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0
+//	                       0                       | MDE |SIZ| CLS
+//
+// For StXClass where MDE == AtomicMode:
+//
+//	7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0
+//	              0              |    ATOMIC OP    | MDE |SIZ| CLS
+//
+// For JumpClass, Jump32Class:
+//
+//	7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0 7 6 5 4 3 2 1 0
+//	                       0                       |  OPC  |S| CLS
+type OpCode uint32
 
 // InvalidOpCode is returned by setters on OpCode
-const InvalidOpCode OpCode = 0xff
+const InvalidOpCode OpCode = 0xffff
+
+// bpfOpCode returns the actual BPF opcode.
+func (op OpCode) bpfOpCode() (byte, error) {
+	const opCodeMask = 0xff
+
+	if !valid(op, opCodeMask) {
+		return 0, fmt.Errorf("invalid opcode %x", op)
+	}
+
+	return byte(op & opCodeMask), nil
+}
 
 // rawInstructions returns the number of BPF instructions required
 // to encode this opcode.
@@ -110,6 +141,14 @@ func (op OpCode) Size() Size {
 		return InvalidSize
 	}
 	return Size(op & sizeMask)
+}
+
+// AtomicOp returns the type of atomic operation.
+func (op OpCode) AtomicOp() AtomicOp {
+	if op.Class() != StXClass || op.Mode() != AtomicMode {
+		return InvalidAtomic
+	}
+	return AtomicOp(op & atomicMask)
 }
 
 // Source returns the source for branch and ALU operations.
@@ -146,7 +185,7 @@ func (op OpCode) JumpOp() JumpOp {
 	jumpOp := JumpOp(op & jumpMask)
 
 	// Some JumpOps are only supported by JumpClass, not Jump32Class.
-	if op.Class() == Jump32Class && (jumpOp == Exit || jumpOp == Call || jumpOp == Ja) {
+	if op.Class() == Jump32Class && (jumpOp == Exit || jumpOp == Call) {
 		return InvalidJumpOp
 	}
 
@@ -171,6 +210,13 @@ func (op OpCode) SetSize(size Size) OpCode {
 		return InvalidOpCode
 	}
 	return (op & ^sizeMask) | OpCode(size)
+}
+
+func (op OpCode) SetAtomicOp(atomic AtomicOp) OpCode {
+	if op.Class() != StXClass || op.Mode() != AtomicMode || !valid(OpCode(atomic), atomicMask) {
+		return InvalidOpCode
+	}
+	return (op & ^atomicMask) | OpCode(atomic)
 }
 
 // SetSource sets the source on jump and ALU operations.
@@ -221,6 +267,10 @@ func (op OpCode) String() string {
 		mode := op.Mode()
 		f.WriteString(strings.TrimSuffix(mode.String(), "Mode"))
 
+		if atomic := op.AtomicOp(); atomic != InvalidAtomic {
+			f.WriteString(strings.TrimSuffix(atomic.String(), "Atomic"))
+		}
+
 		switch op.Size() {
 		case DWord:
 			f.WriteString("DW")
@@ -233,17 +283,24 @@ func (op OpCode) String() string {
 		}
 
 	case class.IsALU():
+		if op.ALUOp() == Swap && op.Class() == ALU64Class {
+			// B to make BSwap, uncontitional byte swap
+			f.WriteString("B")
+		}
+
 		f.WriteString(op.ALUOp().String())
 
 		if op.ALUOp() == Swap {
-			// Width for Endian is controlled by Constant
-			f.WriteString(op.Endianness().String())
+			if op.Class() == ALUClass {
+				// Width for Endian is controlled by Constant
+				f.WriteString(op.Endianness().String())
+			}
 		} else {
+			f.WriteString(strings.TrimSuffix(op.Source().String(), "Source"))
+
 			if class == ALUClass {
 				f.WriteString("32")
 			}
-
-			f.WriteString(strings.TrimSuffix(op.Source().String(), "Source"))
 		}
 
 	case class.IsJump():
@@ -253,7 +310,7 @@ func (op OpCode) String() string {
 			f.WriteString("32")
 		}
 
-		if jop := op.JumpOp(); jop != Exit && jop != Call {
+		if jop := op.JumpOp(); jop != Exit && jop != Call && jop != Ja {
 			f.WriteString(strings.TrimSuffix(op.Source().String(), "Source"))
 		}
 

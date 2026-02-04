@@ -1,3 +1,5 @@
+//go:build !windows
+
 package link
 
 import (
@@ -70,6 +72,10 @@ func (frt *simpleRawTracepoint) Pin(string) error {
 
 func (frt *simpleRawTracepoint) Unpin() error {
 	return fmt.Errorf("unpin raw_tracepoint: %w", ErrNotSupported)
+}
+
+func (frt *simpleRawTracepoint) Detach() error {
+	return fmt.Errorf("detach raw_tracepoint: %w", ErrNotSupported)
 }
 
 func (frt *simpleRawTracepoint) Info() (*Info, error) {
