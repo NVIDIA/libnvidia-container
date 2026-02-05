@@ -96,8 +96,7 @@ BIN_SRCS     := $(SRCS_DIR)/cli/common.c    \
                 $(SRCS_DIR)/error_generic.c \
                 $(SRCS_DIR)/utils.c
 
-LIB_SCRIPT   = $(SRCS_DIR)/$(LIB_NAME).lds
-BIN_SCRIPT   = $(SRCS_DIR)/cli/$(BIN_NAME).lds
+LIB_SCRIPT   = $(SRCS_DIR)/$(LIB_NAME).ver
 
 ##### Target definitions #####
 
@@ -221,7 +220,7 @@ $(BIN_OBJS): %.o: %.c | shared
 
 $(LIB_SHARED): $(LIB_OBJS)
 	$(MKDIR) -p $(DEBUG_DIR)
-	$(CC) $(LIB_CFLAGS) $(LIB_CPPFLAGS) $(LIB_LDFLAGS) $(OUTPUT_OPTION) $^ $(LIB_SCRIPT) $(LIB_LDLIBS)
+	$(CC) $(LIB_CFLAGS) $(LIB_CPPFLAGS) $(LIB_LDFLAGS) $(OUTPUT_OPTION) $^ -Wl,--version-script=$(LIB_SCRIPT) -Wl,-e,nvc_entrypoint -Wl,-u,interpreter -Wl,-u,abitag $(LIB_LDLIBS)
 	$(OBJCPY) --only-keep-debug $@ $(LIB_SONAME)
 	$(OBJCPY) --add-gnu-debuglink=$(LIB_SONAME) $@
 	$(MV) $(LIB_SONAME) $(DEBUG_DIR)
@@ -234,7 +233,7 @@ $(LIB_STATIC_OBJ): $(LIB_OBJS)
 	$(STRIP) --strip-unneeded -R .comment $@
 
 $(BIN_NAME): $(BIN_OBJS)
-	$(CC) $(BIN_CFLAGS) $(BIN_CPPFLAGS) $(BIN_LDFLAGS) $(OUTPUT_OPTION) $^ $(BIN_SCRIPT) $(BIN_LDLIBS)
+	$(CC) $(BIN_CFLAGS) $(BIN_CPPFLAGS) $(BIN_LDFLAGS) $(OUTPUT_OPTION) $^ -Wl,-u,argp_err_exit_status -Wl,-u,argp_program_version_hook -Wl,-u,argp_program_bug_address $(BIN_LDLIBS)
 	$(STRIP) --strip-unneeded -R .comment $@
 
 ##### Public rules #####
