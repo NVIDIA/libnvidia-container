@@ -1,3 +1,0 @@
-EXTERN(argp_err_exit_status)
-EXTERN(argp_program_version_hook)
-EXTERN(argp_program_bug_address)
