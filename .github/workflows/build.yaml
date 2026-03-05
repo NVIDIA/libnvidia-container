@@ -61,7 +61,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: build ${{ matrix.package }} packages
         run: |
           sudo apt-get install -y coreutils build-essential sed git bash make
