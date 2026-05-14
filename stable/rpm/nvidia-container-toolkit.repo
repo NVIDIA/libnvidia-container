@@ -5,8 +5,6 @@ repo_gpgcheck=1
 gpgcheck=0
 enabled=1
 gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
-sslverify=1
-sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 
 [nvidia-container-toolkit-experimental]
 name=nvidia-container-toolkit-experimental
@@ -15,5 +13,3 @@ repo_gpgcheck=1
 gpgcheck=0
 enabled=0
 gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
-sslverify=1
-sslcacert=/etc/pki/tls/certs/ca-bundle.crt
