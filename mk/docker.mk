@@ -43,6 +43,13 @@ AARCH64_TARGETS := centos7 rhel7 centos8 rhel8 amazonlinux2
 # Define top-level build targets
 docker%: SHELL:=/bin/bash
 
+# When using Podman, local images are stored under localhost/ so run uses the same name
+IMAGE_PREFIX := $(if $(filter podman,$(DOCKER)),localhost/,)
+# When using Podman (often on SELinux hosts), :z allows the container to write to the volume
+VOLUME_OPTS := $(if $(filter podman,$(DOCKER)),:z,)
+# Podman defaults to OCI image format which ignores SHELL; use docker format so RUN uses bash
+DOCKER_BUILD_FMT := $(if $(filter podman,$(DOCKER)),--format docker,)
+
 # Native targets (for tab completion by OS name only on native platform)
 ifeq ($(PLATFORM),x86_64)
 NATIVE_TARGETS := $(AMD64_TARGETS) $(X86_64_TARGETS)
@@ -101,7 +108,7 @@ docker-all: $(AMD64_TARGETS) $(X86_64_TARGETS) \
 --%: TARGET_PLATFORM = $(*)
 --%: VERSION = $(patsubst $(OS)%-$(ARCH),%,$(TARGET_PLATFORM))
 --%: BASEIMAGE = $(OS):$(VERSION)
---%: BUILDIMAGE = nvidia/$(LIB_NAME)/$(OS)$(VERSION)-$(ARCH)
+--%: BUILDIMAGE = $(IMAGE_PREFIX)nvidia/$(LIB_NAME)/$(OS)$(VERSION)-$(ARCH)
 --%: DOCKERFILE = $(MAKE_DIR)/Dockerfile.$(OS)
 --%: ARTIFACTS_DIR = $(DIST_DIR)/$(OS)$(VERSION)/$(ARCH)
 --%: docker-build-%
@@ -151,6 +158,7 @@ docker-build-%: $(ARTIFACTS_DIR)
 	$(DOCKER) pull --platform=linux/$(ARCH) $(BASEIMAGE)
 	DOCKER_BUILDKIT=1 \
 	$(DOCKER) build \
+	    $(DOCKER_BUILD_FMT) \
 	    --platform=linux/$(ARCH) \
 	    --progress=plain \
 	    --build-arg BASEIMAGE="$(BASEIMAGE)" \
@@ -170,11 +178,12 @@ docker-build-%: $(ARTIFACTS_DIR)
 	    $(EXTRA_BUILD_ARGS) \
 	    --tag $(BUILDIMAGE) \
 	    --file $(DOCKERFILE) .
+	mkdir -p $(ARTIFACTS_DIR)
 	$(DOCKER) run \
 	    --platform=linux/$(ARCH) \
 	    --rm \
 	    -e TAG \
-	    -v $(ARTIFACTS_DIR):/dist \
+	    -v $(ARTIFACTS_DIR):/dist$(VOLUME_OPTS) \
 	    $(BUILDIMAGE)
 
 docker-verify-%: %
@@ -187,9 +196,9 @@ docker-verify-%: %
 	    bash -c "make install; LD_LIBRARY_PATH=/usr/local/lib/  nvidia-container-cli -k -d /dev/tty info"
 
 docker-clean:
-	IMAGES=$$(docker images "nvidia/$(LIB_NAME)/*" --format="{{.ID}}"); \
+	IMAGES=$$($(DOCKER) images "$(IMAGE_PREFIX)nvidia/$(LIB_NAME)/*" --format="{{.ID}}"); \
 	if [ "$${IMAGES}" != "" ]; then \
-	    docker rmi -f $${IMAGES}; \
+	    $(DOCKER) rmi -f $${IMAGES}; \
 	fi
 
 $(ARTIFACTS_DIR):
