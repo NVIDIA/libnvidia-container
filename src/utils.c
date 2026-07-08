@@ -526,7 +526,11 @@ make_ancestors(char *path, mode_t perm)
                         return (-1);
                 *p = '/';
         }
-        return (mkdir(path, perm));
+
+        if (mkdir(path, perm) < 0 && errno != EEXIST)
+                return (-1);
+
+        return (0);
 }
 
 int
