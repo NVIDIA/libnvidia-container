@@ -41,7 +41,7 @@ const char interpreter[] __attribute__((section(".interp"))) = LIB_DIR "/" LD_SO
 const struct __attribute__((__packed__)) {
         Elf64_Nhdr hdr;
         uint32_t desc[5];
-} abitag __attribute__((section (".note.ABI-tag"))) = {
+} abitag __attribute__((section (".note.ABI-tag"), aligned(4))) = {
         {0x04, 0x10, 0x01},
         {0x554e47, 0x0, 0x3, 0xa, 0x0}, /* GNU Linux 3.10.0 */
 };
