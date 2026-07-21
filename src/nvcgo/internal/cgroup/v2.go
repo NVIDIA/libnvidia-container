@@ -126,7 +126,7 @@ func (c *cgroupv2) AddDeviceRules(cgroupPath string, rules []DeviceRule) error {
 	// If no existing programs found, create a new program with just our device filter.
 	var newProgs []*ebpf.Program
 	if len(oldProgs) == 0 {
-		oldInsts := asm.Instructions{asm.Return()}
+		oldInsts := asm.Instructions{asm.Mov.Imm32(asm.R0, 1), asm.Return()}
 
 		newProg, err := generateNewProgram(rules, oldInsts)
 		if err != nil {
