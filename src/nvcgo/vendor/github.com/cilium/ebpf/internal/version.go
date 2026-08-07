@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"sync"
 )
 
 const (
@@ -11,14 +10,6 @@ const (
 	// KERNEL_VERSION compile-time macro. Used for compatibility with BCC, gobpf
 	// and RedSift.
 	MagicKernelVersion = 0xFFFFFFFE
-)
-
-var (
-	kernelVersion = struct {
-		once    sync.Once
-		version Version
-		err     error
-	}{}
 )
 
 // A Version in the form Major.Minor.Patch.
@@ -75,33 +66,9 @@ func (v Version) Kernel() uint32 {
 	// Kernels 4.4 and 4.9 have their SUBLEVEL clamped to 255 to avoid
 	// overflowing into PATCHLEVEL.
 	// See kernel commit 9b82f13e7ef3 ("kbuild: clamp SUBLEVEL to 255").
-	s := v[2]
-	if s > 255 {
-		s = 255
-	}
+	s := min(v[2], 255)
 
 	// Truncate members to uint8 to prevent them from spilling over into
 	// each other when overflowing 8 bits.
 	return uint32(uint8(v[0]))<<16 | uint32(uint8(v[1]))<<8 | uint32(uint8(s))
-}
-
-// KernelVersion returns the version of the currently running kernel.
-func KernelVersion() (Version, error) {
-	kernelVersion.once.Do(func() {
-		kernelVersion.version, kernelVersion.err = detectKernelVersion()
-	})
-
-	if kernelVersion.err != nil {
-		return Version{}, kernelVersion.err
-	}
-	return kernelVersion.version, nil
-}
-
-// detectKernelVersion returns the version of the running kernel.
-func detectKernelVersion() (Version, error) {
-	vc, err := vdsoVersion()
-	if err != nil {
-		return Version{}, err
-	}
-	return NewVersionFromCode(vc), nil
 }

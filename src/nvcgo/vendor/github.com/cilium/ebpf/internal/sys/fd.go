@@ -1,45 +1,32 @@
 package sys
 
 import (
-	"fmt"
 	"math"
-	"os"
 	"runtime"
 	"strconv"
 
+	"github.com/cilium/ebpf/internal/testutils/testmain"
 	"github.com/cilium/ebpf/internal/unix"
 )
 
 var ErrClosedFd = unix.EBADF
 
-type FD struct {
-	raw int
-}
+// A value for an invalid fd.
+//
+// Luckily this is consistent across Linux and Windows.
+//
+// See https://github.com/microsoft/ebpf-for-windows/blob/54632eb360c560ebef2f173be1a4a4625d540744/include/ebpf_api.h#L25
+const invalidFd = -1
 
 func newFD(value int) *FD {
-	fd := &FD{value}
-	runtime.SetFinalizer(fd, (*FD).Close)
+	testmain.TraceFD(value, 1)
+
+	fd := &FD{raw: value}
+	fd.cleanup = runtime.AddCleanup(fd, func(raw int) {
+		testmain.LeakFD(raw)
+		_ = unix.Close(raw)
+	}, fd.raw)
 	return fd
-}
-
-// NewFD wraps a raw fd with a finalizer.
-//
-// You must not use the raw fd after calling this function, since the underlying
-// file descriptor number may change. This is because the BPF UAPI assumes that
-// zero is not a valid fd value.
-func NewFD(value int) (*FD, error) {
-	if value < 0 {
-		return nil, fmt.Errorf("invalid fd %d", value)
-	}
-
-	fd := newFD(value)
-	if value != 0 {
-		return fd, nil
-	}
-
-	dup, err := fd.Dup()
-	_ = fd.Close()
-	return dup, err
 }
 
 func (fd *FD) String() string {
@@ -47,11 +34,11 @@ func (fd *FD) String() string {
 }
 
 func (fd *FD) Int() int {
-	return fd.raw
+	return int(fd.raw)
 }
 
 func (fd *FD) Uint() uint32 {
-	if fd.raw < 0 || int64(fd.raw) > math.MaxUint32 {
+	if fd.raw == invalidFd {
 		// Best effort: this is the number most likely to be an invalid file
 		// descriptor. It is equal to -1 (on two's complement arches).
 		return math.MaxUint32
@@ -59,38 +46,14 @@ func (fd *FD) Uint() uint32 {
 	return uint32(fd.raw)
 }
 
-func (fd *FD) Close() error {
-	if fd.raw < 0 {
-		return nil
-	}
+// Disown destroys the FD and returns its raw file descriptor without closing
+// it. After this call, the underlying fd is no longer tied to the FD's
+// lifecycle.
+func (fd *FD) Disown() int {
+	value := fd.raw
+	testmain.ForgetFD(value)
+	fd.raw = invalidFd
 
-	value := int(fd.raw)
-	fd.raw = -1
-
-	fd.Forget()
-	return unix.Close(value)
-}
-
-func (fd *FD) Forget() {
-	runtime.SetFinalizer(fd, nil)
-}
-
-func (fd *FD) Dup() (*FD, error) {
-	if fd.raw < 0 {
-		return nil, ErrClosedFd
-	}
-
-	// Always require the fd to be larger than zero: the BPF API treats the value
-	// as "no argument provided".
-	dup, err := unix.FcntlInt(uintptr(fd.raw), unix.F_DUPFD_CLOEXEC, 1)
-	if err != nil {
-		return nil, fmt.Errorf("can't dup fd: %v", err)
-	}
-
-	return newFD(dup), nil
-}
-
-func (fd *FD) File(name string) *os.File {
-	fd.Forget()
-	return os.NewFile(uintptr(fd.raw), name)
+	fd.cleanup.Stop()
+	return value
 }
