@@ -89,6 +89,10 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
                 .gid = gid,
                 .nvml_dl = NULL,
         };
+        if (strlen(root) > sizeof(ctx->root)) {
+            error_setx(err, "root path too long (max %zu bytes)", sizeof(ctx->root) - 1);
+            goto fail;
+        }
         strcpy(ctx->root, root);
 
         if (dxcore->initialized) {
