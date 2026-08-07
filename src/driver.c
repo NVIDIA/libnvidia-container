@@ -3,7 +3,6 @@
  */
 
 #include <sys/types.h>
-#include <bsd/string.h>
 #include <inttypes.h>
 
 #include "nvml.h"
@@ -89,10 +88,11 @@ driver_init(struct error *err, struct dxcore_context *dxcore, const char *root, 
                 .gid = gid,
                 .nvml_dl = NULL,
         };
-        if (strlcpy(ctx->root, root, sizeof(ctx->root)) >= sizeof(ctx->root)) {
+        if (strlen(root) > sizeof(ctx->root) {
                 error_setx(err, "root path too long (max %zu bytes)", sizeof(ctx->root) - 1);
                 goto fail;
         }
+        strcpy(ctx->root, root);
 
         if (dxcore->initialized) {
                 memset(ctx->nvml_path, 0, strlen(ctx->nvml_path));
