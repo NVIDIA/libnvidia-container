@@ -1,3 +1,5 @@
+//go:build !windows
+
 package link
 
 import (
@@ -25,10 +27,6 @@ type IterOptions struct {
 
 // AttachIter attaches a BPF seq_file iterator.
 func AttachIter(opts IterOptions) (*Iter, error) {
-	if err := haveBPFLink(); err != nil {
-		return nil, err
-	}
-
 	progFd := opts.Program.FD()
 	if progFd < 0 {
 		return nil, fmt.Errorf("invalid program: %s", sys.ErrClosedFd)
@@ -46,28 +44,19 @@ func AttachIter(opts IterOptions) (*Iter, error) {
 	attr := sys.LinkCreateIterAttr{
 		ProgFd:      uint32(progFd),
 		AttachType:  sys.AttachType(ebpf.AttachTraceIter),
-		IterInfo:    sys.NewPointer(unsafe.Pointer(&info)),
+		IterInfo:    sys.UnsafePointer(unsafe.Pointer(&info)),
 		IterInfoLen: uint32(unsafe.Sizeof(info)),
 	}
 
 	fd, err := sys.LinkCreateIter(&attr)
 	if err != nil {
+		if haveFeatErr := haveBPFLink(); haveFeatErr != nil {
+			return nil, haveFeatErr
+		}
 		return nil, fmt.Errorf("can't link iterator: %w", err)
 	}
 
 	return &Iter{RawLink{fd, ""}}, err
-}
-
-// LoadPinnedIter loads a pinned iterator from a bpffs.
-//
-// Deprecated: use LoadPinnedLink instead.
-func LoadPinnedIter(fileName string, opts *ebpf.LoadPinOptions) (*Iter, error) {
-	link, err := LoadPinnedRawLink(fileName, IterType, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Iter{*link}, err
 }
 
 // Iter represents an attached bpf_iter.
@@ -88,7 +77,7 @@ func (it *Iter) Open() (io.ReadCloser, error) {
 		return nil, fmt.Errorf("can't create iterator: %w", err)
 	}
 
-	return fd.File("bpf_iter"), nil
+	return fd.File("bpf_iter")
 }
 
 // union bpf_iter_link_info.map
