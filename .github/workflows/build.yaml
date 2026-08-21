@@ -29,6 +29,25 @@ on:
       - release-*
 
 jobs:
+  third-party-notices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        name: Check out code
+        with:
+          fetch-tags: true
+          fetch-depth: 1024
+      - name: Get Golang version
+        id: vars
+        run: |
+          echo "GOLANG_VERSION=$(./hack/golang-version.sh)" >> $GITHUB_ENV
+      - name: Install Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GOLANG_VERSION }}
+      - name: Check that THIRD_PARTY_NOTICES.md is up to date
+        run: make check-third-party-notices
+
   packages:
     runs-on: ubuntu-latest
     strategy:

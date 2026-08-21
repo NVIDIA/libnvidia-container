@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean
+.PHONY: all tools shared static deps install uninstall dist depsclean mostlyclean clean distclean third-party-notices check-third-party-notices
 .DEFAULT_GOAL := all
 
 ##### Global variables #####
@@ -51,7 +51,8 @@ include $(MAKE_DIR)/docker.mk
 DOC_FILES    := $(CURDIR)/NOTICE \
                 $(CURDIR)/LICENSE \
                 $(CURDIR)/COPYING \
-                $(CURDIR)/COPYING.LESSER
+                $(CURDIR)/COPYING.LESSER \
+                $(CURDIR)/THIRD_PARTY_NOTICES.md
 
 BUILD_DEFS   := $(SRCS_DIR)/build.h
 
@@ -305,6 +306,22 @@ endif
 	$(RM) $(DESTDIR)$(bindir)/$(BIN_NAME)
 	# Uninstall documentation files
 	$(RM) -r $(DESTDIR)$(docdir)/$(LIB_NAME)-$(VERSION)
+
+GO_LICENSES := bin/go-licenses
+
+$(GO_LICENSES): deployments/devel/go.mod deployments/devel/go.sum
+	cd $(CURDIR)/deployments/devel && \
+	    GOBIN=$(CURDIR)/bin GOFLAGS=-mod=readonly $(GO) install github.com/google/go-licenses/v2
+
+third-party-notices: $(GO_LICENSES)
+	@bash $(CURDIR)/hack/generate-third-party-notices.sh
+
+check-third-party-notices: third-party-notices
+	@echo "- Checking if THIRD_PARTY_NOTICES.md is up to date..."
+	@git ls-files --error-unmatch THIRD_PARTY_NOTICES.md >/dev/null 2>&1 \
+	    || { echo "ERROR: THIRD_PARTY_NOTICES.md is not tracked. Run 'make third-party-notices' and commit the result."; exit 1; }
+	@git diff --exit-code -- THIRD_PARTY_NOTICES.md \
+	    || { echo "ERROR: THIRD_PARTY_NOTICES.md is stale. Run 'make third-party-notices' and commit the change."; exit 1; }
 
 dist: DESTDIR:=$(DIST_DIR)/$(LIB_NAME)_$(VERSION)$(addprefix -,$(TAG))
 dist: install
