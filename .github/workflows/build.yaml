@@ -42,7 +42,7 @@ jobs:
         run: |
           echo "GOLANG_VERSION=$(./hack/golang-version.sh)" >> $GITHUB_ENV
       - name: Install Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
           go-version: ${{ env.GOLANG_VERSION }}
       - name: Check that THIRD_PARTY_NOTICES.md is up to date
