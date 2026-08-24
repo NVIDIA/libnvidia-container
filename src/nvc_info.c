@@ -543,9 +543,8 @@ lookup_devices(struct error *err, struct dxcore_context *dxcore, struct nvc_driv
                                 return (-1);
                 }
                 if (!(flags & OPT_NO_MODESET)) {
-                        modeset.path = (char *)NV_MODESET_DEVICE_PATH;
-                        modeset.id = makedev(NV_DEVICE_MAJOR, NV_MODESET_DEVICE_MINOR);
-                        has_modeset = 1;
+                        if ((has_modeset = find_device_node(err, root, NV_MODESET_DEVICE_PATH, &modeset)) < 0)
+                                return (-1);
                 }
                 nvidiactl.path = (char *)NV_CTL_DEVICE_PATH;
                 nvidiactl.id = makedev(NV_DEVICE_MAJOR, NV_CTL_DEVICE_MINOR);
