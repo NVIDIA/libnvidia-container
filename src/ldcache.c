@@ -58,6 +58,13 @@ ldcache_init(struct ldcache *ctx, struct error *err, const char *path)
         *ctx = (struct ldcache){err, path, NULL, NULL, 0};
 }
 
+static bool
+ldcache_ptr_valid(const struct ldcache *ctx, const void *ptr)
+{
+        return ((const char *)ptr >= (const char *)ctx->addr &&
+            (const char *)ptr < (const char *)ctx->addr + ctx->size);
+}
+
 int
 ldcache_open(struct ldcache *ctx)
 {
@@ -77,6 +84,8 @@ ldcache_open(struct ldcache *ctx)
                 ctx->ptr = h5->libs + h5->nlibs;
                 padding = (-(uintptr_t)ctx->ptr) & (__alignof__(struct header_libc6) - 1);
                 ctx->ptr = (char *)ctx->ptr + padding; /* align on header_libc6 boundary */
+                if (!ldcache_ptr_valid(ctx, ctx->ptr))
+                        goto fail;
         }
 
         h6 = (struct header_libc6 *)ctx->ptr;
@@ -84,6 +93,8 @@ ldcache_open(struct ldcache *ctx)
                 goto fail;
         if (strncmp(h6->magic, MAGIC_LIBC6, MAGIC_LIBC6_LEN) ||
             strncmp(h6->version, MAGIC_VERSION, MAGIC_VERSION_LEN))
+                goto fail;
+        if (!ldcache_ptr_valid(ctx, h6->libs + h6->nlibs))
                 goto fail;
 
         return (0);
@@ -121,6 +132,11 @@ ldcache_resolve(struct ldcache *ctx, uint32_t arch, const char *root, const char
                 int32_t flags = h->libs[i].flags;
                 char *key = (char *)ctx->ptr + h->libs[i].key;
                 char *value = (char *)ctx->ptr + h->libs[i].value;
+
+                if (!ldcache_ptr_valid(ctx, key) || !ldcache_ptr_valid(ctx, value)) {
+                        error_setx(ctx->err, "corrupted ldcache entry: %s", ctx->path);
+                        return (-1);
+                }
 
                 if (!(flags & LD_ELF) || (flags & LD_ARCH_MASK) != arch)
                         continue;
