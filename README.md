@@ -89,3 +89,4 @@ Refer to [NOTICE](https://github.com/NVIDIA/libnvidia-container/blob/main/NOTICE
 
 * Please let us know by [filing a new issue](https://github.com/NVIDIA/libnvidia-container/issues/new)
 * You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)
+* Contributions must adhere to the [Code of Conduct](CODE_OF_CONDUCT.md).
