@@ -16,7 +16,8 @@ LIBTIRPC := $(SRCS_DIR)/libtirpc
 ##### Flags definitions #####
 
 export CPPFLAGS := -D_FORTIFY_SOURCE=2
-export CFLAGS   := -O2 -g -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fPIC
+# libtirpc 1.3.2 has unprototyped declarations that C23 (the GCC 15 default) rejects.
+export CFLAGS   := -std=gnu11 -O2 -g -fdata-sections -ffunction-sections -fstack-protector -fno-strict-aliasing -fPIC
 
 ##### Private rules #####
 
