@@ -78,7 +78,7 @@ nvidia-smi -L
 
 ## Copyright and License
 
-This project is released under the [BSD 3-clause license](https://github.com/NVIDIA/libnvidia-container/blob/main/LICENSE).
+This project is released under the [Apache-2.0 license](https://github.com/NVIDIA/libnvidia-container/blob/main/LICENSE).
 
 Additionally, this project can be dynamically linked with libelf from the elfutils package (https://sourceware.org/elfutils), in which case additional terms apply.\
 Refer to [NOTICE](https://github.com/NVIDIA/libnvidia-container/blob/main/NOTICE) for more information.
