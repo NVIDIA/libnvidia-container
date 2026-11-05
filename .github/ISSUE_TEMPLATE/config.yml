@@ -1,1 +1,5 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Community Slack (#gpu-operator)
+    url: https://inviter.co/dsx-ai-factory
+    about: Chat with the GPU Operator team and community
