@@ -88,5 +88,7 @@ Refer to [NOTICE](https://github.com/NVIDIA/libnvidia-container/blob/main/NOTICE
 [Checkout the Contributing document!](CONTRIBUTING.md)
 
 * Please let us know by [filing a new issue](https://github.com/NVIDIA/libnvidia-container/issues/new)
-* You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)
 * Contributions must adhere to the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Support and Getting Help
+You can join our [community Slack](https://inviter.co/dsx-ai-factory). Your feedback is appreciated.
