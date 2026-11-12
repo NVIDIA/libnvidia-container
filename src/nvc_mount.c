@@ -511,8 +511,11 @@ unmount(const char *path)
 {
         if (path == NULL || str_empty(path))
                 return;
+
+        // All callers use this helper to roll back a failed mount operation.
+        // Keep the mount target in place: it may be shared with another mount
+        // namespace, where removing it would invalidate that namespace's mount.
         umount2(path, MNT_DETACH);
-        file_remove(NULL, path);
 }
 
 static int
