@@ -24,7 +24,7 @@ libnvidia-container-tools
 With Docker:
 ```bash
 # Generate docker images for a supported <os><version>
-make {ubuntu18.04, ubuntu16.04, debian10, debian9, centos7, amazonlinux2, opensuse-leap15.1}
+make {ubuntu18.04, ubuntu16.04, debian10, debian9, centos7, amazonlinux2, opensuse-leap15.1, opensuse-leap15.6, opensuse-leap16.0, sles15.7, sles16.0}
 
 # Or generate docker images for all supported distributions in the dist/ directory
 make docker

@@ -35,10 +35,10 @@ include $(CURDIR)/versions.mk
 
 # Supported OSs by architecture
 AMD64_TARGETS := ubuntu22.04 ubuntu20.04 ubuntu18.04 ubuntu16.04 debian10 debian9
-X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1
+X86_64_TARGETS := centos7 centos8 rhel7 rhel8 amazonlinux2 opensuse-leap15.1 opensuse-leap15.6 opensuse-leap16.0 sles15.7 sles16.0
 PPC64LE_TARGETS := ubuntu18.04 ubuntu16.04 centos7 centos8 rhel7 rhel8
 ARM64_TARGETS := ubuntu18.04
-AARCH64_TARGETS := centos7 rhel7 centos8 rhel8 amazonlinux2
+AARCH64_TARGETS := centos7 rhel7 centos8 rhel8 amazonlinux2 opensuse-leap15.6 opensuse-leap16.0 sles15.7 sles16.0
 
 # Define top-level build targets
 docker%: SHELL:=/bin/bash
@@ -145,6 +145,18 @@ docker-amd64-verify: $(patsubst %, %-verify, $(AMD64_TARGETS)) \
 # private opensuse-leap target with overrides
 --opensuse-leap%: OS := opensuse-leap
 --opensuse-leap%: BASEIMAGE = opensuse/leap:$(VERSION)
+# glibc no longer ships the Sun RPC headers from Leap 15.6 on; build against libtirpc
+--opensuse-leap15.6%: WITH_TIRPC = yes
+--opensuse-leap16%: WITH_TIRPC = yes
+
+# private sles target (built on the SLE Base Container Image with the opensuse-leap Dockerfile)
+--sles%: OS := opensuse-leap
+--sles%: VERSION = $(patsubst sles%-$(ARCH),%,$(TARGET_PLATFORM))
+--sles%: BASEIMAGE = registry.suse.com/bci/bci-base:$(VERSION)
+--sles%: BUILDIMAGE = $(IMAGE_PREFIX)nvidia/$(LIB_NAME)/sles$(VERSION)-$(ARCH)
+--sles%: ARTIFACTS_DIR = $(DIST_DIR)/sles$(VERSION)/$(ARCH)
+--sles%: WITH_TIRPC = yes
+--sles16%: WITH_LIBELF = yes
 
 # private rhel target (actually built on centos)
 --rhel%: OS := centos
