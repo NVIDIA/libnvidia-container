@@ -25,7 +25,9 @@ containers leveraging NVIDIA hardware. The implementation relies on several
 kernel subsystems and is designed to be agnostic of the container runtime.
 
 %install
-DESTDIR=%{buildroot} %{__make} install prefix=%{_prefix} exec_prefix=%{_exec_prefix} bindir=%{_bindir} libdir=%{_libdir} includedir=%{_includedir} docdir=%{_licensedir}
+# rpm >= 4.20 runs the install section in a per-build subdirectory, so point make at the
+# source tree that the Makefile links to _topdir/BUILD.
+DESTDIR=%{buildroot} %{__make} -C %{_topdir}/BUILD install prefix=%{_prefix} exec_prefix=%{_exec_prefix} bindir=%{_bindir} libdir=%{_libdir} includedir=%{_includedir} docdir=%{_licensedir}
 
 %package -n %{name}%{_major}
 Summary: NVIDIA container runtime library

@@ -4,9 +4,8 @@ FROM ${BASEIMAGE}
 SHELL ["/bin/bash", "-c"]
 
 RUN zypper install -y \
-        bmake \
         bzip2 \
-        createrepo \
+        createrepo_c \
         curl \
         gcc \
         git \
@@ -18,9 +17,15 @@ RUN zypper install -y \
         make \
         lsb-release \
         pkg-config \
+        rpcgen \
         rpm-build \
-        rpmlint \
         which && \
+    rm -rf /var/cache/zypp/*
+
+# bmake is only needed to build the bundled elftoolchain (WITH_LIBELF=no) and rpmlint is
+# optional. Neither is available in every SUSE repository (e.g. SLE BCI 16), so they are
+# installed when the repository provides them.
+RUN (zypper install -y bmake rpmlint || zypper install -y bmake || true) && \
     rm -rf /var/cache/zypp/*
 
 ARG OS_ARCH
